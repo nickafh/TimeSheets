@@ -15,33 +15,24 @@ fi
 
 echo "==> Obtaining SSL certificate for $DOMAIN ..."
 
-# 1. Start Nginx in HTTP-only mode (it will fail on the HTTPS block if
-#    certs don't exist yet, so we create a self-signed placeholder first).
-echo "==> Creating temporary self-signed certificate ..."
-mkdir -p ./certbot/conf/live/$DOMAIN
-docker compose run --rm --entrypoint "\
-  openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
-    -keyout '/etc/letsencrypt/live/$DOMAIN/privkey.pem' \
-    -out '/etc/letsencrypt/live/$DOMAIN/fullchain.pem' \
-    -subj '/CN=localhost'" certbot
+# 1. Start services — nginx will detect missing certs and run in HTTP-only mode
+echo "==> Starting services (nginx in HTTP-only mode) ..."
+docker compose up -d --build
 
-echo "==> Starting Nginx with temporary certificate ..."
-docker compose up -d nginx
+echo "==> Waiting for nginx to be ready ..."
+sleep 5
 
-echo "==> Removing temporary certificate ..."
-docker compose run --rm --entrypoint "\
-  rm -rf /etc/letsencrypt/live/$DOMAIN && \
-  rm -rf /etc/letsencrypt/archive/$DOMAIN && \
-  rm -rf /etc/letsencrypt/renewal/$DOMAIN.conf" certbot
-
-echo "==> Requesting real certificate from Let's Encrypt ..."
-docker compose run --rm certbot certonly \
+# 2. Request real certificate from Let's Encrypt
+echo "==> Requesting certificate from Let's Encrypt ..."
+docker compose run --rm --entrypoint "certbot" certbot certonly \
   --webroot -w /var/www/certbot \
   --email "$CERTBOT_EMAIL" \
   --agree-tos --no-eff-email \
   -d "$DOMAIN"
 
-echo "==> Reloading Nginx with real certificate ..."
-docker compose exec nginx nginx -s reload
+# 3. Restart nginx so it picks up the new cert and enables HTTPS
+echo "==> Restarting nginx with SSL certificate ..."
+docker compose restart nginx
 
 echo "==> Done! SSL certificate obtained for $DOMAIN"
+echo "    Visit https://$DOMAIN"

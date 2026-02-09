@@ -12,11 +12,12 @@ server {
         root /var/www/certbot;
     }
 
-    # Redirect everything else to HTTPS
+    # Redirect everything else to HTTPS (removed in HTTP-only mode)
     location / {
         return 301 https://$host$request_uri;
     }
 }
+# END HTTP
 
 # HTTPS
 server {
