@@ -1,0 +1,42 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# .NET build output
+bin/
+obj/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+
+# Environment / secrets
+.env
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+
+# Playwright
+playwright-report/
+test-results/
+.playwright-mcp/
+**/tests/screenshots/
+**/playwright-*.png
+
+# Logs
+*.log
+npm-debug.log*
+
+# Design references / working docs
+Style/
+WEEKLY_TIME_ENTRIES_IMPROVEMENTS.md
+
+# Dev-only files
+*.http

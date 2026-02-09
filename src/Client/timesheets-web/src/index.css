@@ -1,0 +1,1445 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+/* ================================
+   AFH BRAND THEME — SIR Style
+   ================================ */
+
+:root {
+  --primary: #002349;
+  --afh-navy: #002349;
+  --afh-navy-dark: #00172b;
+  --afh-gold: #C29B40;
+  --afh-gold-dark: #a8832e;
+  --accent-grey: #999999;
+  --text-grey: #666666;
+
+  --bg-main: #F8F9FA;
+  --bg-surface: #ffffff;
+
+  --border-subtle: #e1e7ef;
+  --text-main: #1f2933;
+  --text-muted: #666666;
+
+  --sidebar-bg: #ffffff;
+}
+
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Montserrat', sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999999;
+  border-radius: 10px;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ======================
+   LAYOUT
+   ====================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ======================
+   SIDEBAR
+   ====================== */
+
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 20;
+}
+
+.sidebar__logo {
+  padding: 32px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--afh-navy);
+  letter-spacing: 0.02em;
+}
+
+.sidebar__subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--afh-gold);
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.sidebar__nav {
+  flex: 1;
+  padding: 16px;
+  margin-top: 16px;
+  overflow-y: auto;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-grey);
+  transition: all 0.2s ease;
+}
+
+.sidebar__link:hover {
+  background: rgba(0, 35, 73, 0.05);
+  color: var(--afh-navy);
+}
+
+.sidebar__link--active {
+  background: var(--afh-navy);
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.sidebar__link--active:hover {
+  background: var(--afh-navy-dark);
+  color: #ffffff !important;
+}
+
+.sidebar__icon {
+  display: inline-flex;
+  width: 24px;
+  margin-right: 12px;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+}
+
+.sidebar__label {
+  vertical-align: middle;
+}
+
+/* ======================
+   TOPBAR
+   ====================== */
+
+.topbar {
+  background: var(--afh-navy);
+  color: #ffffff;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.topbar__brand {
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  letter-spacing: 0.08em;
+}
+
+.topbar__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.topbar__user-name {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.topbar__user-role {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--afh-gold);
+  font-weight: 700;
+}
+
+/* Header Logo Lockup */
+.header-logo-lockup {
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+.logo-left-text {
+  font-family: 'Montserrat', sans-serif;
+  text-align: right;
+  margin-right: 1.25rem;
+}
+
+.logo-left-text .top-line {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.logo-left-text .bottom-line {
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  margin-top: -1px;
+  letter-spacing: 0.02em;
+}
+
+.logo-vertical-divider {
+  width: 1px;
+  height: 44px;
+  background-color: white;
+  opacity: 0.8;
+}
+
+.logo-right-part {
+  margin-left: 1.25rem;
+}
+
+.logo-sir-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.logo-sir-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 500;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+/* ======================
+   CONTENT AREA
+   ====================== */
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-left: 280px;
+}
+
+.app-main__content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: var(--afh-navy);
+}
+
+.page-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: var(--text-grey);
+  margin-bottom: 32px;
+}
+
+/* ======================
+   CARDS
+   ====================== */
+
+.card {
+  background: var(--bg-surface);
+  padding: 32px;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+  transition: border-color 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--afh-gold);
+}
+
+.card__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: var(--afh-navy);
+}
+
+.card__subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--accent-grey);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ======================
+   BUTTONS
+   ====================== */
+
+.btn {
+  font-family: 'Montserrat', sans-serif;
+  padding: 12px 24px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border: none;
+  background: var(--afh-gold);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: var(--afh-gold-dark);
+}
+
+.btn-navy {
+  background: var(--afh-navy);
+}
+
+.btn-navy:hover {
+  background: var(--afh-navy-dark);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--afh-navy);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--afh-navy);
+  border: 1px solid var(--afh-navy);
+}
+
+.btn-outline:hover {
+  background: var(--afh-navy);
+  color: #ffffff;
+}
+
+/* ======================
+   TABLES
+   ====================== */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: var(--afh-navy);
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #ffffff;
+  font-size: 14px;
+}
+
+.table tbody tr:hover td {
+  background: rgba(194, 155, 64, 0.05);
+}
+
+/* ======================
+   LABELS & BADGES
+   ====================== */
+
+.label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}
+
+.badge {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+/* ======================
+   LOGIN PAGE
+   ====================== */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-main);
+}
+
+.login-card {
+  width: 400px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 40px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.08);
+}
+
+.login-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--afh-navy);
+}
+
+.login-subtitle {
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--afh-gold);
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ======================
+   FOOTER
+   ====================== */
+
+.footer-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.footer-logo-main-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+
+.footer-logo-divider {
+  height: 1px;
+  width: 100%;
+  background-color: currentColor;
+  margin: 6px 0;
+  opacity: 0.3;
+}
+
+.footer-logo-sub-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ======================
+   RESPONSIVE TWEAKS
+   ====================== */
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  .app-main {
+    margin-left: 240px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  .sidebar__logo {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .sidebar__nav {
+    display: flex;
+    gap: 4px;
+    margin-top: 0;
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  .sidebar__link {
+    margin-bottom: 0;
+    font-size: 12px;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+}
+
+/* ======================
+   TIMESHEET GRID
+   ====================== */
+
+.timesheet-table-wrapper {
+  overflow-x: auto;
+}
+
+.timesheet-table th,
+.timesheet-table td {
+  text-align: center;
+}
+
+.timesheet-row:nth-child(even) td {
+  background: #f9fafb;
+}
+
+.timesheet-row-number {
+  font-weight: 500;
+  background: #f3f4f6;
+}
+
+.timesheet-input {
+  width: 100%;
+  max-width: 70px;
+  padding: 8px 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timesheet-input:focus {
+  outline: none;
+  border-color: var(--afh-gold);
+  box-shadow: 0 0 0 2px rgba(194, 155, 64, 0.2);
+}
+
+.timesheet-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-top: 16px;
+  color: var(--text-muted);
+}
+
+/* ======================
+   UTILITY CLASSES
+   ====================== */
+
+.tracking-wide-custom {
+  letter-spacing: 0.2em;
+}
+
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-sans-custom {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* ======================
+   DASHBOARD STYLES
+   ====================== */
+
+.dashboard-container {
+  padding: 40px;
+}
+
+.dashboard-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.dashboard-card {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.dashboard-card__title {
+  font-size: 18px;
+  font-family: 'Playfair Display', serif;
+  color: #002349;
+}
+
+.dashboard-card__icon {
+  color: #C29B40;
+  font-size: 24px;
+}
+
+.dashboard-card__body {
+  padding: 20px;
+}
+
+.dashboard-card__stats {
+  margin-top: 8px;
+}
+
+.dashboard-card__stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.dashboard-card__stat-value {
+  font-size: 32px;
+  font-weight: 300;
+  color: #002349;
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1;
+}
+
+.dashboard-card__stat-unit {
+  font-size: 14px;
+  color: #666666;
+  font-weight: 400;
+}
+
+.dashboard-card__stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #999999;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.dashboard-card__badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 2px;
+}
+
+.dashboard-card__badge--success {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.dashboard-card__progress {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dashboard-card__progress-bar {
+  height: 100%;
+  background-color: #C29B40;
+  border-radius: 3px;
+}
+
+.dashboard-card__stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.dashboard-card__stat-box {
+  padding: 0;
+}
+
+.dashboard-card__stat-box--bordered {
+  border-left: 1px solid #e2e8f0;
+  padding-left: 24px;
+}
+
+.dashboard-card__action-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  text-align: center;
+  border: 1px solid #002349;
+  color: #002349;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+}
+
+.dashboard-card__action-btn:hover {
+  background-color: #002349;
+  color: white;
+}
+
+.dashboard-card__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-card__list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dashboard-card__list-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-card__list-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dashboard-card__list-subtitle {
+  font-size: 12px;
+  color: #666666;
+  margin-top: 2px;
+}
+
+.dashboard-card__list-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #999999;
+}
+
+.dashboard-card__alert {
+  background-color: #f8fafc;
+  border-left: 4px solid #C29B40;
+  padding: 16px;
+  border-radius: 0 2px 2px 0;
+}
+
+.dashboard-card__alert-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #C29B40;
+  margin-bottom: 8px;
+}
+
+.dashboard-card__alert-text {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.dashboard-card__alert-text strong {
+  font-weight: 700;
+}
+
+/* ======================
+   REQUEST TIME OFF BUTTON
+   ====================== */
+
+.request-time-off-btn:hover {
+  background-color: #a8832e !important;
+  box-shadow: 0 6px 20px -3px rgba(194, 155, 64, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+/* ======================
+   MOBILE STYLES (< 768px)
+   ====================== */
+
+@media (max-width: 768px) {
+  /* Hide desktop sidebar on mobile */
+  .sidebar {
+    display: none;
+  }
+
+  /* Mobile layout adjustments */
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-main {
+    margin-left: 0;
+    padding-bottom: 80px; /* Space for bottom nav */
+  }
+
+  /* Mobile Topbar */
+  .topbar {
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar .header-logo-lockup {
+    transform: scale(0.7);
+    transform-origin: left center;
+  }
+
+  .topbar .header-logo-lockup img {
+    height: 32px !important;
+  }
+
+  .topbar__user-name,
+  .topbar__user-role {
+    display: none;
+  }
+
+  /* Dashboard Mobile */
+  .dashboard-container {
+    padding: 24px 20px !important;
+    max-width: 100%;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px !important;
+  }
+
+  .dashboard-header h1 {
+    font-size: 28px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .dashboard-header p {
+    font-size: 14px !important;
+  }
+
+  .dashboard-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Dashboard card mobile styles */
+  .dashboard-card {
+    border-radius: 2px;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+  }
+
+  .dashboard-card__body {
+    padding: 20px;
+  }
+
+  .dashboard-card__title {
+    font-size: 18px;
+  }
+
+  .dashboard-card__stat-value {
+    font-size: 28px;
+  }
+
+  .dashboard-card__stat-unit {
+    font-size: 12px;
+  }
+
+  .dashboard-card__stats-grid {
+    gap: 0;
+  }
+
+  .dashboard-card__stat-box--bordered {
+    padding-left: 20px;
+  }
+
+  .dashboard-card__action-btn {
+    padding: 12px;
+    font-size: 10px;
+    margin-top: 20px;
+  }
+
+  .dashboard-card__alert {
+    padding: 14px;
+  }
+
+  .dashboard-card__alert-text {
+    font-size: 13px;
+  }
+
+  /* Notification cards on mobile */
+  .dashboard-container > div[style*="marginBottom: '32px'"] {
+    margin-bottom: 20px !important;
+  }
+
+  .dashboard-container > div[style*="marginBottom: '32px'"] > div {
+    padding: 16px !important;
+    border-radius: 2px !important;
+  }
+
+  /* Mobile user avatar */
+  .mobile-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(194, 155, 64, 0.2);
+    border: 1px solid rgba(194, 155, 64, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--afh-gold);
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: -4px;
+  }
+
+  .mobile-menu-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px 0 8px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-menu-btn .material-symbols-outlined {
+    font-size: 28px;
+  }
+
+  /* Reduce gap in topbar on mobile */
+  .topbar > .flex.items-center {
+    gap: 12px !important;
+  }
+
+  /* Page content mobile */
+  .app-main__content {
+    padding: 24px 20px;
+    max-width: 100%;
+  }
+
+  .page-title {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  /* Cards mobile */
+  .card {
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+  }
+
+  .card__title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  /* Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 8px;
+    z-index: 40;
+  }
+
+  .mobile-bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #94a3b8;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-bottom-nav__item--active {
+    color: var(--afh-navy);
+  }
+
+  .mobile-bottom-nav__item--active .material-symbols-outlined {
+    color: var(--afh-gold);
+  }
+
+  .mobile-bottom-nav__item .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  .mobile-bottom-nav__label {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-top: 4px;
+  }
+
+  /* Tables mobile */
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .table th {
+    font-size: 9px;
+  }
+
+  /* Buttons mobile */
+  .btn {
+    padding: 12px 16px;
+    font-size: 10px;
+    width: 100%;
+  }
+
+  /* Login card mobile */
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    margin: 16px;
+    padding: 32px 24px;
+  }
+
+  /* Mobile menu overlay */
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .mobile-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100vh;
+    background: white;
+    z-index: 101;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-menu.open {
+    right: 0;
+  }
+
+  .mobile-menu__header {
+    padding: 20px;
+    background: var(--afh-navy);
+    color: white;
+  }
+
+  .mobile-menu__user-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .mobile-menu__user-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--afh-gold);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .mobile-menu__nav {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .mobile-menu__link {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    color: var(--text-grey);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 2px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu__link:hover {
+    background: rgba(0, 35, 73, 0.05);
+    color: var(--afh-navy);
+  }
+
+  .mobile-menu__link--active {
+    background: var(--afh-navy);
+    color: white !important;
+  }
+
+  .mobile-menu__link .material-symbols-outlined {
+    margin-right: 12px;
+    font-size: 20px;
+  }
+
+  .mobile-menu__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .mobile-menu__logout {
+    margin: 16px;
+    padding: 14px;
+    background: white;
+    color: var(--afh-navy);
+    border: 1px solid var(--border-subtle);
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .mobile-menu__logout:hover {
+    background: #f3f4f6;
+  }
+
+  /* Footer mobile */
+  .footer-logo-main-text {
+    font-size: 16px;
+  }
+
+  .footer-logo-sub-text {
+    font-size: 7px;
+    letter-spacing: 0.35em;
+  }
+
+  /* Stats cards grid mobile */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Time entries mobile */
+  .timesheet-input {
+    max-width: 60px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  /* Logout button in topbar - hide on mobile (but show avatar and menu) */
+  .topbar > .flex.items-center > button:not(.mobile-menu-btn) {
+    display: none;
+  }
+
+  /* Topbar user info - hide on mobile */
+  .topbar > .flex.items-center > div.text-right {
+    display: none;
+  }
+
+  /* Dashboard welcome section mobile */
+  .dashboard-welcome {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-welcome h1 {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+
+  /* Quick action cards grid mobile */
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Progress bars */
+  .progress-bar-container {
+    margin-top: 16px;
+  }
+
+  /* Calendar mobile */
+  .calendar-container {
+    padding: 16px;
+  }
+
+  /* Forms mobile */
+  .form-container {
+    padding: 20px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  /* Modal mobile */
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  /* Table container mobile - horizontal scroll */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Footer mobile */
+  .footer-container {
+    padding: 24px 16px 80px;
+  }
+
+  /* Time Off Requests mobile */
+  .request-time-off-btn {
+    padding: 12px 20px !important;
+    font-size: 10px !important;
+    gap: 8px !important;
+  }
+
+  .request-time-off-btn .material-symbols-outlined {
+    font-size: 18px !important;
+  }
+
+  /* Calendar Mobile Styles */
+  .calendar-page {
+    padding: 24px 20px !important;
+  }
+
+  .calendar-page__header {
+    margin-bottom: 20px !important;
+  }
+
+  .calendar-page__header h1 {
+    font-size: 28px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .calendar-page__subtitle {
+    display: none;
+  }
+
+  .calendar-card {
+    border-radius: 2px !important;
+  }
+
+  .calendar-card__nav {
+    padding: 16px 20px !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+  }
+
+  .calendar-card__nav > div:first-child {
+    gap: 12px !important;
+  }
+
+  .calendar-card__title {
+    font-size: 20px !important;
+    min-width: auto !important;
+  }
+
+  .calendar-card__actions {
+    display: none !important;
+  }
+
+  .calendar-legend {
+    display: none !important;
+  }
+
+  .calendar-table__head--desktop {
+    display: none;
+  }
+
+  .calendar-table__head--mobile {
+    display: table-header-group;
+  }
+
+  .calendar-cell {
+    min-height: 50px !important;
+    height: 50px !important;
+    padding: 8px 4px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+  }
+
+  .calendar-cell__day {
+    margin-bottom: 0 !important;
+    font-size: 16px !important;
+  }
+
+  .calendar-cell--selected {
+    border-radius: 4px;
+  }
+
+  .calendar-cell__events--desktop {
+    display: none !important;
+  }
+
+  .calendar-cell__events--mobile {
+    display: flex !important;
+  }
+
+  /* Mobile detail panel - visible on mobile */
+  .calendar-detail-panel {
+    display: block;
+    margin-top: 24px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 2px;
+  }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+  .mobile-bottom-nav,
+  .mobile-user-avatar,
+  .mobile-menu-btn,
+  .mobile-menu-overlay,
+  .mobile-menu,
+  .calendar-table__head--mobile,
+  .calendar-cell__events--mobile,
+  .calendar-detail-panel {
+    display: none !important;
+  }
+}
