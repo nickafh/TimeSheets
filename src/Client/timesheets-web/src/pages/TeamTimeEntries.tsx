@@ -356,109 +356,138 @@ export default function TeamTimeEntries() {
               </p>
             </div>
           ) : (
-            <div style={{
-              backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              overflow: 'hidden',
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#002349' }}>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'left',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      Employee
-                    </th>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'left',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      Department
-                    </th>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      Days Worked
-                    </th>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      Worked Hours
-                    </th>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      PTO Hours
-                    </th>
-                    <th style={{
-                      padding: '14px 24px',
-                      textAlign: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: '#C29B40',
-                    }}>
-                      Total Hours
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.map((row, index) => (
-                    <tr key={row.userId} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 500, color: '#002349' }}>
-                        {row.userName}
-                      </td>
-                      <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                        {row.department || "N/A"}
-                      </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', color: '#64748b' }}>
-                        {row.daysWorked}
-                      </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#059669' }}>
-                        {row.totalWorkedHours.toFixed(1)}h
-                      </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#C29B40' }}>
-                        {row.totalPtoHours.toFixed(1)}h
-                      </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                        {row.totalHours.toFixed(1)}h
-                      </td>
+            <>
+              <div className="team-summary-table" style={{
+                backgroundColor: 'white',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                overflow: 'hidden',
+              }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#002349' }}>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'left',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        Employee
+                      </th>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'left',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        Department
+                      </th>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        Days Worked
+                      </th>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        Worked Hours
+                      </th>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        PTO Hours
+                      </th>
+                      <th style={{
+                        padding: '14px 24px',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#C29B40',
+                      }}>
+                        Total Hours
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {summary.map((row, index) => (
+                      <tr key={row.userId} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 500, color: '#002349' }}>
+                          {row.userName}
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                          {row.department || "N/A"}
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', color: '#64748b' }}>
+                          {row.daysWorked}
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#059669' }}>
+                          {row.totalWorkedHours.toFixed(1)}h
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#C29B40' }}>
+                          {row.totalPtoHours.toFixed(1)}h
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                          {row.totalHours.toFixed(1)}h
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="team-summary-cards">
+                {summary.map((row) => (
+                  <div key={row.userId} className="team-summary-card">
+                    <div className="team-summary-card__header">
+                      <div>
+                        <div className="team-summary-card__name">{row.userName}</div>
+                        <div className="team-summary-card__dept">{row.department || "N/A"}</div>
+                      </div>
+                      <div className="team-summary-card__total">{row.totalHours.toFixed(1)}h</div>
+                    </div>
+                    <div className="team-summary-card__body">
+                      <div className="team-summary-card__row">
+                        <span className="team-summary-card__label">Days Worked</span>
+                        <span className="team-summary-card__value">{row.daysWorked}</span>
+                      </div>
+                      <div className="team-summary-card__row">
+                        <span className="team-summary-card__label">Worked Hours</span>
+                        <span className="team-summary-card__value" style={{ color: '#059669' }}>{row.totalWorkedHours.toFixed(1)}h</span>
+                      </div>
+                      <div className="team-summary-card__row">
+                        <span className="team-summary-card__label">PTO Hours</span>
+                        <span className="team-summary-card__value" style={{ color: '#C29B40' }}>{row.totalPtoHours.toFixed(1)}h</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </>
       ) : (
@@ -491,7 +520,7 @@ export default function TeamTimeEntries() {
                     overflow: 'hidden',
                   }}>
                     {/* User Header */}
-                    <div style={{
+                    <div className="team-detailed-header" style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -506,7 +535,7 @@ export default function TeamTimeEntries() {
                           {userData.department || "No Department"}
                         </p>
                       </div>
-                      <div style={{ display: 'flex', gap: '32px' }}>
+                      <div className="team-detailed-header__stats" style={{ display: 'flex', gap: '32px' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40', marginBottom: '4px' }}>
                             Worked
@@ -535,61 +564,95 @@ export default function TeamTimeEntries() {
                     </div>
 
                     {/* Weekly Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-                      {weekDays.map((day, idx) => {
+                    <div className="team-detailed-table">
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+                        {weekDays.map((day, idx) => {
+                          const dayStr = formatDate(day);
+                          const entry = userData.entries.find(e => e.workDate.split("T")[0] === dayStr);
+                          const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+
+                          return (
+                            <div
+                              key={dayStr}
+                              style={{
+                                padding: '12px',
+                                borderRight: idx < 6 ? '1px solid #e2e8f0' : 'none',
+                                backgroundColor: isWeekend ? '#f8fafc' : 'white',
+                              }}
+                            >
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '2px' }}>
+                                  {day.toLocaleDateString("en-US", { weekday: "short" })}
+                                </div>
+                                <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                                  {day.getDate()}
+                                </div>
+                              </div>
+                              {entry ? (
+                                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
+                                  {entry.workedHours > 0 && (
+                                    <div style={{
+                                      backgroundColor: '#ecfdf5',
+                                      color: '#059669',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      fontWeight: 700,
+                                    }}>
+                                      {entry.workedHours}h worked
+                                    </div>
+                                  )}
+                                  {entry.ptoHours > 0 && (
+                                    <div style={{
+                                      backgroundColor: 'rgba(194, 155, 64, 0.1)',
+                                      color: '#C29B40',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      fontWeight: 700,
+                                    }}>
+                                      {entry.ptoHours}h PTO
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div style={{ marginTop: '8px', textAlign: 'center', fontSize: '12px', color: '#cbd5e1' }}>
+                                  —
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="team-detailed-cards">
+                      {weekDays.map((day) => {
                         const dayStr = formatDate(day);
                         const entry = userData.entries.find(e => e.workDate.split("T")[0] === dayStr);
                         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-
+                        if (!entry && isWeekend) return null;
                         return (
-                          <div
-                            key={dayStr}
-                            style={{
-                              padding: '12px',
-                              borderRight: idx < 6 ? '1px solid #e2e8f0' : 'none',
-                              backgroundColor: isWeekend ? '#f8fafc' : 'white',
-                            }}
-                          >
-                            <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '2px' }}>
-                                {day.toLocaleDateString("en-US", { weekday: "short" })}
-                              </div>
-                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                                {day.getDate()}
-                              </div>
+                          <div key={dayStr} className="team-detailed-day">
+                            <span className="team-detailed-day__date">
+                              {day.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                            </span>
+                            <div className="team-detailed-day__hours">
+                              {entry ? (
+                                <>
+                                  {entry.workedHours > 0 && (
+                                    <span className="team-detailed-day__worked">{entry.workedHours}h worked</span>
+                                  )}
+                                  {entry.ptoHours > 0 && (
+                                    <span className="team-detailed-day__pto">{entry.ptoHours}h PTO</span>
+                                  )}
+                                  {entry.workedHours === 0 && entry.ptoHours === 0 && (
+                                    <span className="team-detailed-day__none">No hours</span>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="team-detailed-day__none">No entry</span>
+                              )}
                             </div>
-                            {entry ? (
-                              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
-                                {entry.workedHours > 0 && (
-                                  <div style={{
-                                    backgroundColor: '#ecfdf5',
-                                    color: '#059669',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                  }}>
-                                    {entry.workedHours}h worked
-                                  </div>
-                                )}
-                                {entry.ptoHours > 0 && (
-                                  <div style={{
-                                    backgroundColor: 'rgba(194, 155, 64, 0.1)',
-                                    color: '#C29B40',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                  }}>
-                                    {entry.ptoHours}h PTO
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div style={{ marginTop: '8px', textAlign: 'center', fontSize: '12px', color: '#cbd5e1' }}>
-                                —
-                              </div>
-                            )}
                           </div>
                         );
                       })}
