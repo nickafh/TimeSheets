@@ -2789,3 +2789,100 @@ h1, h2, h3, h4 {
 }
 
 /* END MOBILE UX FIXES */
+
+/* ======================
+   ISSUE 16: ADMIN PAGES - MOBILE
+   ====================== */
+
+/* Table/Card toggle pattern for admin pages */
+.admin-table-desktop {
+  display: block;
+}
+
+.admin-cards-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-table-desktop {
+    display: none !important;
+  }
+
+  .admin-cards-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Admin card styling */
+.admin-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+}
+
+.admin-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.admin-card__row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  padding: 4px 0;
+}
+
+.admin-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Quick actions grid (5-column desktop, 2-column tablet, 1-column mobile) */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Form grids for admin forms */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .form-grid-2,
+  .form-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div style={{ marginBottom: '32px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="stats-grid-4" style={{ marginBottom: '32px', gap: '16px' }}>
         <div style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
         <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '16px' }}>
           Quick Actions
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+        <div className="quick-actions-grid">
           <Link
             to="/admin/manage-users"
             style={{
@@ -436,135 +436,242 @@ export default function AdminDashboard() {
             </p>
           </div>
         ) : (
-          <div style={{
-            backgroundColor: 'white',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            overflow: 'hidden',
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#002349' }}>
-                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Employee
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Department
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Date of Leave
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Hours
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Reason
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Requested
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Status
-                  </th>
-                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingPtoRequests.slice(0, 10).map((request, index) => (
-                  <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 500, color: '#002349' }}>
-                      {request.userName}
-                    </td>
-                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                      {request.department || "N/A"}
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', color: '#002349', fontWeight: 500 }}>
-                      {formatPtoRequestDateDisplay(request)}
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                      {request.hours}h
-                    </td>
-                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {request.reason || "—"}
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '13px', color: '#64748b' }}>
-                      {new Date(request.requestedAt).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                      <span style={{
-                        ...getStatusStyle(request.status),
-                        padding: '4px 12px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
+          <>
+            {/* Desktop Table */}
+            <div className="admin-table-desktop" style={{
+              backgroundColor: 'white',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              overflow: 'hidden',
+            }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#002349' }}>
+                    <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Employee
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Department
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Date of Leave
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Hours
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Reason
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Requested
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Status
+                    </th>
+                    <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingPtoRequests.slice(0, 10).map((request, index) => (
+                    <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 500, color: '#002349' }}>
+                        {request.userName}
+                      </td>
+                      <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                        {request.department || "N/A"}
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', color: '#002349', fontWeight: 500 }}>
+                        {formatPtoRequestDateDisplay(request)}
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                        {request.hours}h
+                      </td>
+                      <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {request.reason || "—"}
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '13px', color: '#64748b' }}>
+                        {new Date(request.requestedAt).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                        <span style={{
+                          ...getStatusStyle(request.status),
+                          padding: '4px 12px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>
+                          {getStatusLabel(request.status)}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                          <button
+                            onClick={() => handleApprove(request.id)}
+                            style={{
+                              backgroundColor: '#059669',
+                              color: 'white',
+                              padding: '6px 12px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              minHeight: '44px',
+                            }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleDeny(request.id)}
+                            style={{
+                              backgroundColor: 'white',
+                              color: '#dc2626',
+                              padding: '6px 12px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              borderRadius: '4px',
+                              border: '1px solid #fecaca',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              minHeight: '44px',
+                            }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                            Deny
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {pendingPtoRequests.length > 10 && (
+                <div style={{ backgroundColor: '#f8fafc', padding: '16px 24px', textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
+                  <Link
+                    to="/manager/approve-pto"
+                    style={{ fontSize: '13px', fontWeight: 600, color: '#002349', textDecoration: 'none' }}
+                  >
+                    View all {pendingPtoRequests.length} pending requests
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>arrow_forward</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="admin-cards-mobile">
+              {pendingPtoRequests.slice(0, 10).map((request) => (
+                <div key={request.id} className="admin-card">
+                  <div className="admin-card__header">
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                        {request.userName}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                        {request.department || "N/A"}
+                      </div>
+                    </div>
+                    <span style={{
+                      ...getStatusStyle(request.status),
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      {getStatusLabel(request.status)}
+                    </span>
+                  </div>
+                  <div className="admin-card__row">
+                    <span style={{ fontWeight: 600 }}>Date:</span>
+                    <span>{formatPtoRequestDateDisplay(request)}</span>
+                  </div>
+                  <div className="admin-card__row">
+                    <span style={{ fontWeight: 600 }}>Hours:</span>
+                    <span>{request.hours}h</span>
+                  </div>
+                  {request.reason && (
+                    <div className="admin-card__row">
+                      <span style={{ fontWeight: 600 }}>Reason:</span>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.reason}</span>
+                    </div>
+                  )}
+                  <div className="admin-card__actions">
+                    <button
+                      onClick={() => handleApprove(request.id)}
+                      style={{
+                        flex: 1,
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        padding: '10px 16px',
+                        fontSize: '10px',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        minHeight: '44px',
                       }}>
-                        {getStatusLabel(request.status)}
-                      </span>
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                        <button
-                          onClick={() => handleApprove(request.id)}
-                          style={{
-                            backgroundColor: '#059669',
-                            color: 'white',
-                            padding: '6px 12px',
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            borderRadius: '4px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleDeny(request.id)}
-                          style={{
-                            backgroundColor: 'white',
-                            color: '#dc2626',
-                            padding: '6px 12px',
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            borderRadius: '4px',
-                            border: '1px solid #fecaca',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
-                          Deny
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {pendingPtoRequests.length > 10 && (
-              <div style={{ backgroundColor: '#f8fafc', padding: '16px 24px', textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
-                <Link
-                  to="/manager/approve-pto"
-                  style={{ fontSize: '13px', fontWeight: 600, color: '#002349', textDecoration: 'none' }}
-                >
-                  View all {pendingPtoRequests.length} pending requests
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>arrow_forward</span>
-                </Link>
-              </div>
-            )}
-          </div>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleDeny(request.id)}
+                      style={{
+                        flex: 1,
+                        backgroundColor: 'white',
+                        color: '#dc2626',
+                        padding: '10px 16px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        borderRadius: '6px',
+                        border: '1px solid #fecaca',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        minHeight: '44px',
+                      }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {pendingPtoRequests.length > 10 && (
+                <div style={{ backgroundColor: '#f8fafc', padding: '16px', textAlign: 'center', borderRadius: '8px' }}>
+                  <Link
+                    to="/manager/approve-pto"
+                    style={{ fontSize: '13px', fontWeight: 600, color: '#002349', textDecoration: 'none' }}
+                  >
+                    View all {pendingPtoRequests.length} pending requests
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>arrow_forward</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
@@ -588,7 +695,8 @@ export default function AdminDashboard() {
           </span>
         </div>
 
-        <div style={{
+        {/* Desktop Table */}
+        <div className="admin-table-desktop" style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
           borderRadius: '12px',
@@ -686,6 +794,7 @@ export default function AdminDashboard() {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
+                        minHeight: '44px',
                       }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
@@ -698,6 +807,97 @@ export default function AdminDashboard() {
           </table>
           {allUsers.length > 10 && (
             <div style={{ backgroundColor: '#f8fafc', padding: '16px 24px', textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
+              <Link
+                to="/admin/manage-users"
+                style={{ fontSize: '13px', fontWeight: 600, color: '#002349', textDecoration: 'none' }}
+              >
+                View all {allUsers.length} users
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>arrow_forward</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="admin-cards-mobile">
+          {allUsers.slice(0, 10).map((user) => (
+            <div key={user.id} className="admin-card">
+              <div className="admin-card__header">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                    {user.firstName} {user.lastName}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                    {user.email}
+                  </div>
+                </div>
+                {user.isActive === 1 ? (
+                  <span style={{
+                    backgroundColor: '#ecfdf5',
+                    color: '#059669',
+                    border: '1px solid #a7f3d0',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    Active
+                  </span>
+                ) : (
+                  <span style={{
+                    backgroundColor: '#f8fafc',
+                    color: '#64748b',
+                    border: '1px solid #e2e8f0',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    Inactive
+                  </span>
+                )}
+              </div>
+              <div className="admin-card__row">
+                <span style={{ fontWeight: 600 }}>Department:</span>
+                <span>{user.department || "N/A"}</span>
+              </div>
+              <div className="admin-card__row">
+                <span style={{ fontWeight: 600 }}>Role:</span>
+                <span>{user.role || "N/A"}</span>
+              </div>
+              <div className="admin-card__actions">
+                <Link
+                  to={`/admin/user/${user.id}`}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#002349',
+                    color: 'white',
+                    padding: '10px 16px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                  Manage User
+                </Link>
+              </div>
+            </div>
+          ))}
+          {allUsers.length > 10 && (
+            <div style={{ backgroundColor: '#f8fafc', padding: '16px', textAlign: 'center', borderRadius: '8px' }}>
               <Link
                 to="/admin/manage-users"
                 style={{ fontSize: '13px', fontWeight: 600, color: '#002349', textDecoration: 'none' }}
