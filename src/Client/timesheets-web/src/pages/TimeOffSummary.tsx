@@ -82,7 +82,7 @@ const TimeOffSummary = () => {
       </div>
 
       {/* Overview Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
         <div style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
@@ -197,7 +197,7 @@ const TimeOffSummary = () => {
       </div>
 
       {/* Time Off Balances Table */}
-      <div style={{
+      <div className="table-scroll" style={{
         backgroundColor: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
@@ -311,7 +311,7 @@ const TimeOffSummary = () => {
         <p style={{ fontSize: '14px', color: '#666666', marginBottom: '24px', lineHeight: 1.6 }}>
           PTO is an all-purpose time off policy for employees to use for vacation, illness or personal business.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        <div className="policy-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           <div style={{
             backgroundColor: '#f8fafc',
             border: '1px solid #e2e8f0',
@@ -387,7 +387,7 @@ const TimeOffSummary = () => {
       </div>
 
       {/* Side-by-side: Holidays and Early Closures */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+      <div className="split-panels" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
         {/* Left: Company Holidays */}
         <div style={{
           backgroundColor: 'white',

@@ -57,7 +57,7 @@ export default function ManagerDashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
         {/* Active Team Members */}
         <div style={{
           backgroundColor: 'white',
@@ -208,6 +208,7 @@ export default function ManagerDashboard() {
             </div>
           </div>
         ) : (
+          <div className="table-scroll">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#002349' }}>
@@ -293,6 +294,7 @@ export default function ManagerDashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -328,6 +330,7 @@ export default function ManagerDashboard() {
           </span>
         </div>
 
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ backgroundColor: '#002349' }}>
@@ -393,6 +396,7 @@ export default function ManagerDashboard() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {teamMembers.length > 10 && (
           <div style={{

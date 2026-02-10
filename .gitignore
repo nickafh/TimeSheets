@@ -25,6 +25,7 @@ dist-ssr/
 
 # Playwright
 .planning
+.claude
 CLAUDE.md
 playwright-report/
 test-results/

@@ -334,7 +334,7 @@ export default function WeeklyTimeEntries() {
         marginBottom: '24px',
         overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px' }}>
+        <div className="controls-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             {/* Week navigation */}
             <div style={{
@@ -417,7 +417,7 @@ export default function WeeklyTimeEntries() {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="controls-bar-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               type="button"
               onClick={handleThisWeek}
@@ -490,7 +490,7 @@ export default function WeeklyTimeEntries() {
                 }}
               >
                 {/* Week header */}
-                <div style={{
+                <div className="week-header-bar" style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -504,7 +504,7 @@ export default function WeeklyTimeEntries() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     {/* Week totals */}
                     <div style={{
                       backgroundColor: isPerfect ? '#059669' : isUnderHours ? '#64748b' : '#dc2626',

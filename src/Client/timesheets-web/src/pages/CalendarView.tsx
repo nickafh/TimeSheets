@@ -202,8 +202,16 @@ export default function CalendarView() {
   const teamCalendarUrl = `${API_BASE_URL}/api/calendar/feed.ics`;
   const myCalendarUrl = user ? `${API_BASE_URL}/api/calendar/feed/${user.id}.ics` : null;
 
-  // Convert HTTP URL to webcal:// for Outlook subscription
-  const getWebcalUrl = (url: string) => url.replace(/^https?:\/\//, 'webcal://');
+  // Build Outlook web subscription URL (Office 365)
+  const getOutlookUrl = (url: string, name: string) => {
+    const params = new URLSearchParams({
+      path: '/calendar/action/compose',
+      rru: 'addsubscription',
+      url: url,
+      name: name,
+    });
+    return `https://outlook.office.com/owa?${params.toString()}`;
+  };
 
   const copyToClipboard = async (url: string, type: string) => {
     try {
@@ -744,9 +752,11 @@ export default function CalendarView() {
               <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '12px' }}>
                 Subscribe to see all company holidays and approved team time off.
               </p>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <a
-                  href={getWebcalUrl(teamCalendarUrl)}
+                  href={getOutlookUrl(teamCalendarUrl, 'AFH Team Time Off')}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     flex: 1,
                     backgroundColor: '#002349',
@@ -761,6 +771,7 @@ export default function CalendarView() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
+                    minWidth: 'fit-content',
                   }}
                 >
                   <svg style={{ width: '18px', height: '18px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -812,9 +823,11 @@ export default function CalendarView() {
                 <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '12px' }}>
                   Subscribe to see only holidays and your approved time off.
                 </p>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <a
-                    href={getWebcalUrl(myCalendarUrl)}
+                    href={getOutlookUrl(myCalendarUrl, 'My Time Off')}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                       flex: 1,
                       backgroundColor: '#C29B40',
@@ -829,6 +842,7 @@ export default function CalendarView() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
+                      minWidth: 'fit-content',
                     }}
                   >
                     <svg style={{ width: '18px', height: '18px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -880,12 +894,11 @@ export default function CalendarView() {
               marginTop: '8px',
             }}>
               <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#002349', marginBottom: '12px' }}>
-                How to Subscribe in Outlook
+                How to Subscribe
               </h4>
               <ol style={{ fontSize: '13px', color: '#64748b', margin: 0, paddingLeft: '20px', lineHeight: 1.6 }}>
-                <li>Click "Open in Outlook" to automatically add the calendar</li>
-                <li>Or copy the URL and go to Outlook → Add Calendar → Subscribe from web</li>
-                <li>Paste the URL and give your calendar a name</li>
+                <li>Click "Open in Outlook" to go to Outlook on the web and add the calendar</li>
+                <li>Or copy the URL and in Outlook go to Add Calendar → Subscribe from web and paste</li>
                 <li>The calendar will automatically update with new events</li>
               </ol>
             </div>

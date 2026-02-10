@@ -135,7 +135,7 @@ export default function ApprovePto() {
       </div>
 
       {/* Tabs */}
-      <div style={{
+      <div className="tabs-bar" style={{
         marginBottom: '24px',
         display: 'flex',
         gap: '8px',

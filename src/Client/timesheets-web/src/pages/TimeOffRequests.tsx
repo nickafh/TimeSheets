@@ -44,7 +44,7 @@ const TimeOffRequests = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' , padding: '40px' }}>
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="page-header-row" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
             Time Off Requests
@@ -122,6 +122,7 @@ const TimeOffRequests = () => {
             </div>
           </div>
         ) : (
+          <div className="table-scroll">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#002349' }}>
@@ -214,6 +215,7 @@ const TimeOffRequests = () => {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -257,6 +259,7 @@ const TimeOffRequests = () => {
             </div>
           </div>
         ) : (
+          <div className="table-scroll">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#C29B40' }}>
@@ -378,6 +381,7 @@ const TimeOffRequests = () => {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
