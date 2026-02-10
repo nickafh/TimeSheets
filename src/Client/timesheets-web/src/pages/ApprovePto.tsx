@@ -161,6 +161,7 @@ export default function ApprovePto() {
               alignItems: 'center',
               gap: '8px',
               marginBottom: '-2px',
+              minHeight: '44px',
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{tab.icon}</span>
@@ -386,6 +387,7 @@ export default function ApprovePto() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
+                              minHeight: '44px',
                             }}
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
@@ -409,6 +411,7 @@ export default function ApprovePto() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
+                              minHeight: '44px',
                             }}
                           >
                             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
@@ -649,6 +652,7 @@ export default function ApprovePto() {
                   borderRadius: '6px',
                   border: '1px solid #e2e8f0',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               >
                 Cancel
@@ -671,6 +675,7 @@ export default function ApprovePto() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
+                  minHeight: '44px',
                 }}
               >
                 {processing !== null ? (
