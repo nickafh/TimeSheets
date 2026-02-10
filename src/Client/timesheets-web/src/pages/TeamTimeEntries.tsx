@@ -121,6 +121,7 @@ export default function TeamTimeEntries() {
     borderRadius: '6px',
     border: '1px solid #e2e8f0',
     cursor: 'pointer',
+    minHeight: '44px',
   };
 
   return (
@@ -136,27 +137,22 @@ export default function TeamTimeEntries() {
       </div>
 
       {/* Controls */}
-      <div style={{
-        marginBottom: '24px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
-      }}>
+      <div className="controls-bar" style={{ marginBottom: '24px' }}>
         {/* Week Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => navigateWeek("prev")} style={navButtonStyle}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>chevron_left</span>
-            Prev
-          </button>
-          <button onClick={goToCurrentWeek} style={navButtonStyle}>
-            Today
-          </button>
-          <button onClick={() => navigateWeek("next")} style={navButtonStyle}>
-            Next
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>chevron_right</span>
-          </button>
+        <div className="controls-bar__left">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button onClick={() => navigateWeek("prev")} style={navButtonStyle}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>chevron_left</span>
+              Prev
+            </button>
+            <button onClick={goToCurrentWeek} style={navButtonStyle}>
+              Today
+            </button>
+            <button onClick={() => navigateWeek("next")} style={navButtonStyle}>
+              Next
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginLeft: '4px' }}>chevron_right</span>
+            </button>
+          </div>
           <span style={{
             marginLeft: '16px',
             fontSize: '16px',
@@ -169,65 +165,70 @@ export default function TeamTimeEntries() {
         </div>
 
         {/* View Toggle & Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {viewType === "detailed" && (
-            <select
-              value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value === "all" ? "all" : Number(e.target.value))}
-              style={{
-                padding: '10px 16px',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: '#002349',
-                border: '2px solid #e2e8f0',
-                borderRadius: '6px',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                outline: 'none',
-              }}
-            >
-              <option value="all">All Employees</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.firstName} {user.lastName}
-                </option>
-              ))}
-            </select>
-          )}
-          <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '2px solid #002349' }}>
-            <button
-              onClick={() => setViewType("summary")}
-              style={{
-                padding: '10px 20px',
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: viewType === "summary" ? '#002349' : 'white',
-                color: viewType === "summary" ? 'white' : '#002349',
-              }}
-            >
-              Summary
-            </button>
-            <button
-              onClick={() => setViewType("detailed")}
-              style={{
-                padding: '10px 20px',
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                border: 'none',
-                borderLeft: '2px solid #002349',
-                cursor: 'pointer',
-                backgroundColor: viewType === "detailed" ? '#002349' : 'white',
-                color: viewType === "detailed" ? 'white' : '#002349',
-              }}
-            >
-              Detailed
-            </button>
+        <div className="controls-bar__right">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {viewType === "detailed" && (
+              <select
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value === "all" ? "all" : Number(e.target.value))}
+                style={{
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#002349',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '6px',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  minHeight: '44px',
+                }}
+              >
+                <option value="all">All Employees</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.firstName} {user.lastName}
+                  </option>
+                ))}
+              </select>
+            )}
+            <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: '2px solid #002349' }}>
+              <button
+                onClick={() => setViewType("summary")}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: viewType === "summary" ? '#002349' : 'white',
+                  color: viewType === "summary" ? 'white' : '#002349',
+                  minHeight: '44px',
+                }}
+              >
+                Summary
+              </button>
+              <button
+                onClick={() => setViewType("detailed")}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  border: 'none',
+                  borderLeft: '2px solid #002349',
+                  cursor: 'pointer',
+                  backgroundColor: viewType === "detailed" ? '#002349' : 'white',
+                  color: viewType === "detailed" ? 'white' : '#002349',
+                  minHeight: '44px',
+                }}
+              >
+                Detailed
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -241,7 +242,7 @@ export default function TeamTimeEntries() {
       ) : viewType === "summary" ? (
         <>
           {/* Summary Stats */}
-          <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          <div className="stats-grid-4">
             <div style={{
               backgroundColor: 'white',
               border: '1px solid #e2e8f0',
