@@ -2222,4 +2222,44 @@ h1, h2, h3, h4 {
   }
 }
 
+/* Approved/Denied requests - table/card toggle */
+.timeoff-approved-table {
+  display: block;
+}
+
+.timeoff-approved-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .timeoff-approved-table {
+    display: none;
+  }
+
+  .timeoff-approved-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .timeoff-card__reason-inline {
+    font-size: 12px;
+    color: var(--text-grey);
+    font-style: italic;
+  }
+
+  .page-header-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .request-time-off-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px !important;
+    padding: 14px 20px !important;
+  }
+}
+
 /* END MOBILE UX FIXES */
