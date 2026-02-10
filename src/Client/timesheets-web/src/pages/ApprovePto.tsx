@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import {
-  fetchPendingPtoRequests,
-  fetchPtoHistory,
+  fetchManagerPendingPtoRequests,
+  fetchManagerPtoHistory,
   approvePtoRequest,
   denyPtoRequest,
   formatPtoRequestDateDisplay,
@@ -31,13 +31,13 @@ export default function ApprovePto() {
       let data: PtoRequestWithUserDto[];
 
       if (activeTab === "pending") {
-        data = await fetchPendingPtoRequests();
+        data = await fetchManagerPendingPtoRequests();
       } else if (activeTab === "approved") {
-        data = await fetchPtoHistory(1);
+        data = await fetchManagerPtoHistory(1);
       } else if (activeTab === "denied") {
-        data = await fetchPtoHistory(2);
+        data = await fetchManagerPtoHistory(2);
       } else {
-        data = await fetchPtoHistory();
+        data = await fetchManagerPtoHistory();
       }
 
       setRequests(data);
@@ -123,7 +123,7 @@ export default function ApprovePto() {
   const pendingCount = activeTab === "pending" ? requests.length : 0;
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
@@ -148,7 +148,7 @@ export default function ApprovePto() {
             onClick={() => setActiveTab(tab.id)}
             style={{
               padding: '12px 24px',
-              fontSize: '11px',
+              fontSize: '13px',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -217,7 +217,7 @@ export default function ApprovePto() {
           </div>
 
           {/* Requests Table */}
-          <div style={{
+          <div className="pto-requests-table" style={{
             backgroundColor: 'white',
             border: '1px solid #e2e8f0',
             borderRadius: '12px',
@@ -374,8 +374,8 @@ export default function ApprovePto() {
                             style={{
                               backgroundColor: '#059669',
                               color: 'white',
-                              padding: '8px 16px',
-                              fontSize: '10px',
+                              padding: '10px 16px',
+                              fontSize: '12px',
                               fontWeight: 700,
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
@@ -397,8 +397,8 @@ export default function ApprovePto() {
                             style={{
                               backgroundColor: 'white',
                               color: '#dc2626',
-                              padding: '8px 16px',
-                              fontSize: '10px',
+                              padding: '10px 16px',
+                              fontSize: '12px',
                               fontWeight: 700,
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
@@ -426,6 +426,73 @@ export default function ApprovePto() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="pto-requests-cards">
+            {requests.map((request) => (
+              <div key={request.id} className="pto-request-card">
+                <div className="pto-request-card__header">
+                  <div>
+                    <div className="pto-request-card__employee">{request.userName}</div>
+                    <div className="pto-request-card__department">{request.department || "N/A"}</div>
+                  </div>
+                  <span style={{
+                    ...getStatusStyle(request.status),
+                    padding: '4px 12px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase' as const,
+                  }}>
+                    {getStatusLabel(request.status)}
+                  </span>
+                </div>
+
+                <div className="pto-request-card__body">
+                  <div className="pto-request-card__row">
+                    <span className="pto-request-card__label">Date of Leave</span>
+                    <span className="pto-request-card__value">{formatPtoRequestDateDisplay(request)}</span>
+                  </div>
+                  <div className="pto-request-card__row">
+                    <span className="pto-request-card__label">Hours</span>
+                    <span className="pto-request-card__value">{request.hours}h</span>
+                  </div>
+                  <div className="pto-request-card__row">
+                    <span className="pto-request-card__label">Requested</span>
+                    <span className="pto-request-card__value">
+                      {new Date(request.requestedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {request.reason && (
+                    <div className="pto-request-card__reason">
+                      "{request.reason}"
+                    </div>
+                  )}
+                </div>
+
+                {activeTab === "pending" && (
+                  <div className="pto-request-card__actions">
+                    <button
+                      onClick={() => handleApprove(request)}
+                      disabled={processing === request.id}
+                      className="pto-request-card__btn-approve"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => openDenyModal(request)}
+                      disabled={processing === request.id}
+                      className="pto-request-card__btn-deny"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
+                      Deny
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </>
       )}
@@ -545,7 +612,7 @@ export default function ApprovePto() {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     color: '#002349',
                     border: '2px solid #e2e8f0',
                     borderRadius: '6px',
@@ -558,7 +625,7 @@ export default function ApprovePto() {
             </div>
 
             {/* Modal Footer */}
-            <div style={{
+            <div className="form-actions-mobile" style={{
               padding: '16px 24px',
               backgroundColor: '#f8fafc',
               borderTop: '1px solid #e2e8f0',
@@ -575,7 +642,7 @@ export default function ApprovePto() {
                   backgroundColor: 'white',
                   color: '#64748b',
                   padding: '12px 24px',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -593,7 +660,7 @@ export default function ApprovePto() {
                   backgroundColor: '#dc2626',
                   color: 'white',
                   padding: '12px 24px',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
