@@ -43,3 +43,4 @@ WEEKLY_TIME_ENTRIES_IMPROVEMENTS.md
 
 # Dev-only files
 *.http
+.sqlh
