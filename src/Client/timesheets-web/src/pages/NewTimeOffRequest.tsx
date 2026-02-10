@@ -138,7 +138,7 @@ const NewTimeOffRequest = () => {
   const inputStyle = {
     width: '100%',
     padding: '12px 16px',
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#002349',
     border: '2px solid #e2e8f0',
     borderRadius: '6px',
@@ -159,8 +159,8 @@ const NewTimeOffRequest = () => {
 
   const toggleBtnStyle = (active: boolean) => ({
     flex: 1,
-    padding: '10px 16px',
-    fontSize: '13px',
+    padding: '12px 16px',
+    fontSize: '14px',
     fontWeight: 700 as const,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
@@ -173,7 +173,7 @@ const NewTimeOffRequest = () => {
   });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -184,7 +184,7 @@ const NewTimeOffRequest = () => {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '8px',
+              padding: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -223,7 +223,7 @@ const NewTimeOffRequest = () => {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: '32px' }}>
+        <form onSubmit={handleSubmit} className="pto-form" style={{ padding: '32px' }}>
           {error && (
             <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: '8px', fontSize: '14px' }}>
               {error}
@@ -281,7 +281,7 @@ const NewTimeOffRequest = () => {
                 )}
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: '16px' }}>
+              <div className="date-range-fields">
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>Start Date</label>
                   <input
@@ -311,7 +311,7 @@ const NewTimeOffRequest = () => {
               <label style={labelStyle}>
                 Number of Hours
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <input
                   type="number"
                   min={0}
@@ -331,8 +331,8 @@ const NewTimeOffRequest = () => {
                         style={{
                           backgroundColor: hours === h ? '#002349' : 'white',
                           color: hours === h ? 'white' : '#002349',
-                          padding: '8px 16px',
-                          fontSize: '12px',
+                          padding: '10px 16px',
+                          fontSize: '14px',
                           fontWeight: 600,
                           borderRadius: '6px',
                           border: '1px solid #e2e8f0',
@@ -399,7 +399,7 @@ const NewTimeOffRequest = () => {
             <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40', marginBottom: '12px' }}>
               Request Summary
             </div>
-            <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+            <div className="request-summary-fields">
               <div>
                 <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Date{isRange ? "s" : ""}</div>
                 <div style={{ fontSize: '16px', fontWeight: 600, color: '#002349' }}>
@@ -444,7 +444,7 @@ const NewTimeOffRequest = () => {
           </div>
 
           {/* Actions */}
-          <div style={{
+          <div className="form-actions-mobile" style={{
             marginTop: '32px',
             display: 'flex',
             gap: '12px',
@@ -456,8 +456,8 @@ const NewTimeOffRequest = () => {
               style={{
                 backgroundColor: 'white',
                 color: '#64748b',
-                padding: '12px 24px',
-                fontSize: '11px',
+                padding: '14px 24px',
+                fontSize: '13px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
@@ -474,8 +474,8 @@ const NewTimeOffRequest = () => {
               style={{
                 backgroundColor: '#002349',
                 color: 'white',
-                padding: '12px 24px',
-                fontSize: '11px',
+                padding: '14px 24px',
+                fontSize: '13px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
