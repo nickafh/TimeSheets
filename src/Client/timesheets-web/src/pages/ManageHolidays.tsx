@@ -201,7 +201,7 @@ export default function ManageHolidays() {
   const inputStyle = {
     width: '100%',
     padding: '12px 16px',
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#002349',
     border: '2px solid #e2e8f0',
     borderRadius: '6px',
@@ -252,7 +252,7 @@ export default function ManageHolidays() {
             onChange={(e) => setSelectedYear(Number(e.target.value))}
             style={{
               padding: '10px 16px',
-              fontSize: '14px',
+              fontSize: '16px',
               fontWeight: 600,
               color: '#002349',
               border: '2px solid #002349',
@@ -260,6 +260,7 @@ export default function ManageHolidays() {
               backgroundColor: 'white',
               cursor: 'pointer',
               outline: 'none',
+              minHeight: '44px',
             }}
           >
             {[2024, 2025, 2026, 2027, 2028].map(year => (
@@ -270,7 +271,7 @@ export default function ManageHolidays() {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="stats-grid-4" style={{ marginBottom: '24px' }}>
         <div style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
@@ -377,7 +378,7 @@ export default function ManageHolidays() {
       </div>
 
       {/* Side-by-side layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <div className="split-panels" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Left: Holidays */}
         <div style={{
           backgroundColor: 'white',
@@ -416,6 +417,7 @@ export default function ManageHolidays() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
+                minHeight: '44px',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
@@ -431,6 +433,8 @@ export default function ManageHolidays() {
               </p>
             </div>
           ) : (
+            <>
+            <div className="admin-table-desktop">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <tbody>
                 {filteredHolidays.map((holiday, index) => (
@@ -524,6 +528,91 @@ export default function ManageHolidays() {
                 ))}
               </tbody>
             </table>
+            </div>
+
+            {/* Holiday Cards - Mobile */}
+            <div className="admin-cards-mobile">
+              {filteredHolidays.map((holiday) => (
+                <div key={holiday.id} className="admin-card">
+                  {/* Card Header */}
+                  <div className="admin-card__header">
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '4px' }}>
+                        {holiday.name}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#64748b' }}>
+                        {new Date(holiday.holidayDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                      </div>
+                    </div>
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap',
+                      ...(isPast(holiday.holidayDate)
+                        ? { backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }
+                        : { backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }
+                      ),
+                    }}>
+                      {isPast(holiday.holidayDate) ? "Past" : "Upcoming"}
+                    </span>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="admin-card__actions" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                    <button
+                      onClick={() => openEditHolidayModal(holiday)}
+                      style={{
+                        backgroundColor: '#002349',
+                        color: 'white',
+                        padding: '8px 16px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        borderRadius: '4px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        flex: '1 1 auto',
+                        minHeight: '44px',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteHoliday(holiday)}
+                      style={{
+                        backgroundColor: 'white',
+                        color: '#dc2626',
+                        padding: '8px 16px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        borderRadius: '4px',
+                        border: '1px solid #fecaca',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        flex: '1 1 auto',
+                        minHeight: '44px',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </div>
 
@@ -565,6 +654,7 @@ export default function ManageHolidays() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
+                minHeight: '44px',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
@@ -580,6 +670,8 @@ export default function ManageHolidays() {
               </p>
             </div>
           ) : (
+            <>
+            <div className="admin-table-desktop">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <tbody>
                 {filteredClosures.map((closure, index) => (
@@ -676,6 +768,94 @@ export default function ManageHolidays() {
                 ))}
               </tbody>
             </table>
+            </div>
+
+            {/* Early Closure Cards - Mobile */}
+            <div className="admin-cards-mobile">
+              {filteredClosures.map((closure) => (
+                <div key={closure.id} className="admin-card">
+                  {/* Card Header */}
+                  <div className="admin-card__header">
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '4px' }}>
+                        {closure.name}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#64748b' }}>
+                        {new Date(closure.closureDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#C29B40', marginTop: '4px' }}>
+                        Close at {closure.closeTime}
+                      </div>
+                    </div>
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap',
+                      ...(isPast(closure.closureDate)
+                        ? { backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }
+                        : { backgroundColor: 'rgba(194, 155, 64, 0.1)', color: '#C29B40', border: '1px solid rgba(194, 155, 64, 0.3)' }
+                      ),
+                    }}>
+                      {isPast(closure.closureDate) ? "Past" : "Upcoming"}
+                    </span>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="admin-card__actions" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                    <button
+                      onClick={() => openEditClosureModal(closure)}
+                      style={{
+                        backgroundColor: '#C29B40',
+                        color: 'white',
+                        padding: '8px 16px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        borderRadius: '4px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        flex: '1 1 auto',
+                        minHeight: '44px',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClosure(closure)}
+                      style={{
+                        backgroundColor: 'white',
+                        color: '#dc2626',
+                        padding: '8px 16px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        borderRadius: '4px',
+                        border: '1px solid #fecaca',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        flex: '1 1 auto',
+                        minHeight: '44px',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </div>
       </div>
@@ -706,7 +886,7 @@ export default function ManageHolidays() {
 
       {/* Holiday Modal */}
       {showHolidayModal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 50,
@@ -715,7 +895,7 @@ export default function ManageHolidays() {
           justifyContent: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
         }}>
-          <div style={{
+          <div className="modal-content" style={{
             width: '100%',
             maxWidth: '480px',
             backgroundColor: 'white',
@@ -802,6 +982,7 @@ export default function ManageHolidays() {
                     borderRadius: '6px',
                     border: '1px solid #e2e8f0',
                     cursor: 'pointer',
+                    minHeight: '44px',
                   }}
                 >
                   Cancel
@@ -822,6 +1003,7 @@ export default function ManageHolidays() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    minHeight: '44px',
                   }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
@@ -837,7 +1019,7 @@ export default function ManageHolidays() {
 
       {/* Early Closure Modal */}
       {showClosureModal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 50,
@@ -846,7 +1028,7 @@ export default function ManageHolidays() {
           justifyContent: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
         }}>
-          <div style={{
+          <div className="modal-content" style={{
             width: '100%',
             maxWidth: '480px',
             backgroundColor: 'white',
@@ -882,7 +1064,7 @@ export default function ManageHolidays() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+              <div className="form-grid-2" style={{ marginBottom: '20px' }}>
                 <div>
                   <label style={labelStyle}>
                     Date <span style={{ color: '#dc2626' }}>*</span>
@@ -953,6 +1135,7 @@ export default function ManageHolidays() {
                     borderRadius: '6px',
                     border: '1px solid #e2e8f0',
                     cursor: 'pointer',
+                    minHeight: '44px',
                   }}
                 >
                   Cancel
@@ -973,6 +1156,7 @@ export default function ManageHolidays() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    minHeight: '44px',
                   }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
