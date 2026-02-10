@@ -70,7 +70,7 @@ const TimeOffSummary = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' , padding: '40px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>

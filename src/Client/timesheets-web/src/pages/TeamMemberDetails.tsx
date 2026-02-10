@@ -115,7 +115,7 @@ export default function TeamMemberDetails() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="page-container page-container--centered">
         <div style={{ textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', animation: 'spin 1s linear infinite' }}>progress_activity</span>
           <div style={{ marginTop: '16px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading team member details...</div>
@@ -126,7 +126,7 @@ export default function TeamMemberDetails() {
 
   if (error || !user) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+      <div className="page-container">
         <div style={{ textAlign: 'center', padding: '48px' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '64px', color: '#dc2626' }}>error</span>
           <h2 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349', marginTop: '16px' }}>
@@ -164,7 +164,7 @@ export default function TeamMemberDetails() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+    <div className="page-container">
       {/* Back Link */}
       <Link
         to="/manager/team-time-entries"

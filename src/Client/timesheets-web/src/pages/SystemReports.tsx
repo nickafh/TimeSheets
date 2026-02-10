@@ -312,7 +312,7 @@ export default function SystemReports() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
