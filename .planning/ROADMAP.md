@@ -12,7 +12,7 @@ This roadmap transforms the TimeSheets web app from desktop-only to fully mobile
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Layout Foundation** - Fix responsive shell (sidebar, bottom nav, safe areas)
+- [x] **Phase 1: Layout Foundation** - Fix responsive shell (sidebar, bottom nav, safe areas) ✓
 - [ ] **Phase 2: Touch & Form Patterns** - Establish mobile interaction patterns and form standards
 - [ ] **Phase 3: Employee Pages** - Fix core user workflows for mobile
 - [ ] **Phase 4: Manager Pages** - Make manager workflows mobile-functional
@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 01-01-PLAN.md — Fix viewport meta, consolidate bottom padding, migrate all pages to page-container class
+- [x] 01-01-PLAN.md — Fix viewport meta, consolidate bottom padding, migrate all pages to page-container class ✓
 
 ### Phase 2: Touch & Form Patterns
 **Goal**: All interactive elements are tappable and all forms are usable on mobile devices
@@ -46,11 +46,11 @@ Plans:
   4. Hours field is visible when creating time off request on mobile
   5. Time entry cards render without overlapping on mobile
   6. Data tables convert to card layouts on screens under 768px width
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Fix form inputs (16px font), touch targets (44px), and button layout for mobile
+- [ ] 02-02-PLAN.md — Add mobile card views for remaining data tables (TimeOffRequests, ManagerDashboard)
 
 ### Phase 3: Employee Pages
 **Goal**: Employees can complete all core workflows (time entries, PTO requests, calendar) on iPhone
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Layout Foundation | 0/1 | Planned | - |
+| 1. Layout Foundation | 1/1 | ✓ Complete | 2026-02-10 |
 | 2. Touch & Form Patterns | 0/TBD | Not started | - |
 | 3. Employee Pages | 0/TBD | Not started | - |
 | 4. Manager Pages | 0/TBD | Not started | - |
