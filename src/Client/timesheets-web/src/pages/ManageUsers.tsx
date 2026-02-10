@@ -202,7 +202,7 @@ export default function ManageUsers() {
   const inputStyle = {
     width: '100%',
     padding: '10px 14px',
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#002349',
     border: '2px solid #e2e8f0',
     borderRadius: '6px',
@@ -258,6 +258,7 @@ export default function ManageUsers() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
+            minHeight: '44px',
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
@@ -269,11 +270,12 @@ export default function ManageUsers() {
       <div style={{
         marginBottom: '24px',
         display: 'flex',
+        flexWrap: 'wrap',
         gap: '16px',
         alignItems: 'center',
       }}>
         {/* Search */}
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
           <span className="material-symbols-outlined" style={{
             position: 'absolute',
             left: '14px',
@@ -290,7 +292,7 @@ export default function ManageUsers() {
             style={{
               width: '100%',
               padding: '12px 16px 12px 44px',
-              fontSize: '14px',
+              fontSize: '16px',
               color: '#002349',
               border: '2px solid #e2e8f0',
               borderRadius: '6px',
@@ -329,8 +331,8 @@ export default function ManageUsers() {
         Showing {filteredUsers.length} of {users.length} users
       </div>
 
-      {/* Users Table */}
-      <div style={{
+      {/* Users Table - Desktop */}
+      <div className="admin-table-desktop" style={{
         backgroundColor: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
@@ -564,6 +566,224 @@ export default function ManageUsers() {
         </table>
       </div>
 
+      {/* Users Cards - Mobile */}
+      <div className="admin-cards-mobile">
+        {filteredUsers.length === 0 ? (
+          <div className="admin-card" style={{ textAlign: 'center', padding: '48px 16px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>person_off</span>
+            <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
+              No users found. Try adjusting your search criteria.
+            </p>
+          </div>
+        ) : (
+          filteredUsers.map((user) => (
+            <div key={user.id} className="admin-card">
+              {/* Card Header */}
+              <div className="admin-card__header">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '4px' }}>
+                    {user.firstName} {user.lastName}
+                  </div>
+                  {user.isActive === 1 ? (
+                    <span style={{
+                      backgroundColor: '#ecfdf5',
+                      color: '#059669',
+                      border: '1px solid #a7f3d0',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Active
+                    </span>
+                  ) : (
+                    <span style={{
+                      backgroundColor: '#f8fafc',
+                      color: '#64748b',
+                      border: '1px solid #e2e8f0',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Inactive
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="admin-card__row">
+                <span style={{ color: '#64748b', minWidth: '80px' }}>Email:</span>
+                <span style={{ color: '#002349', fontWeight: 500 }}>{user.email}</span>
+              </div>
+              <div className="admin-card__row">
+                <span style={{ color: '#64748b', minWidth: '80px' }}>Department:</span>
+                <span style={{ color: '#002349', fontWeight: 500 }}>{user.department || "—"}</span>
+              </div>
+              <div className="admin-card__row">
+                <span style={{ color: '#64748b', minWidth: '80px' }}>Role:</span>
+                <span style={{
+                  ...getRoleBadgeStyle(user.role),
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}>
+                  {user.role || "Employee"}
+                </span>
+              </div>
+              <div className="admin-card__row">
+                <span style={{ color: '#64748b', minWidth: '80px' }}>Type:</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {user.isWfh === 1 && (
+                    <span style={{
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      color: '#3b82f6',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                    }}>
+                      WFH
+                    </span>
+                  )}
+                  {user.isPartTime === 1 && (
+                    <span style={{
+                      backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                      color: '#a855f7',
+                      border: '1px solid rgba(168, 85, 247, 0.3)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                    }}>
+                      Part-Time
+                    </span>
+                  )}
+                  {user.isIntern === 1 && (
+                    <span style={{
+                      backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                      color: '#f97316',
+                      border: '1px solid rgba(249, 115, 22, 0.3)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                    }}>
+                      Intern
+                    </span>
+                  )}
+                  {user.isWfh !== 1 && user.isPartTime !== 1 && user.isIntern !== 1 && (
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Full-Time</span>
+                  )}
+                </div>
+              </div>
+              {(user.managerIds?.length || user.managerName) ? (
+                <div className="admin-card__row">
+                  <span style={{ color: '#64748b', minWidth: '80px' }}>Manager(s):</span>
+                  <span style={{ color: '#002349', fontSize: '12px' }}>
+                    {user.managerIds?.length
+                      ? user.managerIds
+                          .map((id) => {
+                            const m = users.find((u) => u.id === id);
+                            return m ? `${m.firstName} ${m.lastName}` : String(id);
+                          })
+                          .join(", ")
+                      : user.managerName ?? "—"}
+                  </span>
+                </div>
+              ) : null}
+
+              {/* Card Actions */}
+              <div className="admin-card__actions" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                <Link
+                  to={`/admin/user/${user.id}`}
+                  style={{
+                    backgroundColor: '#002349',
+                    color: 'white',
+                    padding: '8px 16px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    flex: '1 1 auto',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                  Manage
+                </Link>
+                {user.isActive === 1 ? (
+                  <button
+                    onClick={() => handleDeactivate(user)}
+                    style={{
+                      backgroundColor: 'white',
+                      color: '#dc2626',
+                      padding: '8px 16px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      borderRadius: '4px',
+                      border: '1px solid #fecaca',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      flex: '1 1 auto',
+                      minHeight: '44px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>person_off</span>
+                    Deactivate
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleActivate(user)}
+                    style={{
+                      backgroundColor: '#059669',
+                      color: 'white',
+                      padding: '8px 16px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      borderRadius: '4px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      flex: '1 1 auto',
+                      minHeight: '44px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>person_check</span>
+                    Activate
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Tips */}
       <div style={{
         marginTop: '24px',
@@ -589,7 +809,7 @@ export default function ManageUsers() {
 
       {/* Add/Edit User Modal */}
       {showModal && (
-        <div style={{
+        <div className="modal-overlay" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 50,
@@ -598,7 +818,7 @@ export default function ManageUsers() {
           justifyContent: 'center',
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
         }}>
-          <div style={{
+          <div className="modal-content" style={{
             width: '100%',
             maxWidth: '640px',
             maxHeight: '90vh',
@@ -623,7 +843,7 @@ export default function ManageUsers() {
             {/* Modal Body */}
             <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
               {/* Name Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-grid-2" style={{ marginBottom: '16px' }}>
                 <div>
                   <label style={labelStyle}>
                     First Name <span style={{ color: '#dc2626' }}>*</span>
@@ -665,7 +885,7 @@ export default function ManageUsers() {
               </div>
 
               {/* Department and Category */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-grid-2" style={{ marginBottom: '16px' }}>
                 <div>
                   <label style={labelStyle}>Department</label>
                   <input
@@ -687,7 +907,7 @@ export default function ManageUsers() {
               </div>
 
               {/* Managers (multi-select), Hire Date, Role */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-grid-3" style={{ marginBottom: '16px' }}>
                 <div>
                   <label style={labelStyle}>Managers</label>
                   <div style={{ ...inputStyle, minHeight: '80px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -809,6 +1029,7 @@ export default function ManageUsers() {
                     borderRadius: '6px',
                     border: '1px solid #e2e8f0',
                     cursor: 'pointer',
+                    minHeight: '44px',
                   }}
                 >
                   Cancel
@@ -829,6 +1050,7 @@ export default function ManageUsers() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    minHeight: '44px',
                   }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
