@@ -88,7 +88,7 @@ const Dashboard = () => {
   const upcomingClosures = filteredClosures.filter(c => !isPast(c.closureDate));
 
   return (
-    <div className="dashboard-container" style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' , padding: '40px' }}>
+    <div className="page-container dashboard-container">
       {/* Header */}
       <div className="dashboard-header" style={{ marginBottom: '40px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
@@ -166,7 +166,7 @@ const Dashboard = () => {
             {loadingPto ? (
               <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="pto-overview-stats">
                 <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '4px' }}>
                   <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
                     Available PTO
