@@ -2065,6 +2065,40 @@ h1, h2, h3, h4 {
   textarea {
     min-height: 44px;
   }
+
+  /* Prevent iOS auto-zoom on form inputs - all inputs must be 16px+ */
+  input[type="date"],
+  input[type="number"],
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Ensure all interactive elements have 44px touch targets */
+  .page-container button,
+  .page-container [role="button"],
+  .page-container a.btn {
+    min-height: 44px;
+  }
+
+  /* Full-width mobile form actions */
+  .form-actions-mobile {
+    flex-direction: column !important;
+    gap: 12px;
+  }
+  .form-actions-mobile button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Mobile form padding optimization */
+  .pto-form {
+    padding: 20px !important;
+  }
 }
 
 /* ======================
