@@ -117,6 +117,7 @@ export default function SystemSettings() {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
+    minHeight: '44px',
   });
 
   const sections = [
@@ -156,6 +157,7 @@ export default function SystemSettings() {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              minHeight: '44px',
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>restart_alt</span>
@@ -179,6 +181,7 @@ export default function SystemSettings() {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              minHeight: '44px',
             }}
           >
             {saving ? (
@@ -215,9 +218,22 @@ export default function SystemSettings() {
       {/* Main Content */}
       {!loading && (
         <>
-        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '24px' }}>
+        {/* Mobile Section Dropdown */}
+        <div className="settings-mobile-nav" style={{ marginBottom: '24px' }}>
+          <select
+            value={activeSection}
+            onChange={(e) => setActiveSection(e.target.value as any)}
+            style={{ width: '100%', padding: '12px 16px', fontSize: '16px', border: '2px solid #e2e8f0', borderRadius: '8px', backgroundColor: 'white', minHeight: '44px' }}
+          >
+            {sections.map(section => (
+              <option key={section.id} value={section.id}>{section.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="settings-layout" style={{ gap: '24px' }}>
         {/* Sidebar Navigation */}
-        <div style={{
+        <div className="settings-sidebar" style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
           borderRadius: '12px',
@@ -287,7 +303,7 @@ export default function SystemSettings() {
                       style={inputStyle}
                     />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-grid-2" style={{ gap: '16px' }}>
                     <div>
                       <label style={labelStyle}>Phone Number</label>
                       <input
@@ -332,7 +348,7 @@ export default function SystemSettings() {
               </div>
               <div style={{ padding: '32px' }}>
                 <div style={{ display: 'grid', gap: '24px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div className="form-grid-3" style={{ gap: '16px' }}>
                     <div>
                       <label style={labelStyle}>Standard Hours Per Day</label>
                       <input
@@ -409,7 +425,7 @@ export default function SystemSettings() {
                     <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Allowance Settings
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-grid-2" style={{ gap: '16px' }}>
                       <div>
                         <label style={labelStyle}>Default Annual PTO (Hours)</label>
                         <input

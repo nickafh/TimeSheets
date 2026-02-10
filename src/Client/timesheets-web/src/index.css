@@ -2886,3 +2886,36 @@ h1, h2, h3, h4 {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Settings sidebar-to-dropdown layout */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.settings-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .settings-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .settings-sidebar {
+    display: none !important;
+  }
+
+  .settings-mobile-nav {
+    display: block !important;
+  }
+}
+
+/* Export dropdown mobile fix */
+@media (max-width: 768px) {
+  .export-dropdown {
+    right: 0 !important;
+    left: auto !important;
+    min-width: 200px;
+  }
+}

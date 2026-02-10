@@ -363,13 +363,14 @@ export default function SystemReports() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
+                minHeight: '44px',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
               Export CSV
             </button>
             {showExportMenu && (
-              <div style={{
+              <div className="export-dropdown" style={{
                 position: 'absolute',
                 right: 0,
                 top: '100%',
@@ -429,7 +430,7 @@ export default function SystemReports() {
       </div>
 
       {/* Overview Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-4" style={{ gap: '24px', marginBottom: '32px' }}>
         {/* Total Users */}
         <div style={{
           backgroundColor: 'white',
@@ -542,7 +543,7 @@ export default function SystemReports() {
       </div>
 
       {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+      <div className="split-panels" style={{ gap: '24px', marginBottom: '32px' }}>
         {/* PTO by Month Chart */}
         <div style={{
           backgroundColor: 'white',
@@ -638,7 +639,7 @@ export default function SystemReports() {
       </div>
 
       {/* Second Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+      <div className="split-panels" style={{ gap: '24px', marginBottom: '32px' }}>
         {/* PTO by Department */}
         <div style={{
           backgroundColor: 'white',
@@ -763,34 +764,68 @@ export default function SystemReports() {
             Recent PTO Requests
           </h2>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f8fafc' }}>
-              <th style={{ ...thStyle, color: '#002349' }}>Employee</th>
-              <th style={{ ...thStyle, color: '#002349' }}>Department</th>
-              <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Date</th>
-              <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
-              <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
-              <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentPtoRequests.map((request, index) => (
-              <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>{request.userName}</td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>{request.department || "N/A"}</td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b', textAlign: 'center' }}>
-                  {formatPtoRequestDateDisplay(request)}
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349', textAlign: 'center' }}>{request.hours}h</td>
-                <td style={{ padding: '16px 24px', textAlign: 'center' }}>{getStatusBadge(request.status)}</td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                  {new Date(request.requestedAt).toLocaleDateString()}
-                </td>
+
+        {/* Desktop Table */}
+        <div className="admin-table-desktop">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f8fafc' }}>
+                <th style={{ ...thStyle, color: '#002349' }}>Employee</th>
+                <th style={{ ...thStyle, color: '#002349' }}>Department</th>
+                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Date</th>
+                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
+                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
+                <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentPtoRequests.map((request, index) => (
+                <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>{request.userName}</td>
+                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>{request.department || "N/A"}</td>
+                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b', textAlign: 'center' }}>
+                    {formatPtoRequestDateDisplay(request)}
+                  </td>
+                  <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349', textAlign: 'center' }}>{request.hours}h</td>
+                  <td style={{ padding: '16px 24px', textAlign: 'center' }}>{getStatusBadge(request.status)}</td>
+                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                    {new Date(request.requestedAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="admin-cards-mobile">
+          {recentPtoRequests.map((request) => (
+            <div key={request.id} className="admin-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349' }}>{request.userName}</div>
+                {getStatusBadge(request.status)}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Date:</span>
+                  <span style={{ color: '#002349', fontWeight: 600 }}>{formatPtoRequestDateDisplay(request)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Hours:</span>
+                  <span style={{ color: '#002349', fontWeight: 600 }}>{request.hours}h</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Department:</span>
+                  <span style={{ color: '#002349' }}>{request.department || "N/A"}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Requested:</span>
+                  <span style={{ color: '#002349' }}>{new Date(request.requestedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Tips */}
