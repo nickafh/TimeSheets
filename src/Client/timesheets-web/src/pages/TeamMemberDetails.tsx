@@ -461,36 +461,56 @@ export default function TeamMemberDetails() {
               </div>
             </div>
           ) : (
-            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc' }}>
-                    <th style={{ ...thStyle, color: '#002349' }}>Date</th>
-                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Worked</th>
-                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>PTO</th>
-                    <th style={{ ...thStyle, color: '#002349' }}>Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {timeEntries.slice(0, 10).map((entry, index) => (
-                    <tr key={entry.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px 20px', fontSize: '13px', color: '#002349' }}>
-                        {new Date(entry.workDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                      </td>
-                      <td style={{ padding: '12px 20px', fontSize: '13px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
-                        {entry.workedHours > 0 ? `${entry.workedHours}h` : '—'}
-                      </td>
-                      <td style={{ padding: '12px 20px', fontSize: '13px', color: '#C29B40', textAlign: 'center', fontWeight: 600 }}>
-                        {entry.ptoHours > 0 ? `${entry.ptoHours}h` : '—'}
-                      </td>
-                      <td style={{ padding: '12px 20px', fontSize: '12px', color: '#64748b' }}>
-                        {entry.dayType || 'Regular'}
-                      </td>
+            <>
+              <div className="team-entries-table" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f8fafc' }}>
+                      <th style={{ ...thStyle, color: '#002349' }}>Date</th>
+                      <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Worked</th>
+                      <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>PTO</th>
+                      <th style={{ ...thStyle, color: '#002349' }}>Type</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {timeEntries.slice(0, 10).map((entry, index) => (
+                      <tr key={entry.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '12px 20px', fontSize: '13px', color: '#002349' }}>
+                          {new Date(entry.workDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                        </td>
+                        <td style={{ padding: '12px 20px', fontSize: '13px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
+                          {entry.workedHours > 0 ? `${entry.workedHours}h` : '—'}
+                        </td>
+                        <td style={{ padding: '12px 20px', fontSize: '13px', color: '#C29B40', textAlign: 'center', fontWeight: 600 }}>
+                          {entry.ptoHours > 0 ? `${entry.ptoHours}h` : '—'}
+                        </td>
+                        <td style={{ padding: '12px 20px', fontSize: '12px', color: '#64748b' }}>
+                          {entry.dayType || 'Regular'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="team-entries-cards">
+                {timeEntries.slice(0, 10).map((entry) => (
+                  <div key={entry.id} className="team-entry-card">
+                    <div className="team-entry-card__date">
+                      {new Date(entry.workDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="team-entry-card__hours">
+                      {entry.workedHours > 0 && (
+                        <span className="team-entry-card__worked">{entry.workedHours}h worked</span>
+                      )}
+                      {entry.ptoHours > 0 && (
+                        <span className="team-entry-card__pto">{entry.ptoHours}h PTO</span>
+                      )}
+                    </div>
+                    <div className="team-entry-card__type">{entry.dayType || 'Regular'}</div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -525,38 +545,64 @@ export default function TeamMemberDetails() {
             </div>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8fafc' }}>
-                <th style={{ ...thStyle, color: '#002349' }}>Date of Leave</th>
-                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
-                <th style={{ ...thStyle, color: '#002349' }}>Reason</th>
-                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
-                <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {yearPtoRequests.map((request, index) => (
-                <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                    {formatPtoRequestDateDisplay(request)}
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
-                    {request.hours}h
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', color: '#64748b', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {request.reason || '—'}
-                  </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+          <>
+            <div className="team-pto-table">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8fafc' }}>
+                    <th style={{ ...thStyle, color: '#002349' }}>Date of Leave</th>
+                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
+                    <th style={{ ...thStyle, color: '#002349' }}>Reason</th>
+                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
+                    <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearPtoRequests.map((request, index) => (
+                    <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                        {formatPtoRequestDateDisplay(request)}
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
+                        {request.hours}h
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', color: '#64748b', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {request.reason || '—'}
+                      </td>
+                      <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                        {getStatusBadge(request.status)}
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '13px', color: '#64748b' }}>
+                        {new Date(request.requestedAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="team-pto-cards">
+              {yearPtoRequests.map((request) => (
+                <div key={request.id} className="team-pto-card">
+                  <div className="team-pto-card__header">
+                    <div>
+                      <div className="team-pto-card__date">{formatPtoRequestDateDisplay(request)}</div>
+                      <div className="team-pto-card__requested">Requested {new Date(request.requestedAt).toLocaleDateString()}</div>
+                    </div>
                     {getStatusBadge(request.status)}
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '13px', color: '#64748b' }}>
-                    {new Date(request.requestedAt).toLocaleDateString()}
-                  </td>
-                </tr>
+                  </div>
+                  <div className="team-pto-card__body">
+                    <div className="team-pto-card__row">
+                      <span className="team-pto-card__label">Hours</span>
+                      <span className="team-pto-card__value">{request.hours}h</span>
+                    </div>
+                    {request.reason && (
+                      <div className="team-pto-card__reason">"{request.reason}"</div>
+                    )}
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 

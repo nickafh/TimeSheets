@@ -2594,4 +2594,198 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ======================
+   TEAM MEMBER DETAILS - MOBILE
+   ====================== */
+
+.team-detail-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.info-card-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.team-entries-table {
+  display: block;
+}
+
+.team-entries-cards {
+  display: none;
+}
+
+.team-pto-table {
+  display: block;
+}
+
+.team-pto-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .team-detail-panels {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .info-card-fields {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .team-member-header__info {
+    gap: 16px !important;
+  }
+
+  .team-member-header__info > div:last-child h1 {
+    font-size: 24px !important;
+  }
+
+  /* Recent Time Entries cards */
+  .team-entries-table {
+    display: none;
+  }
+
+  .team-entries-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px;
+  }
+
+  .team-entry-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 8px;
+  }
+
+  .team-entry-card:last-child {
+    border-bottom: none;
+  }
+
+  .team-entry-card__date {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--afh-navy);
+    min-width: 90px;
+  }
+
+  .team-entry-card__hours {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .team-entry-card__worked {
+    font-size: 12px;
+    font-weight: 700;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .team-entry-card__pto {
+    font-size: 12px;
+    font-weight: 700;
+    color: #C29B40;
+    background: rgba(194, 155, 64, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .team-entry-card__type {
+    font-size: 11px;
+    color: var(--text-grey);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* PTO Request History cards */
+  .team-pto-table {
+    display: none;
+  }
+
+  .team-pto-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .team-pto-card {
+    background: white;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .team-pto-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .team-pto-card__date {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--afh-navy);
+  }
+
+  .team-pto-card__requested {
+    font-size: 11px;
+    color: var(--text-grey);
+    margin-top: 2px;
+  }
+
+  .team-pto-card__body {
+    padding: 12px 16px;
+  }
+
+  .team-pto-card__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .team-pto-card__row:last-child {
+    margin-bottom: 0;
+  }
+
+  .team-pto-card__label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-grey);
+  }
+
+  .team-pto-card__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--afh-navy);
+  }
+
+  .team-pto-card__reason {
+    font-size: 12px;
+    color: var(--text-grey);
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
 /* END MOBILE UX FIXES */
