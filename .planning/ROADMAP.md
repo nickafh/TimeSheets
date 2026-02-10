@@ -13,8 +13,8 @@ This roadmap transforms the TimeSheets web app from desktop-only to fully mobile
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Layout Foundation** - Fix responsive shell (sidebar, bottom nav, safe areas) ✓
-- [ ] **Phase 2: Touch & Form Patterns** - Establish mobile interaction patterns and form standards
-- [ ] **Phase 3: Employee Pages** - Fix core user workflows for mobile
+- [x] **Phase 2: Touch & Form Patterns** - Establish mobile interaction patterns and form standards ✓
+- [x] **Phase 3: Employee Pages** - Fix core user workflows for mobile ✓
 - [ ] **Phase 4: Manager Pages** - Make manager workflows mobile-functional
 - [ ] **Phase 5: Admin Pages** - Complete mobile coverage with admin interface
 
@@ -49,8 +49,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Fix form inputs (16px font), touch targets (44px), and button layout for mobile
-- [ ] 02-02-PLAN.md — Add mobile card views for remaining data tables (TimeOffRequests, ManagerDashboard)
+- [x] 02-01-PLAN.md — Fix form inputs (16px font), touch targets (44px), and button layout for mobile ✓
+- [x] 02-02-PLAN.md — Add mobile card views for remaining data tables (TimeOffRequests, ManagerDashboard) ✓
 
 ### Phase 3: Employee Pages
 **Goal**: Employees can complete all core workflows (time entries, PTO requests, calendar) on iPhone
@@ -63,12 +63,10 @@ Plans:
   4. User can view time off request history as mobile-friendly cards
   5. User can submit new time off request using mobile-optimized form
   6. Calendar view displays in mobile-friendly format (list or simplified grid)
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [x] 03-01-PLAN.md — Fix Dashboard nested grid, TimeOffRequests/NewTimeOffRequest touch targets, Dashboard header scaling ✓
 
 ### Phase 4: Manager Pages
 **Goal**: Managers can approve PTO and view team data on mobile devices
@@ -79,11 +77,12 @@ Plans:
   2. Manager can approve or deny PTO requests with tappable buttons and readable details on mobile
   3. Manager can view team time entries in mobile-optimized format
   4. Team member detail pages display profile and time data without layout issues on mobile
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Fix touch targets on ManagerDashboard and ApprovePto buttons/links
+- [ ] 04-02-PLAN.md — TeamTimeEntries mobile: stats grid, controls bar, summary cards, detailed view cards
+- [ ] 04-03-PLAN.md — TeamMemberDetails mobile: grid collapse, panel stacking, table-to-card conversions
 
 ### Phase 5: Admin Pages
 **Goal**: Admin interface fully functional on mobile for user management and system configuration
@@ -112,9 +111,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Layout Foundation | 1/1 | ✓ Complete | 2026-02-10 |
-| 2. Touch & Form Patterns | 0/TBD | Not started | - |
-| 3. Employee Pages | 0/TBD | Not started | - |
-| 4. Manager Pages | 0/TBD | Not started | - |
+| 2. Touch & Form Patterns | 2/2 | ✓ Complete | 2026-02-10 |
+| 3. Employee Pages | 1/1 | ✓ Complete | 2026-02-10 |
+| 4. Manager Pages | 0/3 | Not started | - |
 | 5. Admin Pages | 0/TBD | Not started | - |
 
 ---

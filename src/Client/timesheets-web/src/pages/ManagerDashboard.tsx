@@ -145,6 +145,7 @@ export default function ManagerDashboard() {
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontWeight: 600,
+                minHeight: '44px',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>list_alt</span>
@@ -163,6 +164,7 @@ export default function ManagerDashboard() {
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontWeight: 600,
+                minHeight: '44px',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>task_alt</span>
@@ -273,6 +275,7 @@ export default function ManagerDashboard() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
+                              minHeight: '44px',
                             }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
                               Approve
@@ -291,6 +294,7 @@ export default function ManagerDashboard() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
+                              minHeight: '44px',
                             }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
                               Deny
@@ -344,6 +348,7 @@ export default function ManagerDashboard() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
+                      minHeight: '44px',
                     }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
                       Approve
@@ -364,6 +369,7 @@ export default function ManagerDashboard() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
+                      minHeight: '44px',
                     }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
                       Deny
@@ -465,7 +471,9 @@ export default function ManagerDashboard() {
                           borderRadius: '4px',
                           border: '1px solid #e2e8f0',
                           textDecoration: 'none',
-                          display: 'inline-block',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          minHeight: '44px',
                         }}
                       >
                         View Details
