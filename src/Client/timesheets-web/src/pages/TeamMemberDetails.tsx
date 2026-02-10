@@ -176,6 +176,7 @@ export default function TeamMemberDetails() {
           fontSize: '14px',
           textDecoration: 'none',
           marginBottom: '24px',
+          minHeight: '44px',
         }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
@@ -183,8 +184,8 @@ export default function TeamMemberDetails() {
       </Link>
 
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+      <div className="team-member-header" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="team-member-header__info" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           {/* Avatar */}
           <div style={{
             width: '80px',
@@ -226,7 +227,7 @@ export default function TeamMemberDetails() {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-4">
         {/* Approved PTO */}
         <div style={{
           backgroundColor: 'white',
@@ -337,7 +338,7 @@ export default function TeamMemberDetails() {
       </div>
 
       {/* Two Column Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+      <div className="team-detail-panels">
         {/* Employee Information */}
         <div style={{
           backgroundColor: 'white',
@@ -355,7 +356,7 @@ export default function TeamMemberDetails() {
             </h2>
           </div>
           <div style={{ padding: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="info-card-fields">
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>
                   Email
