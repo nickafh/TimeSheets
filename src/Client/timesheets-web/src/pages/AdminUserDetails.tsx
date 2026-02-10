@@ -380,7 +380,7 @@ export default function AdminUserDetails() {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           {!isEditing ? (
             <>
               <button
@@ -399,6 +399,7 @@ export default function AdminUserDetails() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
+                  minHeight: '44px',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
@@ -420,6 +421,7 @@ export default function AdminUserDetails() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
+                  minHeight: '44px',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>lock_reset</span>
@@ -440,6 +442,7 @@ export default function AdminUserDetails() {
                   border: 'none',
                   cursor: saving ? 'not-allowed' : 'pointer',
                   opacity: saving ? 0.7 : 1,
+                  minHeight: '44px',
                 }}
               >
                 {user.isActive === 1 ? 'Deactivate' : 'Activate'}
@@ -475,6 +478,7 @@ export default function AdminUserDetails() {
                   borderRadius: '6px',
                   border: '1px solid #e2e8f0',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               >
                 Cancel
@@ -497,6 +501,7 @@ export default function AdminUserDetails() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
+                  minHeight: '44px',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>save</span>
@@ -534,7 +539,7 @@ export default function AdminUserDetails() {
               {passwordMsg.text}
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <input
               type="password"
               value={newPassword}
@@ -562,6 +567,7 @@ export default function AdminUserDetails() {
                 cursor: passwordSaving ? 'not-allowed' : 'pointer',
                 opacity: passwordSaving ? 0.7 : 1,
                 whiteSpace: 'nowrap',
+                minHeight: '44px',
               }}
             >
               {passwordSaving ? 'Saving...' : 'Confirm'}
@@ -580,6 +586,7 @@ export default function AdminUserDetails() {
                 border: '1px solid #e2e8f0',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                minHeight: '44px',
               }}
             >
               Cancel
@@ -589,7 +596,7 @@ export default function AdminUserDetails() {
       )}
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-4" style={{ gap: '24px', marginBottom: '32px' }}>
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
             PTO Approved ({currentYear})
@@ -638,7 +645,7 @@ export default function AdminUserDetails() {
           </h2>
         </div>
         <div style={{ padding: '32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
+          <div className="form-grid-3" style={{ gap: '24px' }}>
             <div>
               <label style={labelStyle}>First Name</label>
               {isEditing ? (
@@ -707,7 +714,7 @@ export default function AdminUserDetails() {
             <div>
               <label style={labelStyle}>Managers</label>
               {isEditing ? (
-                <div style={{ ...inputStyle, minHeight: '80px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ ...inputStyle, minHeight: '80px', maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {managers.length === 0 ? (
                     <span style={{ fontSize: '12px', color: '#64748b' }}>No Manager/Admin users yet</span>
                   ) : (
@@ -875,38 +882,71 @@ export default function AdminUserDetails() {
             </div>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8fafc' }}>
-                <th style={{ ...thStyle, color: '#002349' }}>Date of Leave</th>
-                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
-                <th style={{ ...thStyle, color: '#002349' }}>Reason</th>
-                <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
-                <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {yearPtoRequests.map((request, index) => (
-                <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                    {formatPtoRequestDateDisplay(request)}
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
-                    {request.hours}h
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '14px', color: '#64748b', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {request.reason || '—'}
-                  </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+          <>
+            {/* Desktop Table */}
+            <div className="admin-table-desktop">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f8fafc' }}>
+                    <th style={{ ...thStyle, color: '#002349' }}>Date of Leave</th>
+                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Hours</th>
+                    <th style={{ ...thStyle, color: '#002349' }}>Reason</th>
+                    <th style={{ ...thStyle, color: '#002349', textAlign: 'center' }}>Status</th>
+                    <th style={{ ...thStyle, color: '#002349' }}>Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearPtoRequests.map((request, index) => (
+                    <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                        {formatPtoRequestDateDisplay(request)}
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', color: '#002349', textAlign: 'center', fontWeight: 600 }}>
+                        {request.hours}h
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '14px', color: '#64748b', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {request.reason || '—'}
+                      </td>
+                      <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                        {getStatusBadge(request.status)}
+                      </td>
+                      <td style={{ padding: '16px 20px', fontSize: '13px', color: '#64748b' }}>
+                        {new Date(request.requestedAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="admin-cards-mobile">
+              {yearPtoRequests.map((request) => (
+                <div key={request.id} className="admin-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349' }}>{formatPtoRequestDateDisplay(request)}</div>
                     {getStatusBadge(request.status)}
-                  </td>
-                  <td style={{ padding: '16px 20px', fontSize: '13px', color: '#64748b' }}>
-                    {new Date(request.requestedAt).toLocaleDateString()}
-                  </td>
-                </tr>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Hours:</span>
+                      <span style={{ color: '#002349', fontWeight: 600 }}>{request.hours}h</span>
+                    </div>
+                    {request.reason && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>Reason:</span>
+                        <span style={{ color: '#002349', flex: 1, textAlign: 'right', marginLeft: '12px' }}>{request.reason}</span>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Requested:</span>
+                      <span style={{ color: '#002349' }}>{new Date(request.requestedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>
