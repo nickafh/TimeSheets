@@ -228,6 +228,7 @@ export default function ManageNotifications() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
+            minHeight: '44px',
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_alert</span>
@@ -236,7 +237,7 @@ export default function ManageNotifications() {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      <div className="stats-grid-3" style={{ marginBottom: '24px', gap: '16px' }}>
         <div style={{
           backgroundColor: 'white',
           border: '1px solid #e2e8f0',
@@ -317,8 +318,8 @@ export default function ManageNotifications() {
         </div>
       </div>
 
-      {/* Notifications Table */}
-      <div style={{
+      {/* Notifications Table - Desktop */}
+      <div className="admin-table-desktop" style={{
         backgroundColor: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
@@ -407,6 +408,7 @@ export default function ManageNotifications() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
+                          minHeight: '44px',
                         }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
@@ -429,6 +431,7 @@ export default function ManageNotifications() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
+                            minHeight: '44px',
                           }}
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility_off</span>
@@ -451,6 +454,7 @@ export default function ManageNotifications() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
+                            minHeight: '44px',
                           }}
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>
@@ -473,6 +477,7 @@ export default function ManageNotifications() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
+                          minHeight: '44px',
                         }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
@@ -485,6 +490,161 @@ export default function ManageNotifications() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Notifications Cards - Mobile */}
+      <div className="admin-cards-mobile">
+        {notifications.length === 0 ? (
+          <div style={{
+            backgroundColor: 'white',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '48px',
+            textAlign: 'center',
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>notifications_off</span>
+            <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
+              No notifications found. Create one to get started.
+            </p>
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <div key={notification.id} className="admin-card">
+              <div className="admin-card__header">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                    {notification.title}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                    {notification.message}
+                  </div>
+                </div>
+                <span style={{
+                  ...getStatusStyle(notification),
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}>
+                  {getStatusLabel(notification)}
+                </span>
+              </div>
+              <div className="admin-card__row">
+                <span style={{ fontWeight: 600 }}>Created:</span>
+                <span>{new Date(notification.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+              </div>
+              {notification.expiresAt && (
+                <div className="admin-card__row">
+                  <span style={{ fontWeight: 600 }}>Expires:</span>
+                  <span>{new Date(notification.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                </div>
+              )}
+              <div className="admin-card__actions">
+                <button
+                  onClick={() => openEditModal(notification)}
+                  style={{
+                    flex: '1 1 auto',
+                    backgroundColor: '#002349',
+                    color: 'white',
+                    padding: '10px 12px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                  Edit
+                </button>
+                {notification.isActive === 1 ? (
+                  <button
+                    onClick={() => handleDeactivate(notification)}
+                    style={{
+                      flex: '1 1 auto',
+                      backgroundColor: 'white',
+                      color: '#d97706',
+                      padding: '10px 12px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      borderRadius: '6px',
+                      border: '1px solid #fde68a',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      minHeight: '44px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility_off</span>
+                    Hide
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleActivate(notification)}
+                    style={{
+                      flex: '1 1 auto',
+                      backgroundColor: '#059669',
+                      color: 'white',
+                      padding: '10px 12px',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      minHeight: '44px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                    Show
+                  </button>
+                )}
+                <button
+                  onClick={() => handleDelete(notification)}
+                  style={{
+                    flex: '1 1 auto',
+                    backgroundColor: 'white',
+                    color: '#dc2626',
+                    padding: '10px 12px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    borderRadius: '6px',
+                    border: '1px solid #fecaca',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Tips */}
