@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { fetchUsers, fetchAllPtoRequests, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto } from "../api";
+import { fetchMyTeamUsers, fetchManagerPendingPtoRequests, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto } from "../api";
 import { Link } from "react-router-dom";
 
 export default function ManagerDashboard() {
@@ -8,23 +8,23 @@ export default function ManagerDashboard() {
   const [teamMembers, setTeamMembers] = useState<UserDto[]>([]);
   const [pendingPtoRequests, setPendingPtoRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError("");
 
-        // Fetch all users and filter for active team members
-        const allUsers = await fetchUsers();
-        const activeTeam = allUsers.filter(u => u.isActive === 1);
+        // Fetch manager-scoped team and pending requests
+        const activeTeam = await fetchMyTeamUsers();
         setTeamMembers(activeTeam);
 
-        // Fetch all PTO requests and filter for pending ones
-        const allPtoRequests = await fetchAllPtoRequests();
-        const pending = allPtoRequests.filter(req => req.status === 0); // 0 = Pending
+        const pending = await fetchManagerPendingPtoRequests();
         setPendingPtoRequests(pending);
       } catch (error) {
         console.error("Failed to fetch manager dashboard data:", error);
+        setError("Failed to load manager dashboard data.");
       } finally {
         setLoading(false);
       }
@@ -35,7 +35,7 @@ export default function ManagerDashboard() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="page-container page-container--centered">
         <div style={{ textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
           <div style={{ fontSize: '16px', color: '#666666', marginTop: '12px' }}>Loading manager dashboard...</div>
@@ -45,7 +45,7 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
@@ -54,10 +54,15 @@ export default function ManagerDashboard() {
         <p style={{ color: '#666666', fontSize: '15px' }}>
           Welcome, {user?.name?.split(' ')[0]}. Manage your team and approve requests.
         </p>
+        {error && (
+          <div style={{ marginTop: '12px', borderLeft: '4px solid #ef4444', backgroundColor: '#fef2f2', padding: '12px 16px', borderRadius: '0 8px 8px 0', fontSize: '14px', color: '#b91c1c' }}>
+            {error}
+          </div>
+        )}
       </div>
 
       {/* Quick Stats */}
-      <div className="stats-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div className="stats-grid-3">
         {/* Active Team Members */}
         <div style={{
           backgroundColor: 'white',
@@ -208,93 +213,166 @@ export default function ManagerDashboard() {
             </div>
           </div>
         ) : (
-          <div className="table-scroll">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#002349' }}>
-                <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Employee
-                </th>
-                <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Department
-                </th>
-                <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Date of Leave
-                </th>
-                <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Hours
-                </th>
-                <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Reason
-                </th>
-                <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingPtoRequests.map((request, index) => (
-                <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                    {request.userName}
-                  </td>
-                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                    {request.department || "N/A"}
-                  </td>
-                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#002349' }}>
-                    {formatPtoRequestDateDisplay(request)}
-                  </td>
-                  <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 700, color: '#002349' }}>
-                    {request.hours}h
-                  </td>
-                  <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                    {request.reason || "—"}
-                  </td>
-                  <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button style={{
-                        backgroundColor: '#059669',
-                        color: 'white',
-                        padding: '6px 12px',
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        borderRadius: '4px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
-                        Approve
-                      </button>
-                      <button style={{
-                        backgroundColor: 'white',
-                        color: '#dc2626',
-                        padding: '6px 12px',
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        borderRadius: '4px',
-                        border: '1px solid #fecaca',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
-                        Deny
-                      </button>
+          <>
+            <div className="mgr-pto-table">
+              <div className="table-scroll">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#002349' }}>
+                      <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Employee
+                      </th>
+                      <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Department
+                      </th>
+                      <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Date of Leave
+                      </th>
+                      <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Hours
+                      </th>
+                      <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Reason
+                      </th>
+                      <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingPtoRequests.map((request, index) => (
+                      <tr key={request.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                          {request.userName}
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                          {request.department || "N/A"}
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', color: '#002349' }}>
+                          {formatPtoRequestDateDisplay(request)}
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center', fontSize: '14px', fontWeight: 700, color: '#002349' }}>
+                          {request.hours}h
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                          {request.reason || "—"}
+                        </td>
+                        <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <button style={{
+                              backgroundColor: '#059669',
+                              color: 'white',
+                              padding: '6px 12px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
+                              Approve
+                            </button>
+                            <button style={{
+                              backgroundColor: 'white',
+                              color: '#dc2626',
+                              padding: '6px 12px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              borderRadius: '4px',
+                              border: '1px solid #fecaca',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                              Deny
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="mgr-pto-cards">
+              {pendingPtoRequests.map((request) => (
+                <div key={request.id} className="mgr-pto-card">
+                  <div className="mgr-pto-card__header">
+                    <div>
+                      <div className="mgr-pto-card__name">{request.userName}</div>
+                      <div className="mgr-pto-card__dept">{request.department || "N/A"}</div>
                     </div>
-                  </td>
-                </tr>
+                    <span className="mgr-pto-card__hours">{request.hours}h</span>
+                  </div>
+                  <div className="mgr-pto-card__body">
+                    <div className="mgr-pto-card__row">
+                      <span className="mgr-pto-card__label">Date</span>
+                      <span className="mgr-pto-card__value">{formatPtoRequestDateDisplay(request)}</span>
+                    </div>
+                    {request.reason && (
+                      <div className="mgr-pto-card__row">
+                        <span className="mgr-pto-card__label">Reason</span>
+                        <span className="mgr-pto-card__value">{request.reason}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mgr-pto-card__actions">
+                    <button style={{
+                      backgroundColor: '#059669',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase' as const,
+                      letterSpacing: '0.05em',
+                      cursor: 'pointer',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
+                      Approve
+                    </button>
+                    <button style={{
+                      backgroundColor: 'white',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '6px',
+                      padding: '12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase' as const,
+                      letterSpacing: '0.05em',
+                      cursor: 'pointer',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
+                      Deny
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -330,72 +408,105 @@ export default function ManagerDashboard() {
           </span>
         </div>
 
-        <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#002349' }}>
-              <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Name
-              </th>
-              <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Email
-              </th>
-              <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Department
-              </th>
-              <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Category
-              </th>
-              <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Hire Date
-              </th>
-              <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {teamMembers.slice(0, 10).map((member, index) => (
-              <tr key={member.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                  {member.firstName} {member.lastName}
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                  {member.email}
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                  {member.department || "N/A"}
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                  {member.category || "N/A"}
-                </td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
-                  {member.hireDate ? new Date(member.hireDate).toLocaleDateString() : "N/A"}
-                </td>
-                <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                  <Link
-                    to={`/manager/team-member/${member.id}`}
-                    style={{
-                      backgroundColor: 'white',
-                      color: '#002349',
-                      padding: '6px 12px',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      borderRadius: '4px',
-                      border: '1px solid #e2e8f0',
-                      textDecoration: 'none',
-                      display: 'inline-block',
-                    }}
-                  >
-                    View Details
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mgr-team-table">
+          <div className="table-scroll">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#002349' }}>
+                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Name
+                  </th>
+                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Email
+                  </th>
+                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Department
+                  </th>
+                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Category
+                  </th>
+                  <th style={{ padding: '14px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Hire Date
+                  </th>
+                  <th style={{ padding: '14px 24px', textAlign: 'center', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#C29B40' }}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamMembers.slice(0, 10).map((member, index) => (
+                  <tr key={member.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                      {member.firstName} {member.lastName}
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                      {member.email}
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                      {member.department || "N/A"}
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                      {member.category || "N/A"}
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: '#64748b' }}>
+                      {member.hireDate ? new Date(member.hireDate).toLocaleDateString() : "N/A"}
+                    </td>
+                    <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                      <Link
+                        to={`/manager/team-member/${member.id}`}
+                        style={{
+                          backgroundColor: 'white',
+                          color: '#002349',
+                          padding: '6px 12px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          borderRadius: '4px',
+                          border: '1px solid #e2e8f0',
+                          textDecoration: 'none',
+                          display: 'inline-block',
+                        }}
+                      >
+                        View Details
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="mgr-team-cards">
+          {teamMembers.slice(0, 10).map((member) => (
+            <Link
+              key={member.id}
+              to={`/manager/team-member/${member.id}`}
+              className="mgr-team-card"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="mgr-team-card__header">
+                <div className="mgr-team-card__name">{member.firstName} {member.lastName}</div>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#C29B40' }}>chevron_right</span>
+              </div>
+              <div className="mgr-team-card__body">
+                <div className="mgr-team-card__row">
+                  <span className="mgr-team-card__label">Department</span>
+                  <span className="mgr-team-card__value">{member.department || "N/A"}</span>
+                </div>
+                <div className="mgr-team-card__row">
+                  <span className="mgr-team-card__label">Category</span>
+                  <span className="mgr-team-card__value">{member.category || "N/A"}</span>
+                </div>
+                <div className="mgr-team-card__row">
+                  <span className="mgr-team-card__label">Hire Date</span>
+                  <span className="mgr-team-card__value">{member.hireDate ? new Date(member.hireDate).toLocaleDateString() : "N/A"}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {teamMembers.length > 10 && (

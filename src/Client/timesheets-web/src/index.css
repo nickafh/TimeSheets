@@ -2262,4 +2262,157 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ======================
+   MANAGER DASHBOARD - MOBILE CARDS
+   ====================== */
+
+.mgr-pto-table,
+.mgr-team-table {
+  display: block;
+}
+
+.mgr-pto-cards,
+.mgr-team-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mgr-pto-table,
+  .mgr-team-table {
+    display: none;
+  }
+
+  .mgr-pto-cards,
+  .mgr-team-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  /* PTO Request Cards */
+  .mgr-pto-card {
+    background: white;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .mgr-pto-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .mgr-pto-card__name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--afh-navy);
+  }
+
+  .mgr-pto-card__dept {
+    font-size: 12px;
+    color: var(--text-grey);
+    margin-top: 2px;
+  }
+
+  .mgr-pto-card__hours {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--afh-navy);
+  }
+
+  .mgr-pto-card__body {
+    padding: 12px 16px;
+  }
+
+  .mgr-pto-card__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .mgr-pto-card__row:last-child {
+    margin-bottom: 0;
+  }
+
+  .mgr-pto-card__label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-grey);
+  }
+
+  .mgr-pto-card__value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--afh-navy);
+    text-align: right;
+  }
+
+  .mgr-pto-card__actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* Team Member Cards */
+  .mgr-team-card {
+    display: block;
+    background: white;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    color: inherit;
+  }
+
+  .mgr-team-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .mgr-team-card__name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--afh-navy);
+  }
+
+  .mgr-team-card__body {
+    padding: 12px 16px;
+  }
+
+  .mgr-team-card__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .mgr-team-card__row:last-child {
+    margin-bottom: 0;
+  }
+
+  .mgr-team-card__label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-grey);
+  }
+
+  .mgr-team-card__value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--afh-navy);
+    text-align: right;
+  }
+}
+
 /* END MOBILE UX FIXES */
