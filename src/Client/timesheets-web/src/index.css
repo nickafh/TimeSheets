@@ -2231,6 +2231,7 @@ h1, h2, h3, h4 {
     border: 1px solid #fecaca;
     border-radius: 6px;
     cursor: pointer;
+    min-height: 44px;
   }
 }
 

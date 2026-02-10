@@ -170,6 +170,7 @@ const NewTimeOffRequest = () => {
     color: active ? 'white' : '#64748b',
     cursor: 'pointer' as const,
     transition: 'all 0.15s ease',
+    minHeight: '44px',
   });
 
   return (
@@ -189,6 +190,8 @@ const NewTimeOffRequest = () => {
               alignItems: 'center',
               justifyContent: 'center',
               color: '#64748b',
+              minHeight: '44px',
+              minWidth: '44px',
             }}
           >
             <svg style={{ width: '20px', height: '20px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -337,6 +340,7 @@ const NewTimeOffRequest = () => {
                           borderRadius: '6px',
                           border: '1px solid #e2e8f0',
                           cursor: 'pointer',
+                          minHeight: '44px',
                         }}
                       >
                         {h}h
@@ -464,6 +468,7 @@ const NewTimeOffRequest = () => {
                 borderRadius: '6px',
                 border: '1px solid #e2e8f0',
                 cursor: 'pointer',
+                minHeight: '44px',
               }}
             >
               Cancel
@@ -486,6 +491,7 @@ const NewTimeOffRequest = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
+                minHeight: '44px',
               }}
             >
               {submitting ? (

@@ -129,6 +129,7 @@ const TimeOffRequests = () => {
             gap: "10px",
             boxShadow: "0 4px 14px -3px rgba(194, 155, 64, 0.4)",
             transition: "all 0.2s ease",
+            minHeight: '44px',
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>add_circle</span>
