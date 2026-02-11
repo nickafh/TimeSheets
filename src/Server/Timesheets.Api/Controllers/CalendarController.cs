@@ -24,6 +24,19 @@ public class CalendarController : ControllerBase
     private static bool IsValidAllDayDate(DateTime dt)
         => dt.Year >= 1900 && dt.Year <= 2100;
 
+    /// <summary>Returns workdays (Mon–Fri) in range, excluding weekends and holidays.</summary>
+    private static List<DateTime> GetWorkdaysInRange(DateTime start, DateTime end, HashSet<DateTime> holidayDates)
+    {
+        var workdays = new List<DateTime>();
+        for (var d = start.Date; d <= end.Date; d = d.AddDays(1))
+        {
+            if (d.DayOfWeek == DayOfWeek.Saturday || d.DayOfWeek == DayOfWeek.Sunday) continue;
+            if (holidayDates.Contains(d)) continue;
+            workdays.Add(d);
+        }
+        return workdays;
+    }
+
     /// <summary>
     /// Returns the current user's calendar token (authenticated).
     /// </summary>
@@ -125,7 +138,9 @@ public class CalendarController : ControllerBase
             sb.AppendLine("END:VEVENT");
         }
 
-        // Add approved PTO requests (multi-day: one event from DateOfLeave through EndDate)
+        var holidayDates = new HashSet<DateTime>(holidays.Select(h => h.HolidayDate.Date));
+
+        // Add approved PTO - one VEVENT per workday (excludes weekends and holidays)
         foreach (var pto in approvedPtoRequests)
         {
             var start = pto.DateOfLeave;
@@ -138,33 +153,40 @@ public class CalendarController : ControllerBase
                 continue;
             }
 
-            var dateStr = start.ToString("yyyyMMdd");
-            var endDateStr = end.AddDays(1).ToString("yyyyMMdd");
-            var uid = $"pto-{pto.Id}@afh-timesheets";
-            var summary = $"{pto.UserName} - Time Off ({pto.Hours}h)";
+            var workdays = GetWorkdaysInRange(start, end, holidayDates);
+            if (workdays.Count == 0) continue;
+
+            var hoursPerDay = (decimal)pto.Hours / workdays.Count;
+            var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
+            var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
             var description = string.IsNullOrEmpty(pto.Reason)
                 ? $"Department: {pto.Department ?? "Unknown"}"
                 : $"Reason: {pto.Reason}\\nDepartment: {pto.Department ?? "Unknown"}";
 
-            // Use ApprovedDeniedAt for DTSTAMP/LAST-MODIFIED when approved; RequestedAt for CREATED
-            var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
-            var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
-            var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            for (var i = 0; i < workdays.Count; i++)
+            {
+                var d = workdays[i];
+                var dateStr = d.ToString("yyyyMMdd");
+                var endDateStr = d.AddDays(1).ToString("yyyyMMdd");
+                var uid = $"pto-{pto.Id}-{i}@afh-timesheets";
+                var summary = $"{pto.UserName} - Time Off ({hoursPerDay:F0}h)";
 
-            sb.AppendLine("BEGIN:VEVENT");
-            sb.AppendLine($"UID:{uid}");
-            sb.AppendLine($"DTSTAMP:{dtstamp}");
-            sb.AppendLine($"CREATED:{created}");
-            sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
-            sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
-            sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
-            sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
-            sb.AppendLine($"DESCRIPTION:{EscapeICalText(description)}");
-            sb.AppendLine($"CATEGORIES:PTO,{EscapeICalText(pto.Department ?? "Unknown")}");
-            sb.AppendLine("TRANSP:TRANSPARENT");
-            sb.AppendLine($"SEQUENCE:0");
-            sb.AppendLine($"STATUS:CONFIRMED");
-            sb.AppendLine("END:VEVENT");
+                sb.AppendLine("BEGIN:VEVENT");
+                sb.AppendLine($"UID:{uid}");
+                sb.AppendLine($"DTSTAMP:{dtstamp}");
+                sb.AppendLine($"CREATED:{created}");
+                sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
+                sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
+                sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
+                sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
+                sb.AppendLine($"DESCRIPTION:{EscapeICalText(description)}");
+                sb.AppendLine($"CATEGORIES:PTO,{EscapeICalText(pto.Department ?? "Unknown")}");
+                sb.AppendLine("TRANSP:TRANSPARENT");
+                sb.AppendLine($"SEQUENCE:0");
+                sb.AppendLine($"STATUS:CONFIRMED");
+                sb.AppendLine("END:VEVENT");
+            }
         }
 
         sb.AppendLine("END:VCALENDAR");
@@ -247,7 +269,9 @@ public class CalendarController : ControllerBase
             sb.AppendLine("END:VEVENT");
         }
 
-        // Add user's approved PTO (multi-day: one event from DateOfLeave through EndDate)
+        var holidayDates = new HashSet<DateTime>(holidays.Select(h => h.HolidayDate.Date));
+
+        // Add user's approved PTO - one VEVENT per workday (excludes weekends and holidays)
         foreach (var pto in userPtoRequests)
         {
             var start = pto.DateOfLeave;
@@ -260,33 +284,40 @@ public class CalendarController : ControllerBase
                 continue;
             }
 
-            var dateStr = start.ToString("yyyyMMdd");
-            var endDateStr = end.AddDays(1).ToString("yyyyMMdd");
-            var uid = $"pto-{pto.Id}@afh-timesheets";
-            var summary = $"Time Off ({pto.Hours}h)";
+            var workdays = GetWorkdaysInRange(start, end, holidayDates);
+            if (workdays.Count == 0) continue;
 
-            // Use ApprovedDeniedAt for DTSTAMP/LAST-MODIFIED when approved; RequestedAt for CREATED
+            var hoursPerDay = (decimal)pto.Hours / workdays.Count;
             var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
             var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
             var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
 
-            sb.AppendLine("BEGIN:VEVENT");
-            sb.AppendLine($"UID:{uid}");
-            sb.AppendLine($"DTSTAMP:{dtstamp}");
-            sb.AppendLine($"CREATED:{created}");
-            sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
-            sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
-            sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
-            sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
-            if (!string.IsNullOrEmpty(pto.Reason))
+            for (var i = 0; i < workdays.Count; i++)
             {
-                sb.AppendLine($"DESCRIPTION:{EscapeICalText(pto.Reason)}");
+                var d = workdays[i];
+                var dateStr = d.ToString("yyyyMMdd");
+                var endDateStr = d.AddDays(1).ToString("yyyyMMdd");
+                var uid = $"pto-{pto.Id}-{i}@afh-timesheets";
+                var summary = $"Time Off ({hoursPerDay:F0}h)";
+
+                sb.AppendLine("BEGIN:VEVENT");
+                sb.AppendLine($"UID:{uid}");
+                sb.AppendLine($"DTSTAMP:{dtstamp}");
+                sb.AppendLine($"CREATED:{created}");
+                sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
+                sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
+                sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
+                sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
+                if (!string.IsNullOrEmpty(pto.Reason))
+                {
+                    sb.AppendLine($"DESCRIPTION:{EscapeICalText(pto.Reason)}");
+                }
+                sb.AppendLine("CATEGORIES:PTO");
+                sb.AppendLine("TRANSP:TRANSPARENT");
+                sb.AppendLine($"SEQUENCE:0");
+                sb.AppendLine($"STATUS:CONFIRMED");
+                sb.AppendLine("END:VEVENT");
             }
-            sb.AppendLine("CATEGORIES:PTO");
-            sb.AppendLine("TRANSP:TRANSPARENT");
-            sb.AppendLine($"SEQUENCE:0");
-            sb.AppendLine($"STATUS:CONFIRMED");
-            sb.AppendLine("END:VEVENT");
         }
 
         sb.AppendLine("END:VCALENDAR");

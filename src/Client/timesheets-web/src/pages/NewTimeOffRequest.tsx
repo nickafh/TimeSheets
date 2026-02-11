@@ -113,8 +113,35 @@ const NewTimeOffRequest = () => {
       setError("You must be logged in to submit a request.");
       return;
     }
-    setSubmitting(true);
     setError(null);
+
+    if (mode === "one" && singleDayIsHoliday) {
+      setError(`Cannot request PTO on a company holiday (${singleDayIsHoliday}).`);
+      return;
+    }
+    if (mode === "one" && startDate) {
+      const d = new Date(startDate + "T12:00:00");
+      if (d.getDay() === 0 || d.getDay() === 6) {
+        setError("Cannot request PTO on weekends. Please select a workday.");
+        return;
+      }
+    }
+    if (isRange && excludedHolidays.length > 0) {
+      setError(
+        `Cannot request PTO on company holidays. Your range includes: ${excludedHolidays.map((h) => h.name).join(", ")}. Please select workdays only.`
+      );
+      return;
+    }
+    if (isRange && start && end) {
+      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+        if (cur.getDay() === 0 || cur.getDay() === 6) {
+          setError("Cannot request PTO on weekends. Please select workdays only.");
+          return;
+        }
+      }
+    }
+
+    setSubmitting(true);
     try {
       await createPtoRequest({
         userId: user.id,

@@ -83,6 +83,20 @@ public class PtoRequestsController : ControllerBase
         if (request.Hours <= 0)
             return BadRequest(new { message = "Hours must be greater than 0" });
 
+        var holidayDates = await _db.Holidays
+            .Where(h => h.HolidayDate >= start && h.HolidayDate <= end)
+            .Select(h => h.HolidayDate.Date)
+            .ToListAsync();
+
+        for (var d = start; d <= end; d = d.AddDays(1))
+        {
+            var dayOfWeek = d.DayOfWeek;
+            if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
+                return BadRequest(new { message = "PTO cannot be requested on weekends. Please select workdays only." });
+            if (holidayDates.Contains(d))
+                return BadRequest(new { message = $"PTO cannot be requested on company holidays. {d:MMMM d, yyyy} is a holiday." });
+        }
+
         var entity = new PtoRequest
         {
             UserId = request.UserId,

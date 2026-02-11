@@ -124,6 +124,19 @@ async function getJson<T>(path: string): Promise<T> {
   return JSON.parse(text) as T;
 }
 
+async function parseErrorResponse(res: Response, prefix: string): Promise<never> {
+  const text = await res.text();
+  let msg = prefix;
+  try {
+    const body = JSON.parse(text) as { message?: string; hint?: string };
+    if (body?.message) msg += ` - ${body.message}`;
+    if (body?.hint) msg += ` (${body.hint})`;
+  } catch {
+    // ignore parse error
+  }
+  throw new Error(msg);
+}
+
 async function putJson<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "PUT",
@@ -132,7 +145,7 @@ async function putJson<T>(path: string, body: unknown): Promise<T> {
   });
   if (!res.ok) {
     handle401(res);
-    throw new Error(`PUT ${path} failed: ${res.status}`);
+    await parseErrorResponse(res, `PUT ${path} failed: ${res.status}`);
   }
   return res.status === 204 ? ({} as T) : res.json();
 }
@@ -145,7 +158,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   });
   if (!res.ok) {
     handle401(res);
-    throw new Error(`POST ${path} failed: ${res.status}`);
+    await parseErrorResponse(res, `POST ${path} failed: ${res.status}`);
   }
   return res.json();
 }
@@ -158,7 +171,7 @@ async function patchJson<T>(path: string, body?: unknown): Promise<T> {
   });
   if (!res.ok) {
     handle401(res);
-    throw new Error(`PATCH ${path} failed: ${res.status}`);
+    await parseErrorResponse(res, `PATCH ${path} failed: ${res.status}`);
   }
   return res.status === 204 ? ({} as T) : res.json();
 }
@@ -170,7 +183,7 @@ async function deleteJson<T>(path: string): Promise<T> {
   });
   if (!res.ok) {
     handle401(res);
-    throw new Error(`DELETE ${path} failed: ${res.status}`);
+    await parseErrorResponse(res, `DELETE ${path} failed: ${res.status}`);
   }
   return res.status === 204 ? ({} as T) : res.json();
 }

@@ -21,13 +21,18 @@ interface PtoRequest {
   reason: string | null;
 }
 
+interface PtoEntry {
+  pto: PtoRequest;
+  hoursForThisDay: number;
+}
+
 interface CalendarDay {
   date: Date;
   dateStr: string;
   isCurrentMonth: boolean;
   isToday: boolean;
   holidays: Holiday[];
-  ptoRequests: PtoRequest[];
+  ptoEntries: PtoEntry[];
 }
 
 // Department color scheme - vibrant colors matching the design
@@ -114,6 +119,20 @@ function getDaysInMonth(year: number, month: number): Date[] {
 
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
+}
+
+/** Returns workdays (Mon–Fri) in range, excluding weekends and holidays. */
+function getWorkdaysInRange(startStr: string, endStr: string, holidayDates: Set<string>): string[] {
+  const workdays: string[] = [];
+  const start = new Date(startStr + "T12:00:00");
+  const end = new Date(endStr + "T12:00:00");
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = formatDate(d);
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    if (holidayDates.has(dateStr)) continue;
+    workdays.push(dateStr);
+  }
+  return workdays;
 }
 
 export default function CalendarView() {
@@ -298,6 +317,7 @@ export default function CalendarView() {
   };
 
   const days = getDaysInMonth(currentYear, currentMonth);
+  const holidayDates = new Set(holidays.map(h => h.date));
 
   const calendarDays: CalendarDay[] = days.map(date => {
     const dateStr = formatDate(date);
@@ -305,11 +325,19 @@ export default function CalendarView() {
     const isToday = formatDate(date) === formatDate(today);
 
     const dayHolidays = holidays.filter(h => h.date === dateStr);
-    const dayPto = ptoRequests.filter(pto => {
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    const isHoliday = dayHolidays.length > 0;
+
+    const ptoEntries: PtoEntry[] = [];
+    for (const pto of ptoRequests) {
       const start = pto.dateOfLeave;
       const end = pto.endDate || pto.dateOfLeave;
-      return dateStr >= start && dateStr <= end;
-    });
+      if (dateStr < start || dateStr > end) continue;
+      if (isWeekend || isHoliday) continue;
+      const workdays = getWorkdaysInRange(start, end, holidayDates);
+      const hoursForThisDay = pto.hours / workdays.length;
+      ptoEntries.push({ pto, hoursForThisDay });
+    }
 
     return {
       date,
@@ -317,7 +345,7 @@ export default function CalendarView() {
       isCurrentMonth,
       isToday,
       holidays: dayHolidays,
-      ptoRequests: dayPto
+      ptoEntries
     };
   });
 
@@ -335,7 +363,7 @@ export default function CalendarView() {
   // Get selected day data for mobile detail panel
   const selectedDayData = calendarDays.find(day => day.dateStr === selectedDate);
   const selectedDateObj = selectedDayData ? selectedDayData.date : new Date(selectedDate);
-  const peopleAway = selectedDayData?.ptoRequests.filter(pto => pto.hours > 0) || [];
+  const peopleAway = selectedDayData?.ptoEntries.filter(e => e.hoursForThisDay > 0) || [];
 
   // Helper to get user initials
   const getUserInitials = (name: string) => {
@@ -577,7 +605,7 @@ export default function CalendarView() {
                   {calendarDays.slice(weekIdx * 7, (weekIdx + 1) * 7).map((day, dayIdx) => {
                     const isWeekend = day.date.getDay() === 0 || day.date.getDay() === 6;
                     const isSelected = day.dateStr === selectedDate;
-                    const hasEvents = day.holidays.length > 0 || day.ptoRequests.filter(p => p.hours > 0).length > 0;
+                    const hasEvents = day.holidays.length > 0 || day.ptoEntries.filter(e => e.hoursForThisDay > 0).length > 0;
 
                     return (
                       <td
@@ -630,13 +658,13 @@ export default function CalendarView() {
                             </div>
                           ))}
 
-                          {/* PTO Requests */}
-                          {day.ptoRequests.filter(pto => pto.hours > 0).map(pto => {
-                            const colors = getDepartmentColors(pto.department);
+                          {/* PTO Requests - workdays only, hours per day */}
+                          {day.ptoEntries.filter(e => e.hoursForThisDay > 0).map(entry => {
+                            const colors = getDepartmentColors(entry.pto.department);
 
                             return (
                               <div
-                                key={pto.id}
+                                key={`${entry.pto.id}-${day.dateStr}`}
                                 style={{
                                   padding: '4px 8px',
                                   fontSize: '11px',
@@ -649,9 +677,9 @@ export default function CalendarView() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                 }}
-                                title={`${pto.userName} (${pto.department || 'Unknown'}) - ${pto.hours} hours`}
+                                title={`${entry.pto.userName} (${entry.pto.department || 'Unknown'}) - ${entry.hoursForThisDay} hours`}
                               >
-                                {pto.userName} ({pto.hours})
+                                {entry.pto.userName} ({entry.hoursForThisDay})
                               </div>
                             );
                           })}
@@ -663,7 +691,7 @@ export default function CalendarView() {
                             {day.holidays.length > 0 && (
                               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? 'white' : '#C29B40' }} />
                             )}
-                            {day.ptoRequests.filter(p => p.hours > 0).slice(0, 3).map((_, i) => (
+                            {day.ptoEntries.filter(e => e.hoursForThisDay > 0).slice(0, 3).map((_, i) => (
                               <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.7)' : '#C29B40' }} />
                             ))}
                           </div>
@@ -713,10 +741,10 @@ export default function CalendarView() {
           </div>
         )}
 
-        {peopleAway.map(pto => {
-          const colors = getDepartmentColors(pto.department);
+        {peopleAway.map(entry => {
+          const colors = getDepartmentColors(entry.pto.department);
           return (
-            <div key={pto.id} style={{
+            <div key={`${entry.pto.id}-${selectedDate}`} style={{
               backgroundColor: 'white',
               border: '1px solid #e2e8f0',
               padding: '16px',
@@ -739,12 +767,12 @@ export default function CalendarView() {
                   fontWeight: 600,
                   color: '#64748b',
                 }}>
-                  {getUserInitials(pto.userName)}
+                  {getUserInitials(entry.pto.userName)}
                 </div>
                 <div>
-                  <p style={{ fontWeight: 600, color: '#1f2937' }}>{pto.userName}</p>
+                  <p style={{ fontWeight: 600, color: '#1f2937' }}>{entry.pto.userName}</p>
                   <p style={{ fontSize: '12px', color: '#C29B40', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    PTO ({pto.hours >= 8 ? 'All Day' : `${pto.hours}h`})
+                    PTO ({entry.hoursForThisDay >= 8 ? 'All Day' : `${entry.hoursForThisDay}h`})
                   </p>
                 </div>
               </div>
@@ -761,7 +789,7 @@ export default function CalendarView() {
                 fontWeight: 700,
                 color: colors.text,
               }}>
-                {pto.department?.substring(0, 2).toUpperCase() || '??'}
+                {entry.pto.department?.substring(0, 2).toUpperCase() || '??'}
               </div>
             </div>
           );
