@@ -621,3 +621,10 @@ export async function fetchCurrentUser(): Promise<AuthUser> {
   }
   return res.json();
 }
+
+// --- Calendar feed ---
+
+export async function fetchCalendarToken(): Promise<string> {
+  const data = await getJson<{ token: string }>("/api/calendar/token");
+  return data.token;
+}

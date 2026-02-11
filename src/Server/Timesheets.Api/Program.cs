@@ -86,6 +86,20 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
+    // Add CalendarToken column if missing
+    {
+        var conn2 = db.Database.GetDbConnection();
+        if (conn2.State != System.Data.ConnectionState.Open) await conn2.OpenAsync();
+        using var cmd2 = conn2.CreateCommand();
+        cmd2.CommandText = "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'Users' AND column_name = 'CalendarToken'";
+        var ctExists = Convert.ToInt32(await cmd2.ExecuteScalarAsync()) > 0;
+        if (!ctExists)
+        {
+            await db.Database.ExecuteSqlRawAsync(
+                "ALTER TABLE Users ADD COLUMN CalendarToken VARCHAR(64) NULL");
+        }
+    }
+
     try
     {
         await db.Database.ExecuteSqlRawAsync(@"
@@ -144,6 +158,17 @@ using (var scope = app.Services.CreateScope())
     }
 
     await db.SaveChangesAsync();
+
+    // Generate CalendarToken for any user that doesn't have one
+    var usersWithoutToken = await db.Users.Where(u => u.CalendarToken == null).ToListAsync();
+    foreach (var u in usersWithoutToken)
+    {
+        u.CalendarToken = Guid.NewGuid().ToString("N"); // 32-char hex string
+    }
+    if (usersWithoutToken.Count > 0)
+    {
+        await db.SaveChangesAsync();
+    }
 
     // Set testuser2 as testuser1's manager
     var testUser1 = await db.Users.FirstOrDefaultAsync(u => u.Email == "testuser1@atlantafinehomes.com");

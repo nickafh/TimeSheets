@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,6 @@ using TimeSheets.Api.Data;
 
 namespace TimeSheets.Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CalendarController : ControllerBase
@@ -19,13 +19,41 @@ public class CalendarController : ControllerBase
     }
 
     /// <summary>
-    /// Returns an iCalendar (.ics) feed with company holidays and approved PTO requests.
-    /// Use this URL in Outlook or other calendar apps to subscribe.
+    /// Returns the current user's calendar token (authenticated).
     /// </summary>
-    [HttpGet("feed.ics")]
-    [Produces("text/calendar")]
-    public async Task<IActionResult> GetCalendarFeed()
+    [Authorize]
+    [HttpGet("token")]
+    public async Task<IActionResult> GetMyCalendarToken()
     {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (email == null) return Unauthorized();
+
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null) return NotFound();
+
+        // Generate token if user doesn't have one yet
+        if (string.IsNullOrEmpty(user.CalendarToken))
+        {
+            user.CalendarToken = Guid.NewGuid().ToString("N");
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new { token = user.CalendarToken });
+    }
+
+    /// <summary>
+    /// Returns an iCalendar (.ics) feed with company holidays and approved PTO requests.
+    /// Authenticated by unguessable token in URL — no JWT required.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("feed/{token}/team.ics")]
+    [Produces("text/calendar")]
+    public async Task<IActionResult> GetTeamCalendarFeed(string token)
+    {
+        // Validate token belongs to any active user
+        var tokenUser = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
+        if (tokenUser == null) return NotFound();
+
         var holidays = await _db.Holidays
             .OrderBy(h => h.HolidayDate)
             .ToListAsync();
@@ -109,23 +137,22 @@ public class CalendarController : ControllerBase
 
     /// <summary>
     /// Returns an iCalendar feed for a specific user's PTO requests only.
+    /// Authenticated by unguessable token in URL — no JWT required.
     /// </summary>
-    [HttpGet("feed/{userId}.ics")]
+    [AllowAnonymous]
+    [HttpGet("feed/{token}/my.ics")]
     [Produces("text/calendar")]
-    public async Task<IActionResult> GetUserCalendarFeed(int userId)
+    public async Task<IActionResult> GetUserCalendarFeed(string token)
     {
-        var user = await _db.Users.FindAsync(userId);
-        if (user == null)
-        {
-            return NotFound("User not found");
-        }
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
+        if (user == null) return NotFound();
 
         var holidays = await _db.Holidays
             .OrderBy(h => h.HolidayDate)
             .ToListAsync();
 
         var userPtoRequests = await _db.PtoRequests
-            .Where(p => p.UserId == userId && p.Status == 1) // Approved only
+            .Where(p => p.UserId == user.Id && p.Status == 1) // Approved only
             .OrderBy(p => p.DateOfLeave)
             .ToListAsync();
 

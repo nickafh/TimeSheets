@@ -24,6 +24,10 @@ public class User
     [JsonIgnore]
     public string? PasswordHash { get; set; }
 
+    /// <summary>Unguessable token for anonymous calendar feed access.</summary>
+    [JsonIgnore]
+    public string? CalendarToken { get; set; }
+
     /// <summary>IDs of users who are managers of this user. Not mapped to DB; populated from UserManagers.</summary>
     [NotMapped]
     public List<int> ManagerIds { get; set; } = new();

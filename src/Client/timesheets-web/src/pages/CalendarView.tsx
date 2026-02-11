@@ -1,10 +1,7 @@
 // src/pages/CalendarView.tsx
 
 import { useEffect, useState } from "react";
-import { fetchHolidays, fetchAllPtoRequests } from "../api";
-import { useAuth } from "../auth/useAuth";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5150";
+import { fetchHolidays, fetchAllPtoRequests, fetchCalendarToken, API_BASE_URL } from "../api";
 
 interface Holiday {
   id: number;
@@ -121,7 +118,6 @@ function formatDate(date: Date): string {
 
 export default function CalendarView() {
   const today = new Date();
-  const { user } = useAuth();
 
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -132,6 +128,7 @@ export default function CalendarView() {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(today));
+  const [calendarToken, setCalendarToken] = useState<string | null>(null);
 
   // Fetch holidays and PTO requests from API
   useEffect(() => {
@@ -198,9 +195,17 @@ export default function CalendarView() {
     setCurrentMonth(today.getMonth());
   };
 
-  // Calendar feed URLs
-  const teamCalendarUrl = `${API_BASE_URL}/api/calendar/feed.ics`;
-  const myCalendarUrl = user ? `${API_BASE_URL}/api/calendar/feed/${user.id}.ics` : null;
+  // Fetch calendar token when subscribe modal opens
+  useEffect(() => {
+    if (showSubscribeModal && !calendarToken) {
+      fetchCalendarToken().then(setCalendarToken).catch(console.error);
+    }
+  }, [showSubscribeModal]);
+
+  // Calendar feed URLs — use token-based anonymous endpoints
+  const calendarBaseUrl = API_BASE_URL;
+  const teamCalendarUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/team.ics` : null;
+  const myCalendarUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/my.ics` : null;
 
   // Copy URL and open Outlook calendar page for subscription
   const handleSubscribe = async (url: string, type: string) => {
@@ -746,8 +751,15 @@ export default function CalendarView() {
               </button>
             </div>
 
+            {/* Loading state */}
+            {!calendarToken && (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '14px' }}>
+                Loading calendar links...
+              </div>
+            )}
+
             {/* Team Calendar Section */}
-            <div style={{ marginBottom: '24px' }}>
+            {calendarToken && <div style={{ marginBottom: '24px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#002349', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Team Calendar
               </h3>
@@ -756,7 +768,7 @@ export default function CalendarView() {
               </p>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => handleSubscribe(teamCalendarUrl, 'team')}
+                  onClick={() => teamCalendarUrl && handleSubscribe(teamCalendarUrl, 'team')}
                   style={{
                     flex: 1,
                     backgroundColor: copied === 'team' ? '#22c55e' : '#002349',
@@ -792,7 +804,7 @@ export default function CalendarView() {
                   )}
                 </button>
                 <button
-                  onClick={() => copyToClipboard(teamCalendarUrl, 'team-copy')}
+                  onClick={() => teamCalendarUrl && copyToClipboard(teamCalendarUrl, 'team-copy')}
                   style={{
                     backgroundColor: copied === 'team-copy' ? '#22c55e' : '#f1f5f9',
                     color: copied === 'team-copy' ? 'white' : '#002349',
@@ -824,7 +836,7 @@ export default function CalendarView() {
                   )}
                 </button>
               </div>
-            </div>
+            </div>}
 
             {/* My Calendar Section */}
             {myCalendarUrl && (
@@ -873,7 +885,7 @@ export default function CalendarView() {
                     )}
                   </button>
                   <button
-                    onClick={() => copyToClipboard(myCalendarUrl, 'my-copy')}
+                    onClick={() => myCalendarUrl && copyToClipboard(myCalendarUrl, 'my-copy')}
                     style={{
                       backgroundColor: copied === 'my-copy' ? '#22c55e' : '#f1f5f9',
                       color: copied === 'my-copy' ? 'white' : '#002349',
