@@ -44,9 +44,11 @@ public class CalendarController : ControllerBase
     /// <summary>
     /// Returns an iCalendar (.ics) feed with company holidays and approved PTO requests.
     /// Authenticated by unguessable token in URL — no JWT required.
+    /// Supports GET and HEAD; calendar clients often HEAD first and need 200 to proceed.
     /// </summary>
     [AllowAnonymous]
     [HttpGet("feed/{token}/team.ics")]
+    [HttpHead("feed/{token}/team.ics")]
     [Produces("text/calendar")]
     public async Task<IActionResult> GetTeamCalendarFeed(string token)
     {
@@ -147,15 +149,21 @@ public class CalendarController : ControllerBase
         sb.AppendLine("END:VCALENDAR");
 
         var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+        Response.ContentType = "text/calendar; charset=utf-8";
+        if (HttpMethods.IsHead(Request.Method))
+            return Ok();
+
         return File(bytes, "text/calendar", "afh-timeoff-calendar.ics");
     }
 
     /// <summary>
     /// Returns an iCalendar feed for a specific user's PTO requests only.
     /// Authenticated by unguessable token in URL — no JWT required.
+    /// Supports GET and HEAD; calendar clients often HEAD first and need 200 to proceed.
     /// </summary>
     [AllowAnonymous]
     [HttpGet("feed/{token}/my.ics")]
+    [HttpHead("feed/{token}/my.ics")]
     [Produces("text/calendar")]
     public async Task<IActionResult> GetUserCalendarFeed(string token)
     {
@@ -248,6 +256,10 @@ public class CalendarController : ControllerBase
         sb.AppendLine("END:VCALENDAR");
 
         var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+        Response.ContentType = "text/calendar; charset=utf-8";
+        if (HttpMethods.IsHead(Request.Method))
+            return Ok();
+
         return File(bytes, "text/calendar", $"{user.FirstName}-timeoff-calendar.ics");
     }
 
