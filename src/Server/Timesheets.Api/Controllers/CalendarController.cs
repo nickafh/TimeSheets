@@ -50,6 +50,10 @@ public class CalendarController : ControllerBase
     [Produces("text/calendar")]
     public async Task<IActionResult> GetTeamCalendarFeed(string token)
     {
+        // Set cache headers to force frequent refreshes (5 minutes)
+        Response.Headers["Cache-Control"] = "public, max-age=300"; // 5 minutes
+        Response.Headers["Expires"] = DateTime.UtcNow.AddMinutes(5).ToString("R");
+        
         // Validate token belongs to any active user
         var tokenUser = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
         if (tokenUser == null) return NotFound();
@@ -144,6 +148,10 @@ public class CalendarController : ControllerBase
     [Produces("text/calendar")]
     public async Task<IActionResult> GetUserCalendarFeed(string token)
     {
+        // Set cache headers to force frequent refreshes (5 minutes)
+        Response.Headers["Cache-Control"] = "public, max-age=300"; // 5 minutes
+        Response.Headers["Expires"] = DateTime.UtcNow.AddMinutes(5).ToString("R");
+        
         var user = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
         if (user == null) return NotFound();
 
