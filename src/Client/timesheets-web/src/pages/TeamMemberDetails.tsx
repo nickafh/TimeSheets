@@ -53,10 +53,14 @@ export default function TeamMemberDetails() {
         setPtoRequests([]);
       }
 
-      // Fetch recent time entries (last 30 days)
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      // Fetch time entries for current week (Mon-Sun) to match Team Time Entries
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + mondayOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
 
       const toLocalDateStr = (d: Date) => {
         const y = d.getFullYear();
@@ -68,8 +72,8 @@ export default function TeamMemberDetails() {
       try {
         const entriesData = await fetchDailyTimeEntries(
           userId,
-          toLocalDateStr(startDate),
-          toLocalDateStr(endDate)
+          toLocalDateStr(weekStart),
+          toLocalDateStr(weekEnd)
         );
         setTimeEntries(entriesData);
       } catch {
@@ -116,7 +120,7 @@ export default function TeamMemberDetails() {
   const totalApprovedHours = approvedPto.reduce((sum, r) => sum + r.hours, 0);
   const totalPendingHours = pendingPto.reduce((sum, r) => sum + r.hours, 0);
 
-  // Calculate time entry stats (last 30 days)
+  // Calculate time entry stats (this week)
   const totalWorkedHours = timeEntries.reduce((sum, e) => sum + (Number(e.workedHours) || 0), 0);
   const totalPtoHours = timeEntries.reduce((sum, e) => sum + (Number(e.ptoHours) || 0), 0);
 
@@ -313,7 +317,7 @@ export default function TeamMemberDetails() {
             Hours Worked
           </div>
           <div style={{ fontSize: '36px', fontWeight: 700, color: '#002349' }}>{totalWorkedHours.toFixed(1)}</div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>last 30 days</div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>this week</div>
         </div>
 
         {/* PTO Used */}
@@ -340,7 +344,7 @@ export default function TeamMemberDetails() {
             PTO Logged
           </div>
           <div style={{ fontSize: '36px', fontWeight: 700, color: '#C29B40' }}>{totalPtoHours.toFixed(1)}</div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>last 30 days</div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>this week</div>
         </div>
       </div>
 
@@ -464,7 +468,7 @@ export default function TeamMemberDetails() {
             <div style={{ padding: '48px', textAlign: 'center' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>event_busy</span>
               <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-                No time entries in the last 30 days
+                No time entries this week
               </div>
             </div>
           ) : (

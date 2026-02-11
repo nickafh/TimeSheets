@@ -97,9 +97,14 @@ export default function AdminUserDetails() {
         setPtoRequests([]);
       }
 
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      // Use current week (Mon-Sun) to match Team Time Entries
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + mondayOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
 
       const toLocalDateStr = (d: Date) => {
         const y = d.getFullYear();
@@ -111,8 +116,8 @@ export default function AdminUserDetails() {
       try {
         const entriesData = await fetchDailyTimeEntries(
           userId,
-          toLocalDateStr(startDate),
-          toLocalDateStr(endDate)
+          toLocalDateStr(weekStart),
+          toLocalDateStr(weekEnd)
         );
         setTimeEntries(entriesData);
       } catch {
@@ -620,7 +625,7 @@ export default function AdminUserDetails() {
         </div>
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
-            Hours Worked (30 days)
+            Hours Worked (This Week)
           </div>
           <div style={{ fontSize: '36px', fontWeight: 700, color: '#002349' }}>{totalWorkedHours.toFixed(1)}</div>
           <div style={{ fontSize: '12px', color: '#64748b' }}>hours</div>
