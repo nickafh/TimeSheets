@@ -101,7 +101,6 @@ public class CalendarController : ControllerBase
                     pto.DateOfLeave,
                     pto.EndDate,
                     pto.Hours,
-                    pto.Reason,
                     UserName = user.FirstName + " " + user.LastName,
                     user.Department,
                     pto.RequestedAt,
@@ -160,9 +159,7 @@ public class CalendarController : ControllerBase
             var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
             var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
             var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
-            var description = string.IsNullOrEmpty(pto.Reason)
-                ? $"Department: {pto.Department ?? "Unknown"}"
-                : $"Reason: {pto.Reason}\\nDepartment: {pto.Department ?? "Unknown"}";
+            var description = $"Department: {pto.Department ?? "Unknown"}";
 
             for (var i = 0; i < workdays.Count; i++)
             {
@@ -235,7 +232,6 @@ public class CalendarController : ControllerBase
                 p.DateOfLeave,
                 p.EndDate,
                 p.Hours,
-                p.Reason,
                 p.RequestedAt,
                 p.ApprovedDeniedAt
             })
@@ -308,10 +304,6 @@ public class CalendarController : ControllerBase
                 sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
                 sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
                 sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
-                if (!string.IsNullOrEmpty(pto.Reason))
-                {
-                    sb.AppendLine($"DESCRIPTION:{EscapeICalText(pto.Reason)}");
-                }
                 sb.AppendLine("CATEGORIES:PTO");
                 sb.AppendLine("TRANSP:TRANSPARENT");
                 sb.AppendLine($"SEQUENCE:0");
