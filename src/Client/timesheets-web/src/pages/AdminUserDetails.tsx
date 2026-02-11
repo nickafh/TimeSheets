@@ -101,11 +101,18 @@ export default function AdminUserDetails() {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
+      const toLocalDateStr = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
       try {
         const entriesData = await fetchDailyTimeEntries(
           userId,
-          startDate.toISOString().split('T')[0],
-          endDate.toISOString().split('T')[0]
+          toLocalDateStr(startDate),
+          toLocalDateStr(endDate)
         );
         setTimeEntries(entriesData);
       } catch {
@@ -217,7 +224,7 @@ export default function AdminUserDetails() {
   const yearPtoRequests = ptoRequests.filter(r => new Date(r.dateOfLeave).getFullYear() === currentYear);
   const approvedPto = yearPtoRequests.filter(r => r.status === 1);
   const totalApprovedHours = approvedPto.reduce((sum, r) => sum + r.hours, 0);
-  const totalWorkedHours = timeEntries.reduce((sum, e) => sum + e.workedHours, 0);
+  const totalWorkedHours = timeEntries.reduce((sum, e) => sum + (Number(e.workedHours) || 0), 0);
 
   const inputStyle = {
     width: '100%',

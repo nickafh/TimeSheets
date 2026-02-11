@@ -58,11 +58,18 @@ export default function TeamMemberDetails() {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
+      const toLocalDateStr = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
       try {
         const entriesData = await fetchDailyTimeEntries(
           userId,
-          startDate.toISOString().split('T')[0],
-          endDate.toISOString().split('T')[0]
+          toLocalDateStr(startDate),
+          toLocalDateStr(endDate)
         );
         setTimeEntries(entriesData);
       } catch {
@@ -110,8 +117,8 @@ export default function TeamMemberDetails() {
   const totalPendingHours = pendingPto.reduce((sum, r) => sum + r.hours, 0);
 
   // Calculate time entry stats (last 30 days)
-  const totalWorkedHours = timeEntries.reduce((sum, e) => sum + e.workedHours, 0);
-  const totalPtoHours = timeEntries.reduce((sum, e) => sum + e.ptoHours, 0);
+  const totalWorkedHours = timeEntries.reduce((sum, e) => sum + (Number(e.workedHours) || 0), 0);
+  const totalPtoHours = timeEntries.reduce((sum, e) => sum + (Number(e.ptoHours) || 0), 0);
 
   if (loading) {
     return (
