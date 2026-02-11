@@ -225,20 +225,30 @@ export default function CalendarView() {
     }
   }, [showSubscribeModal, calendarToken, isLoadingToken]);
 
-  // Calendar feed URL - ensure it's always absolute
+  // Calendar feed URL - convert to webcal:// protocol for subscriptions
   const calendarFeedUrl = calendarToken 
-    ? `${getBaseUrl()}/api/calendar/feed/${calendarToken}/team.ics` 
+    ? (() => {
+        const baseUrl = getBaseUrl();
+        const fullUrl = `${baseUrl}/api/calendar/feed/${calendarToken}/team.ics`;
+        // Convert http:// to webcal:// and https:// to webcals:// for calendar subscriptions
+        if (fullUrl.startsWith('https://')) {
+          return fullUrl.replace('https://', 'webcals://');
+        } else if (fullUrl.startsWith('http://')) {
+          return fullUrl.replace('http://', 'webcal://');
+        }
+        return fullUrl;
+      })()
     : null;
 
   // Validate URL is absolute before using
-  if (calendarFeedUrl && !calendarFeedUrl.startsWith('http://') && !calendarFeedUrl.startsWith('https://')) {
+  if (calendarFeedUrl && !calendarFeedUrl.startsWith('http://') && !calendarFeedUrl.startsWith('https://') && !calendarFeedUrl.startsWith('webcal://') && !calendarFeedUrl.startsWith('webcals://')) {
     console.error('Invalid calendar URL (not absolute):', calendarFeedUrl);
   }
 
   // Copy URL and open Outlook calendar page for subscription
   const handleSubscribe = async (url: string, type: string) => {
-    // Validate URL is absolute
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    // Validate URL is absolute (accept webcal:// and webcals:// protocols)
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('webcal://') && !url.startsWith('webcals://')) {
       setCalendarTokenError(`Invalid calendar URL. Expected absolute URL but got: ${url}`);
       console.error('Invalid calendar URL (not absolute):', url);
       return;
