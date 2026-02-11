@@ -48,33 +48,141 @@ ORDER BY duplicate_count DESC
 LIMIT 20;
 
 -- =====================================================
--- STEP 2: Count records to be deleted (fast preview)
+-- STEP 2: Delete Duplicates (batched to avoid timeout)
 -- =====================================================
+-- Deletes in batches of 2000. Each batch is fast; run until no more deleted.
 
-SELECT '=== RECORDS TO BE DELETED (keeping lowest Id per UserId+DateOfLeave) ===' as Step;
+SELECT '=== DELETING DUPLICATE PTO REQUESTS (batched) ===' as Step;
 
-SELECT COUNT(*) as rows_to_delete
-FROM PtoRequests p1
-INNER JOIN PtoRequests p2
-    ON p1.UserId = p2.UserId
-   AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
-   AND p1.Id > p2.Id;
+-- Batch 1
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
 
--- =====================================================
--- STEP 3: Delete Duplicates
--- =====================================================
--- Keeps the row with the lowest Id for each (UserId, DateOfLeave).
--- Run this when ready to apply the cleanup.
+-- Batch 2
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
 
-SELECT '=== DELETING DUPLICATE PTO REQUESTS ===' as Step;
+-- Batch 3
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
 
-DELETE p1 FROM PtoRequests p1
-INNER JOIN PtoRequests p2
-    ON p1.UserId = p2.UserId
-   AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
-   AND p1.Id > p2.Id;
+-- Batch 4
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
 
-SELECT ROW_COUNT() as duplicate_rows_deleted;
+-- Batch 5
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
+
+-- Batch 6
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
+
+-- Batch 7
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
+
+-- Batch 8
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
+
+-- Batch 9
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
+
+-- Batch 10
+DELETE FROM PtoRequests WHERE Id IN (
+    SELECT Id FROM (
+        SELECT p1.Id FROM PtoRequests p1
+        INNER JOIN PtoRequests p2
+            ON p1.UserId = p2.UserId
+           AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+           AND p1.Id > p2.Id
+        LIMIT 2000
+    ) t
+);
+SELECT ROW_COUNT() as batch_deleted;
 
 -- =====================================================
 -- STEP 4: Verify Final State
