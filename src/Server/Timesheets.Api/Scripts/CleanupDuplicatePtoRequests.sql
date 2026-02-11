@@ -17,6 +17,11 @@
 
 USE afh_timesheets;
 
+-- Prevent query timeout when processing large tables
+SET SESSION max_execution_time = 0;
+SET SESSION net_read_timeout = 3600;
+SET SESSION net_write_timeout = 3600;
+
 -- =====================================================
 -- STEP 1: Analyze Current State
 -- =====================================================
@@ -43,35 +48,17 @@ ORDER BY duplicate_count DESC
 LIMIT 20;
 
 -- =====================================================
--- STEP 2: Preview Records to be Deleted
+-- STEP 2: Count records to be deleted (fast preview)
 -- =====================================================
 
 SELECT '=== RECORDS TO BE DELETED (keeping lowest Id per UserId+DateOfLeave) ===' as Step;
 
--- Show which rows will be kept (lowest Id) vs deleted
-SELECT
-    p.Id,
-    p.UserId,
-    p.DateOfLeave,
-    p.EndDate,
-    p.Hours,
-    p.Status,
-    p.RequestedAt,
-    CASE WHEN p.Id = (
-        SELECT MIN(p2.Id)
-        FROM PtoRequests p2
-        WHERE p2.UserId = p.UserId
-          AND DATE(p2.DateOfLeave) = DATE(p.DateOfLeave)
-    ) THEN 'KEEP' ELSE 'DELETE' END as action
-FROM PtoRequests p
-WHERE EXISTS (
-    SELECT 1
-    FROM PtoRequests p2
-    WHERE p2.UserId = p.UserId
-      AND DATE(p2.DateOfLeave) = DATE(p.DateOfLeave)
-      AND p2.Id < p.Id
-)
-ORDER BY p.UserId, p.DateOfLeave, p.Id;
+SELECT COUNT(*) as rows_to_delete
+FROM PtoRequests p1
+INNER JOIN PtoRequests p2
+    ON p1.UserId = p2.UserId
+   AND DATE(p1.DateOfLeave) = DATE(p2.DateOfLeave)
+   AND p1.Id > p2.Id;
 
 -- =====================================================
 -- STEP 3: Delete Duplicates
