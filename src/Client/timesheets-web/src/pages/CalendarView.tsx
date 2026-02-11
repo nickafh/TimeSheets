@@ -202,10 +202,9 @@ export default function CalendarView() {
     }
   }, [showSubscribeModal]);
 
-  // Calendar feed URLs — use token-based anonymous endpoints
-  const calendarBaseUrl = API_BASE_URL;
-  const teamCalendarUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/team.ics` : null;
-  const myCalendarUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/my.ics` : null;
+  // Calendar feed URL — use the current hostname so Outlook/Google can reach it
+  const calendarBaseUrl = API_BASE_URL !== "http://localhost:5150" ? API_BASE_URL : window.location.origin;
+  const calendarFeedUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/team.ics` : null;
 
   // Copy URL and open Outlook calendar page for subscription
   const handleSubscribe = async (url: string, type: string) => {
@@ -754,108 +753,25 @@ export default function CalendarView() {
             {/* Loading state */}
             {!calendarToken && (
               <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '14px' }}>
-                Loading calendar links...
+                Loading calendar link...
               </div>
             )}
 
-            {/* Team Calendar Section */}
-            {calendarToken && <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#002349', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Team Calendar
-              </h3>
-              <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '12px' }}>
-                Subscribe to see all company holidays and approved team time off.
-              </p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => teamCalendarUrl && handleSubscribe(teamCalendarUrl, 'team')}
-                  style={{
-                    flex: 1,
-                    backgroundColor: copied === 'team' ? '#22c55e' : '#002349',
-                    color: 'white',
-                    padding: '12px 16px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    border: 'none',
-                    borderRadius: '6px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    minWidth: 'fit-content',
-                  }}
-                >
-                  {copied === 'team' ? (
-                    <>
-                      <svg style={{ width: '18px', height: '18px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      URL Copied — Paste in Outlook
-                    </>
-                  ) : (
-                    <>
-                      <svg style={{ width: '18px', height: '18px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Add to Outlook
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => teamCalendarUrl && copyToClipboard(teamCalendarUrl, 'team-copy')}
-                  style={{
-                    backgroundColor: copied === 'team-copy' ? '#22c55e' : '#f1f5f9',
-                    color: copied === 'team-copy' ? 'white' : '#002349',
-                    padding: '12px 16px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  {copied === 'team-copy' ? (
-                    <>
-                      <svg style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <svg style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      Copy URL
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>}
-
-            {/* My Calendar Section */}
-            {myCalendarUrl && (
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#002349', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  My Calendar
-                </h3>
-                <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '12px' }}>
-                  Subscribe to see only holidays and your approved time off.
+            {/* Subscribe Section */}
+            {calendarFeedUrl && (
+              <>
+                <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px' }}>
+                  Subscribe to see all company holidays and approved team time off in Outlook or any calendar app.
                 </p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                   <button
-                    onClick={() => handleSubscribe(myCalendarUrl, 'my')}
+                    onClick={() => handleSubscribe(calendarFeedUrl, 'subscribe')}
                     style={{
                       flex: 1,
-                      backgroundColor: copied === 'my' ? '#22c55e' : '#C29B40',
+                      backgroundColor: copied === 'subscribe' ? '#22c55e' : '#002349',
                       color: 'white',
-                      padding: '12px 16px',
-                      fontSize: '13px',
+                      padding: '14px 16px',
+                      fontSize: '14px',
                       fontWeight: 600,
                       border: 'none',
                       borderRadius: '6px',
@@ -865,10 +781,9 @@ export default function CalendarView() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      minWidth: 'fit-content',
                     }}
                   >
-                    {copied === 'my' ? (
+                    {copied === 'subscribe' ? (
                       <>
                         <svg style={{ width: '18px', height: '18px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -885,12 +800,12 @@ export default function CalendarView() {
                     )}
                   </button>
                   <button
-                    onClick={() => myCalendarUrl && copyToClipboard(myCalendarUrl, 'my-copy')}
+                    onClick={() => copyToClipboard(calendarFeedUrl, 'copy')}
                     style={{
-                      backgroundColor: copied === 'my-copy' ? '#22c55e' : '#f1f5f9',
-                      color: copied === 'my-copy' ? 'white' : '#002349',
-                      padding: '12px 16px',
-                      fontSize: '13px',
+                      backgroundColor: copied === 'copy' ? '#22c55e' : '#f1f5f9',
+                      color: copied === 'copy' ? 'white' : '#002349',
+                      padding: '14px 16px',
+                      fontSize: '14px',
                       fontWeight: 600,
                       border: 'none',
                       borderRadius: '6px',
@@ -900,7 +815,7 @@ export default function CalendarView() {
                       gap: '6px',
                     }}
                   >
-                    {copied === 'my-copy' ? (
+                    {copied === 'copy' ? (
                       <>
                         <svg style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -917,26 +832,25 @@ export default function CalendarView() {
                     )}
                   </button>
                 </div>
-              </div>
-            )}
 
-            {/* Instructions */}
-            <div style={{
-              backgroundColor: '#f8fafc',
-              borderRadius: '8px',
-              padding: '16px',
-              marginTop: '8px',
-            }}>
-              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#002349', marginBottom: '12px' }}>
-                How to Subscribe
-              </h4>
-              <ol style={{ fontSize: '13px', color: '#64748b', margin: 0, paddingLeft: '20px', lineHeight: 1.6 }}>
-                <li>Click "Add to Outlook" — this copies the URL and opens Outlook</li>
-                <li>In Outlook, click "Subscribe from web" on the left panel</li>
-                <li>Paste the URL (Ctrl+V) and click Import</li>
-                <li>The calendar will automatically update with new events</li>
-              </ol>
-            </div>
+                {/* Instructions */}
+                <div style={{
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  padding: '16px',
+                }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#002349', marginBottom: '12px' }}>
+                    How to Subscribe
+                  </h4>
+                  <ol style={{ fontSize: '13px', color: '#64748b', margin: 0, paddingLeft: '20px', lineHeight: 1.6 }}>
+                    <li>Click "Add to Outlook" — this copies the URL and opens Outlook</li>
+                    <li>In Outlook, click "Subscribe from web" on the left panel</li>
+                    <li>Paste the URL (Ctrl+V) and click Import</li>
+                    <li>The calendar will automatically update with new events</li>
+                  </ol>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
