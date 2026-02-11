@@ -1605,7 +1605,9 @@ h1, h2, h3, h4 {
   display: block;
 }
 
-.timesheet-mobile-cards {
+.timesheet-mobile-cards,
+.timesheet-mobile-totals,
+.timesheet-mobile-actions {
   display: none;
 }
 
