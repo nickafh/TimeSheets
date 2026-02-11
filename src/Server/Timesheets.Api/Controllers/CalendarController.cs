@@ -76,8 +76,8 @@ public class CalendarController : ControllerBase
                     pto.Reason,
                     UserName = user.FirstName + " " + user.LastName,
                     user.Department,
-                    pto.CreatedDate,
-                    pto.LastModifiedDate
+                    pto.RequestedAt,
+                    pto.ApprovedDeniedAt
                 })
             .OrderBy(p => p.DateOfLeave)
             .ToListAsync();
@@ -123,10 +123,10 @@ public class CalendarController : ControllerBase
                 ? $"Department: {pto.Department ?? "Unknown"}"
                 : $"Reason: {pto.Reason}\\nDepartment: {pto.Department ?? "Unknown"}";
 
-            // Use LastModifiedDate for DTSTAMP and LAST-MODIFIED to help clients detect changes
-            var lastModified = pto.LastModifiedDate ?? pto.CreatedDate ?? DateTime.UtcNow;
+            // Use ApprovedDeniedAt for DTSTAMP/LAST-MODIFIED when approved; RequestedAt for CREATED
+            var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
             var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
-            var created = (pto.CreatedDate ?? DateTime.UtcNow).ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
 
             sb.AppendLine("BEGIN:VEVENT");
             sb.AppendLine($"UID:{uid}");
@@ -178,8 +178,8 @@ public class CalendarController : ControllerBase
                 p.EndDate,
                 p.Hours,
                 p.Reason,
-                p.CreatedDate,
-                p.LastModifiedDate
+                p.RequestedAt,
+                p.ApprovedDeniedAt
             })
             .OrderBy(p => p.DateOfLeave)
             .ToListAsync();
@@ -221,10 +221,10 @@ public class CalendarController : ControllerBase
             var uid = $"pto-{pto.Id}@afh-timesheets";
             var summary = $"Time Off ({pto.Hours}h)";
 
-            // Use LastModifiedDate for DTSTAMP and LAST-MODIFIED to help clients detect changes
-            var lastModified = pto.LastModifiedDate ?? pto.CreatedDate ?? DateTime.UtcNow;
+            // Use ApprovedDeniedAt for DTSTAMP/LAST-MODIFIED when approved; RequestedAt for CREATED
+            var lastModified = pto.ApprovedDeniedAt ?? pto.RequestedAt;
             var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
-            var created = (pto.CreatedDate ?? DateTime.UtcNow).ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            var created = pto.RequestedAt.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
 
             sb.AppendLine("BEGIN:VEVENT");
             sb.AppendLine($"UID:{uid}");
