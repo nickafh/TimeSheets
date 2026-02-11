@@ -66,12 +66,19 @@ public class CalendarController : ControllerBase
         var tokenUser = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
         if (tokenUser == null) return NotFound();
 
+        var today = DateTime.UtcNow.Date;
+        var startWindow = today.AddDays(-30);
+        var endWindow = today.AddMonths(18);
+        var currentYear = today.Year;
+
         var holidays = await _db.Holidays
+            .Where(h => h.HolidayDate.Year == currentYear || h.HolidayDate.Year == currentYear + 1)
             .OrderBy(h => h.HolidayDate)
             .ToListAsync();
 
         var approvedPtoRequests = await _db.PtoRequests
             .Where(p => p.Status == 1) // Approved only
+            .Where(p => (p.EndDate ?? p.DateOfLeave) >= startWindow && p.DateOfLeave <= endWindow)
             .Join(_db.Users,
                 pto => pto.UserId,
                 user => user.Id,
@@ -188,12 +195,19 @@ public class CalendarController : ControllerBase
         var user = await _db.Users.FirstOrDefaultAsync(u => u.CalendarToken == token);
         if (user == null) return NotFound();
 
+        var today = DateTime.UtcNow.Date;
+        var startWindow = today.AddDays(-30);
+        var endWindow = today.AddMonths(18);
+        var currentYear = today.Year;
+
         var holidays = await _db.Holidays
+            .Where(h => h.HolidayDate.Year == currentYear || h.HolidayDate.Year == currentYear + 1)
             .OrderBy(h => h.HolidayDate)
             .ToListAsync();
 
         var userPtoRequests = await _db.PtoRequests
             .Where(p => p.UserId == user.Id && p.Status == 1) // Approved only
+            .Where(p => (p.EndDate ?? p.DateOfLeave) >= startWindow && p.DateOfLeave <= endWindow)
             .Select(p => new {
                 p.Id,
                 p.DateOfLeave,
