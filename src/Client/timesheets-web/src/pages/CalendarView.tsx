@@ -202,9 +202,8 @@ export default function CalendarView() {
     }
   }, [showSubscribeModal]);
 
-  // Calendar feed URL — use the current hostname so Outlook/Google can reach it
-  const calendarBaseUrl = API_BASE_URL !== "http://localhost:5150" ? API_BASE_URL : window.location.origin;
-  const calendarFeedUrl = calendarToken ? `${calendarBaseUrl}/api/calendar/feed/${calendarToken}/team.ics` : null;
+  // Calendar feed URL
+  const calendarFeedUrl = calendarToken ? `${API_BASE_URL}/api/calendar/feed/${calendarToken}/team.ics` : null;
 
   // Copy URL and open Outlook calendar page for subscription
   const handleSubscribe = async (url: string, type: string) => {
