@@ -931,7 +931,7 @@ export default function CalendarView() {
                 </div>
 
                 {/* URL Display for Debugging */}
-                {process.env.NODE_ENV === 'development' && (
+                {import.meta.env.DEV && (
                   <div style={{
                     backgroundColor: '#f1f5f9',
                     borderRadius: '6px',
