@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TimeSheets.Api.Data;
 using TimeSheets.Api.Models;
 
@@ -60,6 +61,33 @@ public class UsersController : ControllerBase
             .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email, u.Role })
             .ToListAsync();
         return Ok(managers);
+    }
+
+    /// <summary>Get active direct reports for the current manager. Admin receives all active users.</summary>
+    [HttpGet("team")]
+    public async Task<IActionResult> GetMyTeam()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? "";
+        if (!int.TryParse(userIdClaim, out var currentUserId))
+            return Unauthorized();
+
+        IQueryable<User> query = _db.Users.Where(u => u.IsActive == 1);
+        if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var teamIds = _db.UserManagers
+                .Where(um => um.ManagerId == currentUserId)
+                .Select(um => um.UserId);
+            query = query.Where(u => teamIds.Contains(u.Id));
+        }
+
+        var users = await query
+            .OrderBy(u => u.LastName)
+            .ThenBy(u => u.FirstName)
+            .ToListAsync();
+
+        await PopulateManagerIds(users);
+        return Ok(users);
     }
 
     private async Task PopulateManagerIds(List<User> users)

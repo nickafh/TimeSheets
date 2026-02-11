@@ -353,6 +353,15 @@ export function fetchAllPtoRequests(): Promise<PtoRequestWithUserDto[]> {
   return getJson<PtoRequestWithUserDto[]>("/api/ptorequests/all");
 }
 
+export function fetchManagerPendingPtoRequests(): Promise<PtoRequestWithUserDto[]> {
+  return getJson<PtoRequestWithUserDto[]>("/api/ptorequests/manager/pending");
+}
+
+export function fetchManagerPtoHistory(status?: number): Promise<PtoRequestWithUserDto[]> {
+  const params = status !== undefined ? `?status=${status}` : "";
+  return getJson<PtoRequestWithUserDto[]>(`/api/ptorequests/manager/history${params}`);
+}
+
 export function fetchPendingPtoRequests(): Promise<PtoRequestWithUserDto[]> {
   return getJson<PtoRequestWithUserDto[]>("/api/ptorequests/pending");
 }
@@ -368,6 +377,10 @@ export function approvePtoRequest(id: number, approvedBy: number): Promise<void>
 
 export function denyPtoRequest(id: number, deniedBy: number, reason?: string): Promise<void> {
   return patchJson<void>(`/api/ptorequests/${id}/deny?deniedBy=${deniedBy}`, { reason });
+}
+
+export function cancelPtoRequest(id: number): Promise<void> {
+  return deleteJson<void>(`/api/ptorequests/${id}`);
 }
 
 // Notifications
@@ -466,6 +479,10 @@ export interface UserPtoSummary {
 // Fetch PTO requests for a specific user
 export function fetchUserPtoRequests(userId: number): Promise<PtoRequestWithUserDto[]> {
   return getJson<PtoRequestWithUserDto[]>(`/api/ptorequests/user/${userId}`);
+}
+
+export function fetchMyTeamUsers(): Promise<UserDto[]> {
+  return getJson<UserDto[]>("/api/users/team");
 }
 
 // Calculate PTO summary for a user using System Settings for allowances

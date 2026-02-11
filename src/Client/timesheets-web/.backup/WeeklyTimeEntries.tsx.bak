@@ -265,7 +265,7 @@ export default function WeeklyTimeEntries() {
   };
 
   return (
-    <div className="page-container">
+    <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', padding: '40px' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
@@ -313,7 +313,7 @@ export default function WeeklyTimeEntries() {
         marginBottom: '24px',
         overflow: 'hidden',
       }}>
-        <div className="controls-bar">
+        <div className="controls-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             {/* Week navigation */}
             <div style={{
@@ -534,7 +534,7 @@ export default function WeeklyTimeEntries() {
                 </div>
 
                 {/* Week grid */}
-                <div className="timesheet-week-table" style={{ overflowX: 'auto' }}>
+                <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#002349' }}>
@@ -761,87 +761,6 @@ export default function WeeklyTimeEntries() {
                       </tr>
                     </tbody>
                   </table>
-                </div>
-
-                {/* Mobile Card View - only visible on mobile */}
-                <div className="timesheet-mobile-cards">
-                  {week.days.map((day, dayIdx) => (
-                    <div
-                      key={day.date}
-                      className={`timesheet-day-card ${day.isWeekend ? 'timesheet-day-card--weekend' : ''}`}
-                    >
-                      <div className="timesheet-day-card__header">
-                        <span className="timesheet-day-card__date">
-                          {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </span>
-                        <span className="timesheet-day-card__day">{day.dayName}</span>
-                      </div>
-                      <div className="timesheet-day-card__body">
-                        <div className="timesheet-day-card__field">
-                          <span className="timesheet-day-card__label">Worked Hours</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            value={day.workedHours || ""}
-                            onChange={(e) => handleEntryChange(weekIdx, dayIdx, "workedHours", e.target.value)}
-                            placeholder="0"
-                            className="timesheet-day-card__input"
-                          />
-                        </div>
-                        <div className="timesheet-day-card__field">
-                          <span className="timesheet-day-card__label">PTO Hours</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            value={day.ptoHours || ""}
-                            onChange={(e) => handleEntryChange(weekIdx, dayIdx, "ptoHours", e.target.value)}
-                            placeholder="0"
-                            className="timesheet-day-card__input"
-                          />
-                        </div>
-                        <textarea
-                          rows={2}
-                          value={day.notes || ""}
-                          onChange={(e) => handleEntryChange(weekIdx, dayIdx, "notes", e.target.value)}
-                          placeholder="Notes..."
-                          className="timesheet-day-card__notes"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mobile Totals */}
-                <div className="timesheet-mobile-totals">
-                  <div className="timesheet-mobile-totals__item">
-                    <div className="timesheet-mobile-totals__value">{grandTotalWorked.toFixed(1)}</div>
-                    <div className="timesheet-mobile-totals__label">Hours Worked</div>
-                  </div>
-                  <div className="timesheet-mobile-totals__item">
-                    <div className="timesheet-mobile-totals__value">{grandTotalPto.toFixed(1)}</div>
-                    <div className="timesheet-mobile-totals__label">PTO Hours</div>
-                  </div>
-                </div>
-
-                {/* Mobile Action Buttons */}
-                <div className="timesheet-mobile-actions">
-                  <button
-                    type="button"
-                    onClick={() => handleFillStandardWeek(weekIdx)}
-                    className="btn btn-secondary"
-                  >
-                    Fill 8h M-F
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving || loading}
-                    className="btn btn-navy"
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </button>
                 </div>
               </div>
             );

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TimeSheets.Api.Data;
 using TimeSheets.Api.Models;
 using TimeSheets.Api.Services;
@@ -181,6 +182,51 @@ public class PtoRequestsController : ControllerBase
         return Ok(pendingRequests);
     }
 
+    // GET: api/ptorequests/manager/pending - Pending requests for the current manager's direct reports
+    [HttpGet("manager/pending")]
+    public async Task<IActionResult> GetManagerPending()
+    {
+        var (currentUserId, isAdmin) = GetCurrentUserContext();
+        if (currentUserId == null)
+            return Unauthorized();
+
+        IQueryable<PtoRequest> query = _db.PtoRequests.Where(pto => pto.Status == 0);
+
+        if (!isAdmin)
+        {
+            var teamIds = _db.UserManagers
+                .Where(um => um.ManagerId == currentUserId.Value)
+                .Select(um => um.UserId);
+            query = query.Where(pto => teamIds.Contains(pto.UserId));
+        }
+
+        var pendingRequests = await query
+            .Join(_db.Users,
+                pto => pto.UserId,
+                user => user.Id,
+                (pto, user) => new
+                {
+                    pto.Id,
+                    pto.UserId,
+                    UserName = $"{user.FirstName} {user.LastName}",
+                    user.Department,
+                    pto.DateOfLeave,
+                    pto.EndDate,
+                    pto.Hours,
+                    pto.Reason,
+                    pto.PtoTypeId,
+                    pto.Status,
+                    pto.RequestedAt,
+                    pto.ApprovedDeniedAt,
+                    pto.ApprovedDeniedBy,
+                    pto.DenyReason
+                })
+            .OrderBy(r => r.DateOfLeave)
+            .ToListAsync();
+
+        return Ok(pendingRequests);
+    }
+
     // GET: api/ptorequests/history - Get all PTO requests (all statuses) with user info
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory([FromQuery] int? status = null)
@@ -190,6 +236,56 @@ public class PtoRequestsController : ControllerBase
         if (status.HasValue)
         {
             query = query.Where(pto => pto.Status == status.Value);
+        }
+
+        var requests = await query
+            .Join(_db.Users,
+                pto => pto.UserId,
+                user => user.Id,
+                (pto, user) => new
+                {
+                    pto.Id,
+                    pto.UserId,
+                    UserName = $"{user.FirstName} {user.LastName}",
+                    user.Department,
+                    pto.DateOfLeave,
+                    pto.EndDate,
+                    pto.Hours,
+                    pto.Reason,
+                    pto.PtoTypeId,
+                    pto.Status,
+                    pto.RequestedAt,
+                    pto.ApprovedDeniedAt,
+                    pto.ApprovedDeniedBy,
+                    pto.DenyReason
+                })
+            .OrderByDescending(r => r.RequestedAt)
+            .ToListAsync();
+
+        return Ok(requests);
+    }
+
+    // GET: api/ptorequests/manager/history - PTO request history for the current manager's direct reports
+    [HttpGet("manager/history")]
+    public async Task<IActionResult> GetManagerHistory([FromQuery] int? status = null)
+    {
+        var (currentUserId, isAdmin) = GetCurrentUserContext();
+        if (currentUserId == null)
+            return Unauthorized();
+
+        IQueryable<PtoRequest> query = _db.PtoRequests;
+
+        if (status.HasValue)
+        {
+            query = query.Where(pto => pto.Status == status.Value);
+        }
+
+        if (!isAdmin)
+        {
+            var teamIds = _db.UserManagers
+                .Where(um => um.ManagerId == currentUserId.Value)
+                .Select(um => um.UserId);
+            query = query.Where(pto => teamIds.Contains(pto.UserId));
         }
 
         var requests = await query
@@ -266,6 +362,41 @@ public class PtoRequestsController : ControllerBase
         await _db.SaveChangesAsync();
         await TrySendPtoDecisionNotificationAsync(request, approved: false, denyReason: denyRequest.Reason);
         return Ok(request);
+    }
+
+    // DELETE: api/ptorequests/{id} - Cancel/delete a pending PTO request
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var request = await _db.PtoRequests.FindAsync(id);
+        if (request == null)
+            return NotFound();
+
+        if (request.Status != 0)
+            return BadRequest(new { message = "Only pending requests can be cancelled." });
+
+        var (currentUserId, isAdmin) = GetCurrentUserContext();
+        if (currentUserId == null)
+            return Unauthorized();
+
+        if (!isAdmin && request.UserId != currentUserId.Value)
+        {
+            var isManagerOfRequester = await _db.UserManagers.AnyAsync(
+                um => um.UserId == request.UserId && um.ManagerId == currentUserId.Value);
+            if (!isManagerOfRequester)
+                return Forbid();
+        }
+
+        _db.PtoRequests.Remove(request);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private (int? userId, bool isAdmin) GetCurrentUserContext()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? "";
+        return (int.TryParse(userIdClaim, out var userId) ? userId : null, string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task TrySendPtoRequestCreatedNotificationAsync(PtoRequest request)

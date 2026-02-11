@@ -1,14 +1,30 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useMemo } from "react";
+import { useAuth } from "../../auth/useAuth";
 
 const MobileBottomNav = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
-  const navItems = [
-    { to: "/dashboard", icon: "dashboard", label: "Dash" },
-    { to: "/calendar", icon: "calendar_month", label: "Calendar" },
-    { to: "/timeoff/requests", icon: "pending_actions", label: "Requests" },
-    { to: "/timesheets/weekly", icon: "schedule", label: "Time" },
-  ];
+  const navItems = useMemo(() => {
+    // Base items for all users
+    const items = [
+      { to: "/dashboard", icon: "dashboard", label: "Home" },
+      { to: "/timesheets/weekly", icon: "schedule", label: "Time" },
+      { to: "/timeoff/requests", icon: "pending_actions", label: "PTO" },
+    ];
+
+    // Role-specific fourth item
+    if (user?.role === "Manager") {
+      items.push({ to: "/manager/approve-pto", icon: "task_alt", label: "Approve" });
+    } else if (user?.role === "Admin") {
+      items.push({ to: "/admin/dashboard", icon: "admin_panel_settings", label: "Admin" });
+    } else {
+      items.push({ to: "/calendar", icon: "calendar_month", label: "Calendar" });
+    }
+
+    return items;
+  }, [user?.role]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");

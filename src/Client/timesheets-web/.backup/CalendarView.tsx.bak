@@ -275,7 +275,7 @@ export default function CalendarView() {
   };
 
   return (
-    <div className="page-container calendar-page">
+    <div className="calendar-page" style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' , padding: '40px'}}>
       {/* Header */}
       <div className="calendar-page__header" style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
