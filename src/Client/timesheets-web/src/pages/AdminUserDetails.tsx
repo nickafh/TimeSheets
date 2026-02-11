@@ -696,12 +696,12 @@ export default function AdminUserDetails() {
               <label style={labelStyle}>Department</label>
               {isEditing ? (
                 <select
-                  value={formData.department}
+                  value={formData.department ?? ""}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
                   <option value="">— Select —</option>
-                  {[...new Set([...departments, formData.department].filter(Boolean))].sort().map((d) => (
+                  {[...new Set([...departments, formData.department].filter((x): x is string => typeof x === "string"))].sort().map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
@@ -713,12 +713,12 @@ export default function AdminUserDetails() {
               <label style={labelStyle}>Category</label>
               {isEditing ? (
                 <select
-                  value={formData.category}
+                  value={formData.category ?? ""}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
                   <option value="">— Select —</option>
-                  {[...new Set([...categories, formData.category].filter(Boolean))].sort().map((c) => (
+                  {[...new Set([...categories, formData.category].filter((x): x is string => typeof x === "string"))].sort().map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
