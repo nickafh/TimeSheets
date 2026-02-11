@@ -333,6 +333,7 @@ public class PtoRequestsController : ControllerBase
         request.Status = 1; // Approved
         request.ApprovedDeniedAt = DateTime.Now;
         request.ApprovedDeniedBy = approvedBy;
+        request.LastModifiedDate = DateTime.UtcNow; // Update for calendar feed detection
 
         await _db.SaveChangesAsync();
         await TrySendPtoDecisionNotificationAsync(request, approved: true);
@@ -357,6 +358,7 @@ public class PtoRequestsController : ControllerBase
         request.Status = 2; // Denied
         request.ApprovedDeniedAt = DateTime.Now;
         request.ApprovedDeniedBy = deniedBy;
+        request.LastModifiedDate = DateTime.UtcNow; // Update for calendar feed detection
         request.DenyReason = denyRequest.Reason;
 
         await _db.SaveChangesAsync();

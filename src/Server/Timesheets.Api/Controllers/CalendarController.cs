@@ -75,7 +75,9 @@ public class CalendarController : ControllerBase
                     pto.Hours,
                     pto.Reason,
                     UserName = user.FirstName + " " + user.LastName,
-                    user.Department
+                    user.Department,
+                    pto.CreatedDate,
+                    pto.LastModifiedDate
                 })
             .OrderBy(p => p.DateOfLeave)
             .ToListAsync();
@@ -121,15 +123,24 @@ public class CalendarController : ControllerBase
                 ? $"Department: {pto.Department ?? "Unknown"}"
                 : $"Reason: {pto.Reason}\\nDepartment: {pto.Department ?? "Unknown"}";
 
+            // Use LastModifiedDate for DTSTAMP and LAST-MODIFIED to help clients detect changes
+            var lastModified = pto.LastModifiedDate ?? pto.CreatedDate ?? DateTime.UtcNow;
+            var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            var created = (pto.CreatedDate ?? DateTime.UtcNow).ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+
             sb.AppendLine("BEGIN:VEVENT");
             sb.AppendLine($"UID:{uid}");
+            sb.AppendLine($"DTSTAMP:{dtstamp}");
+            sb.AppendLine($"CREATED:{created}");
+            sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
             sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
             sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
             sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
             sb.AppendLine($"DESCRIPTION:{EscapeICalText(description)}");
             sb.AppendLine($"CATEGORIES:PTO,{EscapeICalText(pto.Department ?? "Unknown")}");
             sb.AppendLine("TRANSP:TRANSPARENT");
-            sb.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
+            sb.AppendLine($"SEQUENCE:0");
+            sb.AppendLine($"STATUS:CONFIRMED");
             sb.AppendLine("END:VEVENT");
         }
 
@@ -161,6 +172,15 @@ public class CalendarController : ControllerBase
 
         var userPtoRequests = await _db.PtoRequests
             .Where(p => p.UserId == user.Id && p.Status == 1) // Approved only
+            .Select(p => new {
+                p.Id,
+                p.DateOfLeave,
+                p.EndDate,
+                p.Hours,
+                p.Reason,
+                p.CreatedDate,
+                p.LastModifiedDate
+            })
             .OrderBy(p => p.DateOfLeave)
             .ToListAsync();
 
@@ -201,8 +221,16 @@ public class CalendarController : ControllerBase
             var uid = $"pto-{pto.Id}@afh-timesheets";
             var summary = $"Time Off ({pto.Hours}h)";
 
+            // Use LastModifiedDate for DTSTAMP and LAST-MODIFIED to help clients detect changes
+            var lastModified = pto.LastModifiedDate ?? pto.CreatedDate ?? DateTime.UtcNow;
+            var dtstamp = lastModified.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+            var created = (pto.CreatedDate ?? DateTime.UtcNow).ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
+
             sb.AppendLine("BEGIN:VEVENT");
             sb.AppendLine($"UID:{uid}");
+            sb.AppendLine($"DTSTAMP:{dtstamp}");
+            sb.AppendLine($"CREATED:{created}");
+            sb.AppendLine($"LAST-MODIFIED:{dtstamp}");
             sb.AppendLine($"DTSTART;VALUE=DATE:{dateStr}");
             sb.AppendLine($"DTEND;VALUE=DATE:{endDateStr}");
             sb.AppendLine($"SUMMARY:{EscapeICalText(summary)}");
@@ -212,7 +240,8 @@ public class CalendarController : ControllerBase
             }
             sb.AppendLine("CATEGORIES:PTO");
             sb.AppendLine("TRANSP:TRANSPARENT");
-            sb.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
+            sb.AppendLine($"SEQUENCE:0");
+            sb.AppendLine($"STATUS:CONFIRMED");
             sb.AppendLine("END:VEVENT");
         }
 
