@@ -12,11 +12,17 @@ namespace TimeSheets.Api.Controllers;
 public class CalendarController : ControllerBase
 {
     private readonly TimeSheetsDbContext _db;
+    private readonly ILogger<CalendarController> _logger;
 
-    public CalendarController(TimeSheetsDbContext db)
+    public CalendarController(TimeSheetsDbContext db, ILogger<CalendarController> logger)
     {
         _db = db;
+        _logger = logger;
     }
+
+    /// <summary>Valid range for all-day calendar dates; excludes corrupt DB values (e.g. 0000-00-00, MinValue).</summary>
+    private static bool IsValidAllDayDate(DateTime dt)
+        => dt.Year >= 1900 && dt.Year <= 2100;
 
     /// <summary>
     /// Returns the current user's calendar token (authenticated).
@@ -117,6 +123,14 @@ public class CalendarController : ControllerBase
         {
             var start = pto.DateOfLeave;
             var end = pto.EndDate ?? start;
+
+            if (!IsValidAllDayDate(start) || !IsValidAllDayDate(end) || end < start)
+            {
+                _logger.LogWarning("Skipping PTO {PtoId} - invalid dates: Start={Start} End={End}",
+                    pto.Id, start, end);
+                continue;
+            }
+
             var dateStr = start.ToString("yyyyMMdd");
             var endDateStr = end.AddDays(1).ToString("yyyyMMdd");
             var uid = $"pto-{pto.Id}@afh-timesheets";
@@ -224,6 +238,14 @@ public class CalendarController : ControllerBase
         {
             var start = pto.DateOfLeave;
             var end = pto.EndDate ?? start;
+
+            if (!IsValidAllDayDate(start) || !IsValidAllDayDate(end) || end < start)
+            {
+                _logger.LogWarning("Skipping PTO {PtoId} - invalid dates: Start={Start} End={End}",
+                    pto.Id, start, end);
+                continue;
+            }
+
             var dateStr = start.ToString("yyyyMMdd");
             var endDateStr = end.AddDays(1).ToString("yyyyMMdd");
             var uid = $"pto-{pto.Id}@afh-timesheets";
