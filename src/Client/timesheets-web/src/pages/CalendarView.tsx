@@ -226,13 +226,14 @@ export default function CalendarView() {
   }, [showSubscribeModal, calendarToken, isLoadingToken]);
 
   // Calendar feed URL - convert to webcal:// protocol for subscriptions
+  // Use webcal:// (not webcals://) for Outlook compatibility
   const calendarFeedUrl = calendarToken 
     ? (() => {
         const baseUrl = getBaseUrl();
         const fullUrl = `${baseUrl}/api/calendar/feed/${calendarToken}/team.ics`;
-        // Convert http:// to webcal:// and https:// to webcals:// for calendar subscriptions
+        // Use webcal:// for both http and https - Outlook works with webcal://
         if (fullUrl.startsWith('https://')) {
-          return fullUrl.replace('https://', 'webcals://');
+          return fullUrl.replace('https://', 'webcal://');
         } else if (fullUrl.startsWith('http://')) {
           return fullUrl.replace('http://', 'webcal://');
         }
