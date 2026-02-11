@@ -129,6 +129,8 @@ export default function CalendarView() {
   const [copied, setCopied] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(today));
   const [calendarToken, setCalendarToken] = useState<string | null>(null);
+  const [calendarTokenError, setCalendarTokenError] = useState<string | null>(null);
+  const [isLoadingToken, setIsLoadingToken] = useState(false);
 
   // Fetch holidays and PTO requests from API
   useEffect(() => {
@@ -195,37 +197,93 @@ export default function CalendarView() {
     setCurrentMonth(today.getMonth());
   };
 
+  // Helper to get base URL - ensures it's always absolute
+  const getBaseUrl = (): string => {
+    // Check if API_BASE_URL is set and valid
+    if (API_BASE_URL && (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://'))) {
+      return API_BASE_URL;
+    }
+    // Fallback to current origin if API_BASE_URL is not set or invalid
+    return window.location.origin;
+  };
+
   // Fetch calendar token when subscribe modal opens
   useEffect(() => {
-    if (showSubscribeModal && !calendarToken) {
-      fetchCalendarToken().then(setCalendarToken).catch(console.error);
+    if (showSubscribeModal && !calendarToken && !isLoadingToken) {
+      setIsLoadingToken(true);
+      setCalendarTokenError(null);
+      fetchCalendarToken()
+        .then((token) => {
+          setCalendarToken(token);
+          setIsLoadingToken(false);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch calendar token:', err);
+          setCalendarTokenError(err?.message || 'Failed to load calendar link. Please try again.');
+          setIsLoadingToken(false);
+        });
     }
-  }, [showSubscribeModal]);
+  }, [showSubscribeModal, calendarToken, isLoadingToken]);
 
-  // Calendar feed URL
-  const calendarFeedUrl = calendarToken ? `${API_BASE_URL}/api/calendar/feed/${calendarToken}/team.ics` : null;
+  // Calendar feed URL - ensure it's always absolute
+  const calendarFeedUrl = calendarToken 
+    ? `${getBaseUrl()}/api/calendar/feed/${calendarToken}/team.ics` 
+    : null;
+
+  // Validate URL is absolute before using
+  if (calendarFeedUrl && !calendarFeedUrl.startsWith('http://') && !calendarFeedUrl.startsWith('https://')) {
+    console.error('Invalid calendar URL (not absolute):', calendarFeedUrl);
+  }
 
   // Copy URL and open Outlook calendar page for subscription
   const handleSubscribe = async (url: string, type: string) => {
+    // Validate URL is absolute
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      setCalendarTokenError(`Invalid calendar URL. Expected absolute URL but got: ${url}`);
+      console.error('Invalid calendar URL (not absolute):', url);
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(url);
+      console.log('Copied calendar URL:', url); // Debug log
       setCopied(type);
       setTimeout(() => setCopied(null), 4000);
       // Open Outlook calendar "add calendar" page
       window.open('https://outlook.office.com/calendar/addcalendar', '_blank');
     } catch (err) {
       console.error('Failed to copy:', err);
+      setCalendarTokenError('Failed to copy URL to clipboard. Please try again.');
     }
   };
 
   const copyToClipboard = async (url: string, type: string) => {
+    // Validate URL is absolute
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      setCalendarTokenError(`Invalid calendar URL. Expected absolute URL but got: ${url}`);
+      console.error('Invalid calendar URL (not absolute):', url);
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(url);
+      console.log('Copied calendar URL:', url); // Debug log
       setCopied(type);
       setTimeout(() => setCopied(null), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      setCalendarTokenError('Failed to copy URL to clipboard. Please try again.');
     }
+  };
+
+  // Retry fetching calendar token
+  const retryFetchToken = () => {
+    setCalendarToken(null);
+    setCalendarTokenError(null);
+    setIsLoadingToken(false);
+    // Trigger useEffect by toggling modal state
+    setShowSubscribeModal(false);
+    setTimeout(() => setShowSubscribeModal(true), 100);
   };
 
   const days = getDaysInMonth(currentYear, currentMonth);
@@ -750,14 +808,54 @@ export default function CalendarView() {
             </div>
 
             {/* Loading state */}
-            {!calendarToken && (
+            {isLoadingToken && !calendarToken && (
               <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '14px' }}>
                 Loading calendar link...
               </div>
             )}
 
+            {/* Error state */}
+            {calendarTokenError && (
+              <div style={{
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#ef4444', fontSize: '20px', flexShrink: 0 }}>
+                    error
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, color: '#991b1b', marginBottom: '8px', fontSize: '14px' }}>
+                      Failed to Load Calendar Link
+                    </p>
+                    <p style={{ color: '#b91c1c', fontSize: '13px', marginBottom: '12px' }}>
+                      {calendarTokenError}
+                    </p>
+                    <button
+                      onClick={retryFetchToken}
+                      style={{
+                        backgroundColor: '#002349',
+                        color: 'white',
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Subscribe Section */}
-            {calendarFeedUrl && (
+            {calendarFeedUrl && !calendarTokenError && (
               <>
                 <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '16px' }}>
                   Subscribe to see all company holidays and approved team time off in Outlook or any calendar app.
@@ -832,6 +930,22 @@ export default function CalendarView() {
                   </button>
                 </div>
 
+                {/* URL Display for Debugging */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div style={{
+                    backgroundColor: '#f1f5f9',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                    color: '#475569',
+                    wordBreak: 'break-all',
+                  }}>
+                    <strong style={{ color: '#002349' }}>Calendar URL:</strong> {calendarFeedUrl}
+                  </div>
+                )}
+
                 {/* Instructions */}
                 <div style={{
                   backgroundColor: '#f8fafc',
@@ -849,6 +963,13 @@ export default function CalendarView() {
                   </ol>
                 </div>
               </>
+            )}
+
+            {/* Show message if no URL and no error (shouldn't happen, but good fallback) */}
+            {!calendarFeedUrl && !isLoadingToken && !calendarTokenError && (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '14px' }}>
+                Unable to generate calendar link. Please try again.
+              </div>
             )}
           </div>
         </div>
