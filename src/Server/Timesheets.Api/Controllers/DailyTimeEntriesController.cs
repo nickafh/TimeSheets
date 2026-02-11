@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,14 @@ public class DailyTimeEntriesController : ControllerBase
     public DailyTimeEntriesController(TimeSheetsDbContext db)
     {
         _db = db;
+    }
+
+    /// <summary>Gets the current user's ID and role. Returns (null, null) if not authenticated.</summary>
+    private (int? UserId, string Role) GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? "";
+        return (int.TryParse(userIdClaim, out var id) ? id : null, role);
     }
 
     [HttpGet]
@@ -54,12 +63,25 @@ public class DailyTimeEntriesController : ControllerBase
         return NoContent();
     }
 
-    // GET: api/dailytimeentries/team - Get time entries for all users in a date range
+    // GET: api/dailytimeentries/team - Get time entries for manager's team (or all users for Admin)
     [HttpGet("team")]
     public async Task<IActionResult> GetTeamEntries(DateTime start, DateTime end)
     {
+        var (currentUserId, role) = GetCurrentUser();
+        if (currentUserId == null) return Unauthorized();
+
+        IQueryable<int> allowedUserIds = _db.Users.Where(u => u.IsActive == 1).Select(u => u.Id);
+        if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var teamIds = _db.UserManagers
+                .Where(um => um.ManagerId == currentUserId)
+                .Select(um => um.UserId);
+            allowedUserIds = teamIds;
+        }
+
         var entries = await _db.DailyTimeEntries
             .Where(x => x.WorkDate >= start && x.WorkDate <= end)
+            .Where(x => allowedUserIds.Contains(x.UserId))
             .Join(_db.Users,
                 entry => entry.UserId,
                 user => user.Id,
@@ -82,14 +104,27 @@ public class DailyTimeEntriesController : ControllerBase
         return Ok(entries);
     }
 
-    // GET: api/dailytimeentries/summary - Get weekly summary for all users
+    // GET: api/dailytimeentries/summary - Get weekly summary for manager's team (or all users for Admin)
     [HttpGet("summary")]
     public async Task<IActionResult> GetWeeklySummary(DateTime weekStart)
     {
+        var (currentUserId, role) = GetCurrentUser();
+        if (currentUserId == null) return Unauthorized();
+
         var weekEnd = weekStart.AddDays(6);
+
+        IQueryable<int> allowedUserIds = _db.Users.Where(u => u.IsActive == 1).Select(u => u.Id);
+        if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var teamIds = _db.UserManagers
+                .Where(um => um.ManagerId == currentUserId)
+                .Select(um => um.UserId);
+            allowedUserIds = teamIds;
+        }
 
         var entries = await _db.DailyTimeEntries
             .Where(x => x.WorkDate >= weekStart && x.WorkDate <= weekEnd)
+            .Where(x => allowedUserIds.Contains(x.UserId))
             .Join(_db.Users.Where(u => u.IsActive == 1),
                 entry => entry.UserId,
                 user => user.Id,

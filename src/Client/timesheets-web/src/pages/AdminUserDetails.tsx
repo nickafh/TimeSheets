@@ -5,6 +5,7 @@ import {
   fetchUserPtoRequests,
   fetchDailyTimeEntries,
   fetchManagers,
+  fetchDepartmentAndCategoryLookup,
   updateUser,
   updateUserManagers,
   deactivateUser,
@@ -30,6 +31,8 @@ export default function AdminUserDetails() {
   const [success, setSuccess] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [managers, setManagers] = useState<ManagerOptionDto[]>([]);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [showSetPassword, setShowSetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -60,6 +63,10 @@ export default function AdminUserDetails() {
 
   useEffect(() => {
     fetchManagers().then(setManagers).catch(() => setManagers([]));
+    fetchDepartmentAndCategoryLookup().then(({ departments, categories }) => {
+      setDepartments(departments);
+      setCategories(categories);
+    }).catch(() => {});
   }, []);
 
   const loadData = async () => {
@@ -688,12 +695,16 @@ export default function AdminUserDetails() {
             <div>
               <label style={labelStyle}>Department</label>
               {isEditing ? (
-                <input
-                  type="text"
+                <select
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  style={inputStyle}
-                />
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value="">— Select —</option>
+                  {[...new Set([...departments, formData.department].filter(Boolean))].sort().map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               ) : (
                 <div style={{ fontSize: '15px', color: '#002349', fontWeight: 500, padding: '12px 0' }}>{user.department || '—'}</div>
               )}
@@ -701,12 +712,16 @@ export default function AdminUserDetails() {
             <div>
               <label style={labelStyle}>Category</label>
               {isEditing ? (
-                <input
-                  type="text"
+                <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  style={inputStyle}
-                />
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value="">— Select —</option>
+                  {[...new Set([...categories, formData.category].filter(Boolean))].sort().map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               ) : (
                 <div style={{ fontSize: '15px', color: '#002349', fontWeight: 500, padding: '12px 0' }}>{user.category || '—'}</div>
               )}

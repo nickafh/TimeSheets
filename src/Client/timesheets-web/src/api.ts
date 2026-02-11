@@ -226,6 +226,11 @@ export function fetchManagers(): Promise<ManagerOptionDto[]> {
   return getJson<ManagerOptionDto[]>("/api/users/managers");
 }
 
+/** Distinct department and category values for dropdowns. */
+export function fetchDepartmentAndCategoryLookup(): Promise<{ departments: string[]; categories: string[] }> {
+  return getJson<{ departments: string[]; categories: string[] }>("/api/users/lookup");
+}
+
 /** Set the list of managers for a user. Only Manager/Admin users can be assigned. */
 export function updateUserManagers(userId: number, managerIds: number[]): Promise<{ managerIds: number[] }> {
   return putJson<{ managerIds: number[] }>(`/api/users/${userId}/managers`, { managerIds });

@@ -50,6 +50,27 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+    /// <summary>Get distinct department and category values for dropdowns.</summary>
+    [HttpGet("lookup")]
+    public async Task<IActionResult> GetDepartmentAndCategoryLookup()
+    {
+        var departments = await _db.Users
+            .Where(u => u.Department != null && u.Department != "")
+            .Select(u => u.Department!)
+            .Distinct()
+            .OrderBy(d => d)
+            .ToListAsync();
+
+        var categories = await _db.Users
+            .Where(u => u.Category != null && u.Category != "")
+            .Select(u => u.Category!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync();
+
+        return Ok(new { departments, categories });
+    }
+
     /// <summary>Get users who can be assigned as managers (Role = Manager or Admin).</summary>
     [HttpGet("managers")]
     public async Task<IActionResult> GetManagers()

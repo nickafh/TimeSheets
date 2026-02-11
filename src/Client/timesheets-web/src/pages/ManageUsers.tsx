@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   fetchUsers,
   fetchManagers,
+  fetchDepartmentAndCategoryLookup,
   createUser,
   updateUser,
   updateUserManagers,
@@ -21,6 +22,8 @@ export default function ManageUsers() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [managers, setManagers] = useState<ManagerOptionDto[]>([]);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState<Partial<UserDto> & { managerIds?: number[] }>({
     firstName: "",
     lastName: "",
@@ -43,6 +46,10 @@ export default function ManageUsers() {
 
   useEffect(() => {
     fetchManagers().then(setManagers).catch(() => setManagers([]));
+    fetchDepartmentAndCategoryLookup().then(({ departments, categories }) => {
+      setDepartments(departments);
+      setCategories(categories);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -888,21 +895,29 @@ export default function ManageUsers() {
               <div className="form-grid-2" style={{ marginBottom: '16px' }}>
                 <div>
                   <label style={labelStyle}>Department</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.department || ""}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    style={inputStyle}
-                  />
+                    style={{ ...inputStyle, cursor: 'pointer' }}
+                  >
+                    <option value="">— Select —</option>
+                    {[...new Set([...departments, formData.department].filter(Boolean))].sort().map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label style={labelStyle}>Category</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.category || ""}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={inputStyle}
-                  />
+                    style={{ ...inputStyle, cursor: 'pointer' }}
+                  >
+                    <option value="">— Select —</option>
+                    {[...new Set([...categories, formData.category].filter(Boolean))].sort().map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   fetchWeeklySummary,
   fetchTeamTimeEntries,
-  fetchUsers,
+  fetchMyTeamUsers,
   type WeeklySummaryDto,
   type TeamTimeEntryDto,
   type UserDto,
@@ -43,7 +43,7 @@ export default function TeamTimeEntries() {
 
   const loadUsers = async () => {
     try {
-      const data = await fetchUsers();
+      const data = await fetchMyTeamUsers();
       setUsers(data);
     } catch (error) {
       console.error("Failed to load users:", error);
