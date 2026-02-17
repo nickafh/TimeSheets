@@ -253,6 +253,9 @@ export default function WeeklyTimeEntries() {
       const days = [...week.days];
       const day = { ...days[dayIndex] };
 
+      // Block edits to PTO/notes on days with approved PTO
+      if (day.approvedPto && (field === "ptoHours" || field === "notes")) return prev;
+
       if (field === "notes") {
         day.notes = value;
       } else {
@@ -284,7 +287,11 @@ export default function WeeklyTimeEntries() {
       const days = [...week.days];
 
       for (let i = 0; i < 5; i++) { // Mon-Fri
-        days[i] = { ...days[i], workedHours: 8, ptoHours: 0, dayType: "Work" };
+        if (days[i].approvedPto) {
+          days[i] = { ...days[i], workedHours: Math.max(0, 8 - days[i].ptoHours) };
+        } else {
+          days[i] = { ...days[i], workedHours: 8, ptoHours: 0, dayType: "Work" };
+        }
       }
 
       week.days = days;
