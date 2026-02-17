@@ -253,22 +253,18 @@ export default function WeeklyTimeEntries() {
       const days = [...week.days];
       const day = { ...days[dayIndex] };
 
-      // Block edits to PTO/notes on days with approved PTO
-      if (day.approvedPto && (field === "ptoHours" || field === "notes")) return prev;
+      // PTO and notes are always read-only (driven by approved PTO requests)
+      if (field === "ptoHours" || field === "notes") return prev;
 
-      if (field === "notes") {
-        day.notes = value;
-      } else {
-        const n = value === "" ? 0 : Number(value);
-        day[field] = Number.isFinite(n) ? n : 0;
+      const n = value === "" ? 0 : Number(value);
+      day.workedHours = Number.isFinite(n) ? n : 0;
 
-        // Auto-update dayType
-        const wh = day.workedHours;
-        const ph = day.ptoHours;
-        if (ph > 0 && wh > 0) day.dayType = "Mixed";
-        else if (ph > 0) day.dayType = "PTO";
-        else day.dayType = "Work";
-      }
+      // Auto-update dayType
+      const wh = day.workedHours;
+      const ph = day.ptoHours;
+      if (ph > 0 && wh > 0) day.dayType = "Mixed";
+      else if (ph > 0) day.dayType = "PTO";
+      else day.dayType = "Work";
 
       days[dayIndex] = day;
       week.days = days;
@@ -452,13 +448,18 @@ export default function WeeklyTimeEntries() {
               border: '1px solid rgba(194, 155, 64, 0.2)',
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>Hours</div>
+                <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>Total</div>
+                <div style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349', marginTop: '4px' }}>{(grandTotalWorked + grandTotalPto).toFixed(1)}</div>
+              </div>
+              <div style={{ height: '40px', width: '1px', backgroundColor: 'rgba(194, 155, 64, 0.3)' }}></div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>Worked</div>
                 <div style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349', marginTop: '4px' }}>{grandTotalWorked.toFixed(1)}</div>
               </div>
               <div style={{ height: '40px', width: '1px', backgroundColor: 'rgba(194, 155, 64, 0.3)' }}></div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>PTO</div>
-                <div style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349', marginTop: '4px' }}>{grandTotalPto.toFixed(1)}</div>
+                <div style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#2563eb', marginTop: '4px' }}>{grandTotalPto.toFixed(1)}</div>
               </div>
             </div>
           </div>
@@ -522,9 +523,10 @@ export default function WeeklyTimeEntries() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {weeks.map((week, weekIdx) => {
-            const isUnderHours = week.totalWorked < 40;
-            const isOverHours = week.totalWorked > 40;
-            const isPerfect = week.totalWorked === 40;
+            const totalCombined = week.totalWorked + week.totalPto;
+            const isUnderHours = totalCombined < 40;
+            const isOverHours = totalCombined > 40;
+            const isPerfect = totalCombined === 40;
 
             return (
               <div
@@ -552,7 +554,7 @@ export default function WeeklyTimeEntries() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                    {/* Week totals */}
+                    {/* Total hours (worked + PTO) */}
                     <div style={{
                       backgroundColor: isPerfect ? '#059669' : isUnderHours ? '#64748b' : '#dc2626',
                       color: 'white',
@@ -561,10 +563,10 @@ export default function WeeklyTimeEntries() {
                       fontSize: '13px',
                       fontWeight: 700,
                     }}>
-                      {week.totalWorked.toFixed(1)}h
+                      {totalCombined.toFixed(1)}h Total
                       {isPerfect && " ✓"}
-                      {isUnderHours && ` (-${(40 - week.totalWorked).toFixed(1)})`}
-                      {isOverHours && ` (+${(week.totalWorked - 40).toFixed(1)})`}
+                      {isUnderHours && ` (-${(40 - totalCombined).toFixed(1)})`}
+                      {isOverHours && ` (+${(totalCombined - 40).toFixed(1)})`}
                     </div>
 
                     {week.totalPto > 0 && (
@@ -733,26 +735,22 @@ export default function WeeklyTimeEntries() {
                         }}>
                           PTO
                         </td>
-                        {week.days.map((day, dayIdx) => (
+                        {week.days.map((day) => (
                           <td
                             key={day.date}
                             style={{
                               padding: '16px 12px',
                               textAlign: 'center',
-                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : 'white',
+                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : '#f8fafc',
                             }}
                           >
                             <input
                               type="number"
-                              min={0}
-                              step={0.5}
                               value={day.ptoHours || ""}
-                              onChange={(e) =>
-                                handleEntryChange(weekIdx, dayIdx, "ptoHours", e.target.value)
-                              }
-                              readOnly={day.approvedPto}
+                              readOnly
+                              tabIndex={-1}
                               placeholder="0"
-                              title={day.approvedPto ? "Set by approved PTO request" : undefined}
+                              title={day.approvedPto ? "Set by approved PTO request" : "PTO hours come from approved requests"}
                               style={{
                                 width: '100%',
                                 maxWidth: '70px',
@@ -760,12 +758,12 @@ export default function WeeklyTimeEntries() {
                                 textAlign: 'center',
                                 fontSize: '14px',
                                 fontWeight: 600,
-                                color: day.approvedPto ? '#2563eb' : '#1e293b',
+                                color: day.approvedPto ? '#2563eb' : '#94a3b8',
                                 border: `2px solid ${day.approvedPto ? '#93c5fd' : '#e2e8f0'}`,
                                 borderRadius: '6px',
                                 outline: 'none',
-                                backgroundColor: day.approvedPto ? '#eff6ff' : 'white',
-                                cursor: day.approvedPto ? 'not-allowed' : undefined,
+                                backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc',
+                                cursor: 'default',
                               }}
                             />
                           </td>
@@ -797,36 +795,34 @@ export default function WeeklyTimeEntries() {
                         }}>
                           Notes
                         </td>
-                        {week.days.map((day, dayIdx) => (
+                        {week.days.map((day) => (
                           <td
                             key={day.date}
                             style={{
                               padding: '16px 12px',
                               textAlign: 'center',
-                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : 'white',
+                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : '#f8fafc',
                               verticalAlign: 'top',
                             }}
                           >
                             <textarea
                               rows={2}
                               value={day.notes || ""}
-                              onChange={(e) =>
-                                handleEntryChange(weekIdx, dayIdx, "notes", e.target.value)
-                              }
-                              readOnly={day.approvedPto}
-                              placeholder={day.approvedPto ? "" : "Notes..."}
+                              readOnly
+                              tabIndex={-1}
+                              placeholder={day.approvedPto ? "" : "—"}
                               style={{
                                 width: '100%',
                                 minWidth: '80px',
                                 padding: '8px',
                                 fontSize: '12px',
-                                color: day.approvedPto ? '#2563eb' : '#1e293b',
+                                color: day.approvedPto ? '#2563eb' : '#94a3b8',
                                 border: `2px solid ${day.approvedPto ? '#93c5fd' : '#e2e8f0'}`,
                                 borderRadius: '6px',
                                 outline: 'none',
                                 resize: 'none',
                                 backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc',
-                                cursor: day.approvedPto ? 'not-allowed' : undefined,
+                                cursor: 'default',
                               }}
                             />
                           </td>
@@ -870,24 +866,22 @@ export default function WeeklyTimeEntries() {
                           </span>
                           <input
                             type="number"
-                            min={0}
-                            step={0.5}
                             value={day.ptoHours || ""}
-                            onChange={(e) => handleEntryChange(weekIdx, dayIdx, "ptoHours", e.target.value)}
-                            readOnly={day.approvedPto}
+                            readOnly
+                            tabIndex={-1}
                             placeholder="0"
                             className="timesheet-day-card__input"
-                            style={day.approvedPto ? { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#93c5fd' } : undefined}
+                            style={{ backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc', color: day.approvedPto ? '#2563eb' : '#94a3b8', borderColor: day.approvedPto ? '#93c5fd' : '#e2e8f0', cursor: 'default' }}
                           />
                         </div>
                         <textarea
                           rows={2}
                           value={day.notes || ""}
-                          onChange={(e) => handleEntryChange(weekIdx, dayIdx, "notes", e.target.value)}
-                          readOnly={day.approvedPto}
-                          placeholder={day.approvedPto ? "" : "Notes..."}
+                          readOnly
+                          tabIndex={-1}
+                          placeholder={day.approvedPto ? "" : "—"}
                           className="timesheet-day-card__notes"
-                          style={day.approvedPto ? { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#93c5fd' } : undefined}
+                          style={{ backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc', color: day.approvedPto ? '#2563eb' : '#94a3b8', borderColor: day.approvedPto ? '#93c5fd' : '#e2e8f0', cursor: 'default' }}
                         />
                       </div>
                     </div>
