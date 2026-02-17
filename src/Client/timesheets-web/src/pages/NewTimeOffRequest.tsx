@@ -289,7 +289,9 @@ const NewTimeOffRequest = () => {
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   required
+                  placeholder="mm/dd/yyyy"
                   style={inputStyle}
+                  className="date-input-styled"
                 />
                 {singleDayIsHoliday && (
                   <div style={{
@@ -318,7 +320,9 @@ const NewTimeOffRequest = () => {
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     required
+                    placeholder="mm/dd/yyyy"
                     style={inputStyle}
+                    className="date-input-styled"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -329,7 +333,9 @@ const NewTimeOffRequest = () => {
                     min={startDate || undefined}
                     onChange={(e) => setEndDate(e.target.value)}
                     required
+                    placeholder="mm/dd/yyyy"
                     style={inputStyle}
+                    className="date-input-styled"
                   />
                 </div>
               </div>

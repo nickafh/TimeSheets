@@ -2008,6 +2008,33 @@ h1, h2, h3, h4 {
   flex-wrap: wrap;
 }
 
+/* Date input styling for consistent cross-browser appearance */
+.date-input-styled {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+.date-input-styled::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+/* Show placeholder text on iOS/Safari when no value is selected */
+.date-input-styled:not(:valid)::-webkit-datetime-edit {
+  color: transparent;
+}
+
+.date-input-styled:not(:valid)::before {
+  content: attr(placeholder);
+  color: #94a3b8;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   .date-range-fields {
     flex-direction: column;
@@ -2028,12 +2055,6 @@ h1, h2, h3, h4 {
     min-width: 0;
     min-height: 48px;
     line-height: 1.5;
-    -webkit-min-logical-height: 48px;
-  }
-
-  .pto-form input[type="date"]::-webkit-date-and-time-value {
-    text-align: left;
-    padding: 0;
   }
 
   .request-summary-fields {
