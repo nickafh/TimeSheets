@@ -6,10 +6,12 @@ import {
   fetchHolidays,
   fetchEarlyClosures,
   fetchUserPtoSummary,
+  fetchDailyTimeEntries,
   type NotificationDto,
   type HolidayDto,
   type EarlyClosureDto,
   type UserPtoSummary,
+  type DailyTimeEntryDto,
 } from "../api";
 
 const Dashboard = () => {
@@ -18,16 +20,34 @@ const Dashboard = () => {
   const [holidays, setHolidays] = useState<HolidayDto[]>([]);
   const [closures, setClosures] = useState<EarlyClosureDto[]>([]);
   const [ptoSummary, setPtoSummary] = useState<UserPtoSummary | null>(null);
+  const [weekEntries, setWeekEntries] = useState<DailyTimeEntryDto[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
   const [loadingHolidays, setLoadingHolidays] = useState(true);
   const [loadingPto, setLoadingPto] = useState(true);
+  const [loadingWeek, setLoadingWeek] = useState(true);
 
   const currentYear = new Date().getFullYear();
+
+  // Calculate current week (Monday–Friday)
+  const getWeekRange = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun, 1=Mon, ...
+    const diffToMon = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMon);
+    const friday = new Date(monday);
+    friday.setDate(monday.getDate() + 4);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    return { start: fmt(monday), end: fmt(friday), monday, friday };
+  };
+
+  const weekRange = getWeekRange();
 
   useEffect(() => {
     loadNotifications();
     loadHolidaysAndClosures();
     loadPtoSummary();
+    loadWeekEntries();
   }, [user?.id]);
 
   const loadNotifications = async () => {
@@ -70,6 +90,26 @@ const Dashboard = () => {
       setLoadingPto(false);
     }
   };
+
+  const loadWeekEntries = async () => {
+    if (!user?.id) return;
+    try {
+      setLoadingWeek(true);
+      const entries = await fetchDailyTimeEntries(user.id, weekRange.start, weekRange.end);
+      setWeekEntries(entries);
+    } catch (error) {
+      console.error("Failed to load week entries:", error);
+    } finally {
+      setLoadingWeek(false);
+    }
+  };
+
+  const totalWorked = weekEntries.reduce((sum, e) => sum + e.workedHours, 0);
+  const totalPto = weekEntries.reduce((sum, e) => sum + e.ptoHours, 0);
+  const totalLogged = totalWorked + totalPto;
+  const weeklyTarget = 40;
+  const remaining = Math.max(0, weeklyTarget - totalLogged);
+  const progressPct = Math.min(100, (totalLogged / weeklyTarget) * 100);
 
   const currentMonth = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
@@ -137,19 +177,73 @@ const Dashboard = () => {
         {/* This Week's Hours */}
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{ padding: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>This Week's Hours</h3>
               <span className="material-symbols-outlined" style={{ color: '#C29B40', fontSize: '28px', opacity: 0.5 }}>schedule</span>
             </div>
-            <div style={{ borderLeft: '3px solid #002349', paddingLeft: '20px', paddingTop: '12px', paddingBottom: '12px' }}>
-              <p style={{ fontSize: '14px', color: '#666666', lineHeight: 1.7, fontStyle: 'italic' }}>
-                Total hours worked and remaining hours will appear here once the backend integration is complete.
-              </p>
-            </div>
+            <p style={{ fontSize: '13px', color: '#666666', marginBottom: '24px' }}>
+              {weekRange.monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – {weekRange.friday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+            {loadingWeek ? (
+              <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+            ) : (
+              <>
+                {/* Big number */}
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <p style={{ fontSize: '48px', fontFamily: "'Playfair Display', serif", color: '#002349', lineHeight: 1 }}>
+                    {totalLogged.toFixed(1)}
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#666666', marginTop: '4px' }}>of {weeklyTarget} hours</p>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '24px' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${progressPct}%`,
+                    backgroundColor: progressPct >= 100 ? '#059669' : '#C29B40',
+                    borderRadius: '4px',
+                    transition: 'width 0.3s ease',
+                  }} />
+                </div>
+
+                {/* Stat boxes */}
+                <div className="pto-overview-stats">
+                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
+                      Worked
+                    </p>
+                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                      {totalWorked.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
+                    </p>
+                  </div>
+                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
+                      PTO
+                    </p>
+                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                      {totalPto.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
+                    </p>
+                  </div>
+                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
+                      Remaining
+                    </p>
+                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: remaining > 0 ? '#C29B40' : '#059669' }}>
+                      {remaining.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <div style={{ padding: '16px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#999999', fontWeight: 700 }}>Status</span>
-            <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#C29B40', fontWeight: 700 }}>Pending Connection</span>
+            <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
+              {weekEntries.length} of 5 days logged
+            </span>
+            <Link to="/time" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
+              Enter Time
+            </Link>
           </div>
         </div>
 
