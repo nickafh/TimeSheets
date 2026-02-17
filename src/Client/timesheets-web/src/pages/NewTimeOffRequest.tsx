@@ -239,7 +239,6 @@ const NewTimeOffRequest = () => {
         backgroundColor: 'white',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
-        overflow: 'hidden',
         maxWidth: '600px',
         margin: '0 auto',
       }}>
