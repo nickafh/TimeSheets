@@ -188,16 +188,15 @@ const Dashboard = () => {
               <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
             ) : (
               <>
-                {/* Big number */}
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                  <p style={{ fontSize: '48px', fontFamily: "'Playfair Display', serif", color: '#002349', lineHeight: 1 }}>
-                    {totalLogged.toFixed(1)}
-                  </p>
-                  <p style={{ fontSize: '13px', color: '#666666', marginTop: '4px' }}>of {weeklyTarget} hours</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                    {totalLogged.toFixed(1)}<span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}> / {weeklyTarget}h</span>
+                  </span>
+                  <span style={{ fontSize: '13px', color: progressPct >= 100 ? '#059669' : '#666666', fontWeight: 600 }}>
+                    {progressPct >= 100 ? 'Complete' : `${remaining.toFixed(1)}h remaining`}
+                  </span>
                 </div>
-
-                {/* Progress bar */}
-                <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '24px' }}>
+                <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{
                     height: '100%',
                     width: `${progressPct}%`,
@@ -206,34 +205,6 @@ const Dashboard = () => {
                     transition: 'width 0.3s ease',
                   }} />
                 </div>
-
-                {/* Stat boxes */}
-                <div className="pto-overview-stats">
-                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
-                      Worked
-                    </p>
-                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
-                      {totalWorked.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
-                    </p>
-                  </div>
-                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
-                      PTO
-                    </p>
-                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
-                      {totalPto.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
-                    </p>
-                  </div>
-                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '4px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '6px' }}>
-                      Remaining
-                    </p>
-                    <p style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: remaining > 0 ? '#C29B40' : '#059669' }}>
-                      {remaining.toFixed(1)}<span style={{ fontSize: '12px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>h</span>
-                    </p>
-                  </div>
-                </div>
               </>
             )}
           </div>
@@ -241,7 +212,7 @@ const Dashboard = () => {
             <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
               {weekEntries.length} of 5 days logged
             </span>
-            <Link to="/time" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
+            <Link to="/timesheets/weekly" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
               Enter Time
             </Link>
           </div>
