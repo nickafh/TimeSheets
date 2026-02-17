@@ -2019,6 +2019,15 @@ h1, h2, h3, h4 {
     width: 100%;
   }
 
+  .pto-form {
+    padding: 20px !important;
+  }
+
+  .pto-form input[type="date"] {
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .request-summary-fields {
     gap: 16px;
   }
