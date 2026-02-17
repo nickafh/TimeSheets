@@ -1,10 +1,11 @@
 // src/pages/WeeklyTimeEntries.tsx
 
 import { useEffect, useMemo, useState } from "react";
-import type { DailyTimeEntryDto } from "../api";
+import type { DailyTimeEntryDto, PtoRequestWithUserDto } from "../api";
 import {
   fetchDailyTimeEntries,
   saveDailyTimeEntriesBulk,
+  fetchUserPtoRequests,
 } from "../api";
 import { useAuth } from "../auth/useAuth";
 
@@ -17,6 +18,7 @@ interface WeekEntry {
   id?: number;
   isWeekend: boolean;
   dayName: string;
+  approvedPto: boolean;
 }
 
 interface WeekData {
@@ -73,6 +75,7 @@ export default function WeeklyTimeEntries() {
   const weeksToShow = 1; // Always show 1 week at a time
 
   const [weeks, setWeeks] = useState<WeekData[]>([]);
+  const [approvedPtoRequests, setApprovedPtoRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
@@ -95,6 +98,59 @@ export default function WeeklyTimeEntries() {
       setError("");
     }
   }, [authUser]);
+
+  // Load approved PTO requests for this user
+  useEffect(() => {
+    if (!selectedUserId) return;
+    fetchUserPtoRequests(selectedUserId)
+      .then((reqs) => setApprovedPtoRequests(reqs.filter((r) => r.status === 1)))
+      .catch(() => {});
+  }, [selectedUserId]);
+
+  // Build a set of dates with approved PTO and a map of date -> { hours, reason, ptoTypeName }
+  const approvedPtoByDate = useMemo(() => {
+    const PTO_TYPE_NAMES: Record<number, string> = {
+      1: "PTO", 2: "Jury Duty", 3: "Volunteer", 4: "Bereavement", 5: "Leave",
+    };
+    const map = new Map<string, { hours: number; note: string }>();
+    for (const req of approvedPtoRequests) {
+      const startStr = req.dateOfLeave.slice(0, 10);
+      const endStr = req.endDate ? req.endDate.slice(0, 10) : startStr;
+      const start = new Date(startStr + "T00:00:00");
+      const end = new Date(endStr + "T00:00:00");
+      const typeName = PTO_TYPE_NAMES[req.ptoTypeId] || "PTO";
+
+      if (startStr === endStr) {
+        // Single day – use exact hours from request
+        const note = `Approved ${typeName}${req.reason ? ` – ${req.reason}` : ""}`;
+        const existing = map.get(startStr);
+        map.set(startStr, {
+          hours: (existing?.hours || 0) + req.hours,
+          note: existing ? `${existing.note}; ${note}` : note,
+        });
+      } else {
+        // Date range – count working days and distribute hours evenly
+        let workDays = 0;
+        for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+          const dow = cur.getDay();
+          if (dow !== 0 && dow !== 6) workDays++;
+        }
+        const hoursPerDay = workDays > 0 ? req.hours / workDays : req.hours;
+        const note = `Approved ${typeName}${req.reason ? ` – ${req.reason}` : ""}`;
+        for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+          const dow = cur.getDay();
+          if (dow === 0 || dow === 6) continue;
+          const ds = toDateOnlyString(cur);
+          const existing = map.get(ds);
+          map.set(ds, {
+            hours: (existing?.hours || 0) + hoursPerDay,
+            note: existing ? `${existing.note}; ${note}` : note,
+          });
+        }
+      }
+    }
+    return map;
+  }, [approvedPtoRequests]);
 
   // Load time entries
   useEffect(() => {
@@ -131,16 +187,21 @@ export default function WeeklyTimeEntries() {
             const date = addDays(weekMonday, d);
             const dateStr = toDateOnlyString(date);
             const existing = byDate.get(dateStr);
+            const approvedPto = approvedPtoByDate.get(dateStr);
+
+            const ptoHours = approvedPto ? approvedPto.hours : (existing ? Number(existing.ptoHours) || 0 : 0);
+            const notes = approvedPto ? approvedPto.note : (existing?.notes || "");
 
             days.push({
               date: dateStr,
               workedHours: existing ? Number(existing.workedHours) || 0 : 0,
-              ptoHours: existing ? Number(existing.ptoHours) || 0 : 0,
-              dayType: existing?.dayType || "Work",
-              notes: existing?.notes || "",
+              ptoHours,
+              dayType: existing?.dayType || (approvedPto ? "PTO" : "Work"),
+              notes,
               id: existing?.id,
               isWeekend: isWeekend(dateStr),
               dayName: getDayName(dateStr),
+              approvedPto: !!approvedPto,
             });
           }
 
@@ -164,7 +225,7 @@ export default function WeeklyTimeEntries() {
         setLoading(false);
       }
     })();
-  }, [selectedUserId, currentMonday, weeksToShow]);
+  }, [selectedUserId, currentMonday, weeksToShow, approvedPtoByDate]);
 
   // Navigation
   const handlePrevWeek = () => {
@@ -671,7 +732,7 @@ export default function WeeklyTimeEntries() {
                             style={{
                               padding: '16px 12px',
                               textAlign: 'center',
-                              backgroundColor: day.isWeekend ? '#fafafa' : 'white',
+                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : 'white',
                             }}
                           >
                             <input
@@ -682,7 +743,9 @@ export default function WeeklyTimeEntries() {
                               onChange={(e) =>
                                 handleEntryChange(weekIdx, dayIdx, "ptoHours", e.target.value)
                               }
+                              readOnly={day.approvedPto}
                               placeholder="0"
+                              title={day.approvedPto ? "Set by approved PTO request" : undefined}
                               style={{
                                 width: '100%',
                                 maxWidth: '70px',
@@ -690,10 +753,12 @@ export default function WeeklyTimeEntries() {
                                 textAlign: 'center',
                                 fontSize: '14px',
                                 fontWeight: 600,
-                                color: '#1e293b',
-                                border: '2px solid #e2e8f0',
+                                color: day.approvedPto ? '#2563eb' : '#1e293b',
+                                border: `2px solid ${day.approvedPto ? '#93c5fd' : '#e2e8f0'}`,
                                 borderRadius: '6px',
                                 outline: 'none',
+                                backgroundColor: day.approvedPto ? '#eff6ff' : 'white',
+                                cursor: day.approvedPto ? 'not-allowed' : undefined,
                               }}
                             />
                           </td>
@@ -731,7 +796,7 @@ export default function WeeklyTimeEntries() {
                             style={{
                               padding: '16px 12px',
                               textAlign: 'center',
-                              backgroundColor: day.isWeekend ? '#fafafa' : 'white',
+                              backgroundColor: day.isWeekend ? '#fafafa' : day.approvedPto ? '#eff6ff' : 'white',
                               verticalAlign: 'top',
                             }}
                           >
@@ -741,18 +806,20 @@ export default function WeeklyTimeEntries() {
                               onChange={(e) =>
                                 handleEntryChange(weekIdx, dayIdx, "notes", e.target.value)
                               }
-                              placeholder="Notes..."
+                              readOnly={day.approvedPto}
+                              placeholder={day.approvedPto ? "" : "Notes..."}
                               style={{
                                 width: '100%',
                                 minWidth: '80px',
                                 padding: '8px',
                                 fontSize: '12px',
-                                color: '#1e293b',
-                                border: '2px solid #e2e8f0',
+                                color: day.approvedPto ? '#2563eb' : '#1e293b',
+                                border: `2px solid ${day.approvedPto ? '#93c5fd' : '#e2e8f0'}`,
                                 borderRadius: '6px',
                                 outline: 'none',
                                 resize: 'none',
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc',
+                                cursor: day.approvedPto ? 'not-allowed' : undefined,
                               }}
                             />
                           </td>
@@ -790,23 +857,30 @@ export default function WeeklyTimeEntries() {
                           />
                         </div>
                         <div className="timesheet-day-card__field">
-                          <span className="timesheet-day-card__label">PTO Hours</span>
+                          <span className="timesheet-day-card__label">
+                            PTO Hours
+                            {day.approvedPto && <span style={{ color: '#2563eb', fontSize: '10px', marginLeft: '6px' }}>APPROVED</span>}
+                          </span>
                           <input
                             type="number"
                             min={0}
                             step={0.5}
                             value={day.ptoHours || ""}
                             onChange={(e) => handleEntryChange(weekIdx, dayIdx, "ptoHours", e.target.value)}
+                            readOnly={day.approvedPto}
                             placeholder="0"
                             className="timesheet-day-card__input"
+                            style={day.approvedPto ? { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#93c5fd' } : undefined}
                           />
                         </div>
                         <textarea
                           rows={2}
                           value={day.notes || ""}
                           onChange={(e) => handleEntryChange(weekIdx, dayIdx, "notes", e.target.value)}
-                          placeholder="Notes..."
+                          readOnly={day.approvedPto}
+                          placeholder={day.approvedPto ? "" : "Notes..."}
                           className="timesheet-day-card__notes"
+                          style={day.approvedPto ? { backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#93c5fd' } : undefined}
                         />
                       </div>
                     </div>
