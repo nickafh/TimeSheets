@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { createPtoRequest, fetchHolidays } from "../api";
 import type { HolidayDto } from "../api";
+import DatePicker from "../components/DatePicker";
 
 const PTO_TYPE_TO_ID: Record<string, number> = {
   "Paid Time Off": 1,
@@ -284,14 +285,11 @@ const NewTimeOffRequest = () => {
             {mode === "one" ? (
               <div>
                 <label style={labelStyle}>Date</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
+                  onChange={setStartDate}
+                  holidays={holidayMap}
                   placeholder="mm/dd/yyyy"
-                  style={inputStyle}
-                  className="date-input-styled"
                 />
                 {singleDayIsHoliday && (
                   <div style={{
@@ -315,27 +313,21 @@ const NewTimeOffRequest = () => {
               <div className="date-range-fields">
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>Start Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
+                    onChange={setStartDate}
+                    holidays={holidayMap}
                     placeholder="mm/dd/yyyy"
-                    style={inputStyle}
-                    className="date-input-styled"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>End Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={endDate}
+                    onChange={setEndDate}
+                    holidays={holidayMap}
                     min={startDate || undefined}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    required
                     placeholder="mm/dd/yyyy"
-                    style={inputStyle}
-                    className="date-input-styled"
                   />
                 </div>
               </div>

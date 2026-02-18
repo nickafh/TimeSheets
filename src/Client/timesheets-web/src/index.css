@@ -2829,6 +2829,27 @@ h1, h2, h3, h4 {
 /* END MOBILE UX FIXES */
 
 /* ======================
+   DATEPICKER
+   ====================== */
+
+.datepicker-day-hover:hover {
+  background: rgba(194, 155, 64, 0.12) !important;
+}
+
+@media (max-width: 768px) {
+  .datepicker-dropdown {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+/* ======================
    ISSUE 16: ADMIN PAGES - MOBILE
    ====================== */
 
