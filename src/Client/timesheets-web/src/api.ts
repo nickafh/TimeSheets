@@ -48,6 +48,8 @@ export interface UserDto {
   isPartTime: number; // 1/0
   isIntern: number; // 1/0
   role: string; // Employee, Manager, Admin
+  payType: string; // "Salary" | "Hourly"
+  exemptionStatus: string; // "Exempt" | "NonExempt"
 }
 
 export interface ManagerOptionDto {
@@ -528,6 +530,8 @@ export interface AuthUser {
   email: string;
   name: string;
   role: string;
+  payType: string;
+  exemptionStatus: string;
 }
 
 export interface LoginResponse {

@@ -140,6 +140,8 @@ export default function ManageUsers() {
           isPartTime: formData.isPartTime || 0,
           isIntern: formData.isIntern || 0,
           role: formData.role || "Employee",
+          payType: "Salary",
+          exemptionStatus: "Exempt",
         });
         await updateUserManagers(created.id, formData.managerIds ?? []);
       }

@@ -14,6 +14,8 @@ interface User {
   email: string;
   name: string;
   role: UserRole;
+  payType: string;
+  exemptionStatus: string;
 }
 
 interface AuthContextValue {
