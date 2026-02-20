@@ -6,8 +6,10 @@ import {
   fetchDailyTimeEntries,
   saveDailyTimeEntriesBulk,
   fetchUserPtoRequests,
+  getSystemSettings,
 } from "../api";
 import { useAuth } from "../auth/useAuth";
+import { getWeekStart, addDays, toDateOnlyString, getDayName, formatWeekLabel } from "../utils/dateUtils";
 
 interface WeekEntry {
   date: string;
@@ -30,35 +32,6 @@ interface WeekData {
   totalPto: number;
 }
 
-function toDateOnlyString(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function addDays(d: Date, days: number): Date {
-  const copy = new Date(d);
-  copy.setDate(copy.getDate() + days);
-  return copy;
-}
-
-function getMonday(d: Date): Date {
-  const day = d.getDay();
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - ((day + 6) % 7));
-  return monday;
-}
-
-function formatWeekLabel(monday: Date): string {
-  const sunday = addDays(monday, 6);
-  const monthStart = monday.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const monthEnd = sunday.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  return `${monthStart} - ${monthEnd}`;
-}
-
-function getDayName(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString(undefined, { weekday: "short" });
-}
-
 function isWeekend(dateStr: string): boolean {
   const d = new Date(dateStr + "T00:00:00");
   const day = d.getDay();
@@ -70,8 +43,11 @@ export default function WeeklyTimeEntries() {
   const { user: authUser } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-  // Start with current week's Monday
-  const [currentMonday, setCurrentMonday] = useState<Date>(() => getMonday(today));
+  // Dynamic work week start day from SystemSettings (0=Sun, 1=Mon, ..., 6=Sat)
+  const [weekStartDay, setWeekStartDay] = useState<number>(1); // default Monday
+
+  // Start with current week start (recalculated when weekStartDay changes)
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(today, 1));
   const weeksToShow = 1; // Always show 1 week at a time
 
   const [weeks, setWeeks] = useState<WeekData[]>([]);
@@ -90,6 +66,18 @@ export default function WeeklyTimeEntries() {
     () => weeks.reduce((sum, w) => sum + w.totalPto, 0),
     [weeks]
   );
+
+  // Fetch system settings for work week start day
+  useEffect(() => {
+    getSystemSettings()
+      .then((settings) => setWeekStartDay(settings.workWeekStartDay))
+      .catch(() => {}); // fallback to default Monday
+  }, []);
+
+  // Re-compute week start when weekStartDay changes
+  useEffect(() => {
+    setCurrentWeekStart((prev) => getWeekStart(prev, weekStartDay));
+  }, [weekStartDay]);
 
   // Select the authenticated user directly to avoid cross-user fallback behavior
   useEffect(() => {
@@ -163,8 +151,8 @@ export default function WeeklyTimeEntries() {
 
       try {
         // Calculate date range for all weeks
-        const startDate = toDateOnlyString(currentMonday);
-        const endDate = toDateOnlyString(addDays(currentMonday, weeksToShow * 7 - 1));
+        const startDate = toDateOnlyString(currentWeekStart);
+        const endDate = toDateOnlyString(addDays(currentWeekStart, weeksToShow * 7 - 1));
 
         const apiEntries = await fetchDailyTimeEntries(
           selectedUserId,
@@ -180,11 +168,11 @@ export default function WeeklyTimeEntries() {
         const weeksData: WeekData[] = [];
 
         for (let w = 0; w < weeksToShow; w++) {
-          const weekMonday = addDays(currentMonday, w * 7);
+          const weekStartDate = addDays(currentWeekStart, w * 7);
           const days: WeekEntry[] = [];
 
           for (let d = 0; d < 7; d++) {
-            const date = addDays(weekMonday, d);
+            const date = addDays(weekStartDate, d);
             const dateStr = toDateOnlyString(date);
             const existing = byDate.get(dateStr);
             const approvedPto = approvedPtoByDate.get(dateStr);
@@ -209,9 +197,9 @@ export default function WeeklyTimeEntries() {
           const totalPto = days.reduce((sum, d) => sum + d.ptoHours, 0);
 
           weeksData.push({
-            weekStart: toDateOnlyString(weekMonday),
-            weekEnd: toDateOnlyString(addDays(weekMonday, 6)),
-            weekLabel: formatWeekLabel(weekMonday),
+            weekStart: toDateOnlyString(weekStartDate),
+            weekEnd: toDateOnlyString(addDays(weekStartDate, 6)),
+            weekLabel: formatWeekLabel(weekStartDate),
             days,
             totalWorked,
             totalPto,
@@ -225,19 +213,19 @@ export default function WeeklyTimeEntries() {
         setLoading(false);
       }
     })();
-  }, [selectedUserId, currentMonday, weeksToShow, approvedPtoByDate]);
+  }, [selectedUserId, currentWeekStart, weeksToShow, approvedPtoByDate]);
 
   // Navigation
   const handlePrevWeek = () => {
-    setCurrentMonday((prev) => addDays(prev, -7));
+    setCurrentWeekStart((prev) => addDays(prev, -7));
   };
 
   const handleNextWeek = () => {
-    setCurrentMonday((prev) => addDays(prev, 7));
+    setCurrentWeekStart((prev) => addDays(prev, 7));
   };
 
   const handleThisWeek = () => {
-    setCurrentMonday(getMonday(today));
+    setCurrentWeekStart(getWeekStart(today, weekStartDay));
   };
 
   // Update entry
