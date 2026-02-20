@@ -54,6 +54,8 @@ public class AuthController : ControllerBase
                 email = user.Email,
                 name = $"{user.FirstName} {user.LastName}".Trim(),
                 role = user.Role,
+                payType = user.PayType,
+                exemptionStatus = user.ExemptionStatus,
             },
         });
     }
@@ -76,6 +78,8 @@ public class AuthController : ControllerBase
             email = user.Email,
             name = $"{user.FirstName} {user.LastName}".Trim(),
             role = user.Role,
+            payType = user.PayType,
+            exemptionStatus = user.ExemptionStatus,
         });
     }
 

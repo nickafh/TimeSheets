@@ -23,6 +23,8 @@ public class SetPasswordRequest
 public class UsersController : ControllerBase
 {
     private static readonly string[] AllowedRoles = { "Employee", "Manager", "Admin" };
+    private static readonly string[] AllowedPayTypes = { "Salary", "Hourly" };
+    private static readonly string[] AllowedExemptionStatuses = { "Exempt", "NonExempt" };
 
     private readonly TimeSheetsDbContext _db;
 
@@ -227,6 +229,26 @@ public class UsersController : ControllerBase
         }
         user.Role = role;
 
+        // Pay type classification
+        var payType = string.IsNullOrWhiteSpace(user.PayType) ? "Salary" : user.PayType.Trim();
+        if (!AllowedPayTypes.Contains(payType, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { message = "PayType must be Salary or Hourly" });
+        }
+
+        // Enforce: Hourly => always NonExempt
+        var exemptionStatus = string.Equals(payType, "Hourly", StringComparison.OrdinalIgnoreCase)
+            ? "NonExempt"
+            : (string.IsNullOrWhiteSpace(user.ExemptionStatus) ? "Exempt" : user.ExemptionStatus.Trim());
+
+        if (!AllowedExemptionStatuses.Contains(exemptionStatus, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { message = "ExemptionStatus must be Exempt or NonExempt" });
+        }
+
+        user.PayType = payType;
+        user.ExemptionStatus = exemptionStatus;
+
         // Set default values
         user.Id = 0; // Let database generate ID
         user.IsActive = 1; // New users are active by default
@@ -284,6 +306,26 @@ public class UsersController : ControllerBase
         existingUser.IsWfh = user.IsWfh;
         existingUser.IsPartTime = user.IsPartTime;
         existingUser.IsIntern = user.IsIntern;
+
+        // Pay type classification
+        var payType = string.IsNullOrWhiteSpace(user.PayType) ? existingUser.PayType : user.PayType.Trim();
+        if (!AllowedPayTypes.Contains(payType, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { message = "PayType must be Salary or Hourly" });
+        }
+
+        // Enforce: Hourly => always NonExempt
+        var exemptionStatus = string.Equals(payType, "Hourly", StringComparison.OrdinalIgnoreCase)
+            ? "NonExempt"
+            : (string.IsNullOrWhiteSpace(user.ExemptionStatus) ? existingUser.ExemptionStatus : user.ExemptionStatus.Trim());
+
+        if (!AllowedExemptionStatuses.Contains(exemptionStatus, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { message = "ExemptionStatus must be Exempt or NonExempt" });
+        }
+
+        existingUser.PayType = payType;
+        existingUser.ExemptionStatus = exemptionStatus;
 
         await _db.SaveChangesAsync();
 
