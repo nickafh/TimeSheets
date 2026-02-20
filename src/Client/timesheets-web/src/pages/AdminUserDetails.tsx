@@ -48,6 +48,8 @@ export default function AdminUserDetails() {
     managerName: "",
     managerIds: [] as number[],
     role: "Employee",
+    payType: "Salary",
+    exemptionStatus: "Exempt",
     isWfh: 0,
     isPartTime: 0,
     isIntern: 0,
@@ -85,6 +87,8 @@ export default function AdminUserDetails() {
         managerName: userData.managerName || "",
         managerIds: userData.managerIds ?? [],
         role: userData.role,
+        payType: userData.payType || "Salary",
+        exemptionStatus: userData.exemptionStatus || "Exempt",
         isWfh: userData.isWfh,
         isPartTime: userData.isPartTime,
         isIntern: userData.isIntern,
@@ -481,6 +485,8 @@ export default function AdminUserDetails() {
                     managerName: user.managerName || "",
                     managerIds: user.managerIds ?? [],
                     role: user.role,
+                    payType: user.payType || "Salary",
+                    exemptionStatus: user.exemptionStatus || "Exempt",
                     isWfh: user.isWfh,
                     isPartTime: user.isPartTime,
                     isIntern: user.isIntern,
@@ -792,6 +798,57 @@ export default function AdminUserDetails() {
                 </select>
               ) : (
                 <div style={{ fontSize: '15px', color: '#002349', fontWeight: 500, padding: '12px 0' }}>{user.role}</div>
+              )}
+            </div>
+            <div>
+              <label style={labelStyle}>Pay Type</label>
+              {isEditing ? (
+                <select
+                  value={formData.payType}
+                  onChange={(e) => {
+                    const newPayType = e.target.value;
+                    setFormData({
+                      ...formData,
+                      payType: newPayType,
+                      exemptionStatus: newPayType === "Hourly" ? "NonExempt" : formData.exemptionStatus,
+                    });
+                  }}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value="Salary">Salary</option>
+                  <option value="Hourly">Hourly</option>
+                </select>
+              ) : (
+                <div style={{ fontSize: '15px', color: '#002349', fontWeight: 500, padding: '12px 0' }}>{user.payType || 'Salary'}</div>
+              )}
+            </div>
+            <div>
+              <label style={labelStyle}>Exemption Status</label>
+              {isEditing ? (
+                <div>
+                  <select
+                    value={formData.exemptionStatus}
+                    onChange={(e) => setFormData({ ...formData, exemptionStatus: e.target.value })}
+                    disabled={formData.payType === "Hourly"}
+                    style={{
+                      ...inputStyle,
+                      cursor: formData.payType === "Hourly" ? 'not-allowed' : 'pointer',
+                      opacity: formData.payType === "Hourly" ? 0.6 : 1,
+                    }}
+                  >
+                    <option value="Exempt">Exempt</option>
+                    <option value="NonExempt">Non-Exempt</option>
+                  </select>
+                  {formData.payType === "Hourly" && (
+                    <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#64748b', marginTop: '6px' }}>
+                      Hourly employees are always Non-Exempt
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ fontSize: '15px', color: '#002349', fontWeight: 500, padding: '12px 0' }}>
+                  {user.exemptionStatus === "NonExempt" ? "Non-Exempt" : (user.exemptionStatus || "Exempt")}
+                </div>
               )}
             </div>
             <div>
