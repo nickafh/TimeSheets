@@ -287,6 +287,21 @@ using (var scope = app.Services.CreateScope())
     }
     catch { /* columns may already exist */ }
 
+    // Pay Type Classification columns
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'Users' AND column_name = 'PayType'",
+            "ALTER TABLE Users ADD COLUMN PayType VARCHAR(10) NOT NULL DEFAULT 'Salary'");
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'Users' AND column_name = 'ExemptionStatus'",
+            "ALTER TABLE Users ADD COLUMN ExemptionStatus VARCHAR(10) NOT NULL DEFAULT 'Exempt'");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Pay type columns migration note: {ex.Message}");
+    }
+
     // Seed users with passwords
     var hash = BCrypt.Net.BCrypt.HashPassword("Invest123");
 

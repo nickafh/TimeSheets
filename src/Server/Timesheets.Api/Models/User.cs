@@ -12,7 +12,7 @@ public class User
     public string? Email { get; set; }
     public string? Department { get; set; }
     public string? Category { get; set; }
-    public string? ManagerName { get; set; }
+        public string? ManagerName { get; set; }
     public DateTime? HireDate { get; set; }
     public DateTime? TerminationDate { get; set; }
     public sbyte IsActive { get; set; }
@@ -20,6 +20,8 @@ public class User
     public sbyte IsPartTime { get; set; }
     public sbyte IsIntern { get; set; }
     public string Role { get; set; } = "Employee"; // Employee, Manager, Admin
+    public string PayType { get; set; } = "Salary"; // Salary, Hourly
+    public string ExemptionStatus { get; set; } = "Exempt"; // Exempt, NonExempt
 
     [JsonIgnore]
     public string? PasswordHash { get; set; }
