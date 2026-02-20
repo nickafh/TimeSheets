@@ -502,7 +502,9 @@ public class PtoRequestsController : ControllerBase
             if (hireDate.Value.Year == targetYear && accrualEnabled)
             {
                 isFirstYearAccrual = true;
-                var accrualRate = settings?.PtoAccrualRate ?? 4.62m;
+                // Derive accrual rate from the tier: annual hours / 26 biweekly periods
+                var annualHoursForRate = tierAnnualDays * standardHours;
+                var accrualRate = annualHoursForRate / 26m;
                 // Calculate reference date for accrual
                 var referenceDate = targetYear == DateTime.UtcNow.Year
                     ? DateTime.UtcNow.Date
