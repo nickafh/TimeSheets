@@ -11,6 +11,19 @@ import {
 import { useAuth } from "../auth/useAuth";
 import { getWeekStart, addDays, toDateOnlyString, getDayName, formatWeekLabel } from "../utils/dateUtils";
 
+const OT_THRESHOLD = 40;
+
+function calculateDailyOvertime(days: { workedHours: number }[]): number[] {
+  let cumulativeWorked = 0;
+  return days.map((day) => {
+    const prevCumulative = cumulativeWorked;
+    cumulativeWorked += day.workedHours;
+    if (cumulativeWorked <= OT_THRESHOLD) return 0;
+    if (prevCumulative >= OT_THRESHOLD) return day.workedHours;
+    return cumulativeWorked - OT_THRESHOLD;
+  });
+}
+
 interface WeekEntry {
   date: string;
   workedHours: number;
@@ -41,6 +54,8 @@ function isWeekend(dateStr: string): boolean {
 export default function WeeklyTimeEntries() {
   const today = useMemo(() => new Date(), []);
   const { user: authUser } = useAuth();
+  const isNonExempt = authUser?.exemptionStatus === "NonExempt";
+  const isExempt = authUser?.exemptionStatus === "Exempt";
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   // Dynamic work week start day from SystemSettings (0=Sun, 1=Mon, ..., 6=Sat)
@@ -516,6 +531,13 @@ export default function WeeklyTimeEntries() {
             const isOverHours = totalCombined > 40;
             const isPerfect = totalCombined === 40;
 
+            // Overtime calculation for non-exempt employees
+            const overtimeByDay = calculateDailyOvertime(week.days);
+            const totalOvertime = overtimeByDay.reduce((sum, ot) => sum + ot, 0);
+
+            // Exempt employee: warn when worked hours exceed threshold
+            const exemptOverWorked = isExempt && week.totalWorked > OT_THRESHOLD;
+
             return (
               <div
                 key={week.weekStart}
@@ -543,19 +565,34 @@ export default function WeeklyTimeEntries() {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     {/* Total hours (worked + PTO) */}
-                    <div style={{
-                      backgroundColor: isPerfect ? '#059669' : isUnderHours ? '#64748b' : '#dc2626',
-                      color: 'white',
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                    }}>
-                      {totalCombined.toFixed(1)}h Total
-                      {isPerfect && " ✓"}
-                      {isUnderHours && ` (-${(40 - totalCombined).toFixed(1)})`}
-                      {isOverHours && ` (+${(totalCombined - 40).toFixed(1)})`}
-                    </div>
+                    {exemptOverWorked ? (
+                      <div style={{
+                        backgroundColor: '#d97706',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                      }}>
+                        {week.totalWorked.toFixed(1)} hrs worked this week
+                      </div>
+                    ) : (
+                      <div style={{
+                        backgroundColor: isPerfect ? '#059669' : isUnderHours ? '#64748b' : '#dc2626',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                      }}>
+                        {isNonExempt
+                          ? `${totalCombined.toFixed(1)} / ${OT_THRESHOLD}h`
+                          : `${totalCombined.toFixed(1)}h Total`}
+                        {isPerfect && " \u2713"}
+                        {isUnderHours && ` (-${(40 - totalCombined).toFixed(1)})`}
+                        {isOverHours && ` (+${(totalCombined - 40).toFixed(1)})`}
+                      </div>
+                    )}
 
                     {week.totalPto > 0 && (
                       <div style={{
@@ -769,6 +806,52 @@ export default function WeeklyTimeEntries() {
                         </td>
                       </tr>
 
+                      {/* Overtime row (non-exempt only) */}
+                      {isNonExempt && (
+                        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{
+                            padding: '20px 24px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            color: '#002349',
+                            backgroundColor: '#f8fafc',
+                          }}>
+                            Overtime
+                          </td>
+                          {week.days.map((day, dayIdx) => (
+                            <td
+                              key={day.date}
+                              style={{
+                                padding: '16px 12px',
+                                textAlign: 'center',
+                                backgroundColor: day.isWeekend ? '#fafafa' : '#f8fafc',
+                              }}
+                            >
+                              <span style={{
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: overtimeByDay[dayIdx] > 0 ? '#d97706' : 'transparent',
+                              }}>
+                                {overtimeByDay[dayIdx] > 0 ? overtimeByDay[dayIdx].toFixed(1) : ''}
+                              </span>
+                            </td>
+                          ))}
+                          <td style={{
+                            padding: '20px 24px',
+                            textAlign: 'right',
+                            fontSize: '18px',
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 700,
+                            color: totalOvertime > 0 ? '#d97706' : '#002349',
+                            backgroundColor: '#f8fafc',
+                          }}>
+                            {totalOvertime > 0 ? totalOvertime.toFixed(1) : ''}
+                          </td>
+                        </tr>
+                      )}
+
                       {/* Notes row */}
                       <tr>
                         <td style={{
@@ -862,6 +945,24 @@ export default function WeeklyTimeEntries() {
                             style={{ backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc', color: day.approvedPto ? '#2563eb' : '#94a3b8', borderColor: day.approvedPto ? '#93c5fd' : '#e2e8f0', cursor: 'default' }}
                           />
                         </div>
+                        {isNonExempt && overtimeByDay[dayIdx] > 0 && (
+                          <div className="timesheet-day-card__field">
+                            <span className="timesheet-day-card__label" style={{ color: '#d97706' }}>Overtime</span>
+                            <span style={{
+                              display: 'block',
+                              padding: '10px 8px',
+                              textAlign: 'center',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: '#d97706',
+                              backgroundColor: '#fffbeb',
+                              border: '2px solid #fcd34d',
+                              borderRadius: '6px',
+                            }}>
+                              {overtimeByDay[dayIdx].toFixed(1)}
+                            </span>
+                          </div>
+                        )}
                         <textarea
                           rows={2}
                           value={day.notes || ""}
