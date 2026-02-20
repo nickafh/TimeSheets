@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { fetchMyTeamUsers, fetchManagerPendingPtoRequests, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto } from "../api";
+import { fetchMyTeamUsers, fetchManagerPendingPtoRequests, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto } from "../api";
 import { Link } from "react-router-dom";
 
 export default function ManagerDashboard() {
@@ -9,6 +9,10 @@ export default function ManagerDashboard() {
   const [pendingPtoRequests, setPendingPtoRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [processing, setProcessing] = useState<number | null>(null);
+  const [showDenyModal, setShowDenyModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<PtoRequestWithUserDto | null>(null);
+  const [denyReason, setDenyReason] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +36,55 @@ export default function ManagerDashboard() {
 
     fetchData();
   }, []);
+
+  const refreshPendingRequests = async () => {
+    try {
+      const pending = await fetchManagerPendingPtoRequests();
+      setPendingPtoRequests(pending);
+    } catch (err) {
+      console.error("Failed to refresh pending requests:", err);
+    }
+  };
+
+  const handleApprove = async (request: PtoRequestWithUserDto) => {
+    if (!confirm(`Approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}?`)) {
+      return;
+    }
+    try {
+      setProcessing(request.id);
+      await approvePtoRequest(request.id, user?.id ?? 1);
+      await refreshPendingRequests();
+      alert("PTO request approved successfully!");
+    } catch (err) {
+      console.error("Failed to approve request:", err);
+      alert("Failed to approve request. Please try again.");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const openDenyModal = (request: PtoRequestWithUserDto) => {
+    setSelectedRequest(request);
+    setDenyReason("");
+    setShowDenyModal(true);
+  };
+
+  const handleDeny = async () => {
+    if (!selectedRequest) return;
+    try {
+      setProcessing(selectedRequest.id);
+      await denyPtoRequest(selectedRequest.id, user?.id ?? 1, denyReason);
+      setShowDenyModal(false);
+      setSelectedRequest(null);
+      await refreshPendingRequests();
+      alert("PTO request denied.");
+    } catch (err) {
+      console.error("Failed to deny request:", err);
+      alert("Failed to deny request. Please try again.");
+    } finally {
+      setProcessing(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -261,7 +314,10 @@ export default function ManagerDashboard() {
                         </td>
                         <td style={{ padding: '16px 24px', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <button style={{
+                            <button
+                              onClick={() => handleApprove(request)}
+                              disabled={processing === request.id}
+                              style={{
                               backgroundColor: '#059669',
                               color: 'white',
                               padding: '6px 12px',
@@ -271,16 +327,20 @@ export default function ManagerDashboard() {
                               letterSpacing: '0.05em',
                               borderRadius: '4px',
                               border: 'none',
-                              cursor: 'pointer',
+                              cursor: processing === request.id ? 'not-allowed' : 'pointer',
+                              opacity: processing === request.id ? 0.6 : 1,
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
                               minHeight: '44px',
                             }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
-                              Approve
+                              {processing === request.id ? "..." : "Approve"}
                             </button>
-                            <button style={{
+                            <button
+                              onClick={() => openDenyModal(request)}
+                              disabled={processing === request.id}
+                              style={{
                               backgroundColor: 'white',
                               color: '#dc2626',
                               padding: '6px 12px',
@@ -290,7 +350,8 @@ export default function ManagerDashboard() {
                               letterSpacing: '0.05em',
                               borderRadius: '4px',
                               border: '1px solid #fecaca',
-                              cursor: 'pointer',
+                              cursor: processing === request.id ? 'not-allowed' : 'pointer',
+                              opacity: processing === request.id ? 0.6 : 1,
                               display: 'flex',
                               alignItems: 'center',
                               gap: '4px',
@@ -332,7 +393,10 @@ export default function ManagerDashboard() {
                     )}
                   </div>
                   <div className="mgr-pto-card__actions">
-                    <button style={{
+                    <button
+                      onClick={() => handleApprove(request)}
+                      disabled={processing === request.id}
+                      style={{
                       backgroundColor: '#059669',
                       color: 'white',
                       border: 'none',
@@ -342,7 +406,8 @@ export default function ManagerDashboard() {
                       fontWeight: 700,
                       textTransform: 'uppercase' as const,
                       letterSpacing: '0.05em',
-                      cursor: 'pointer',
+                      cursor: processing === request.id ? 'not-allowed' : 'pointer',
+                      opacity: processing === request.id ? 0.6 : 1,
                       flex: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -351,9 +416,12 @@ export default function ManagerDashboard() {
                       minHeight: '44px',
                     }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
-                      Approve
+                      {processing === request.id ? "..." : "Approve"}
                     </button>
-                    <button style={{
+                    <button
+                      onClick={() => openDenyModal(request)}
+                      disabled={processing === request.id}
+                      style={{
                       backgroundColor: 'white',
                       color: '#dc2626',
                       border: '1px solid #fecaca',
@@ -363,7 +431,8 @@ export default function ManagerDashboard() {
                       fontWeight: 700,
                       textTransform: 'uppercase' as const,
                       letterSpacing: '0.05em',
-                      cursor: 'pointer',
+                      cursor: processing === request.id ? 'not-allowed' : 'pointer',
+                      opacity: processing === request.id ? 0.6 : 1,
                       flex: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -530,6 +599,152 @@ export default function ManagerDashboard() {
           </div>
         )}
       </div>
+
+      {/* Deny Modal */}
+      {showDenyModal && selectedRequest && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '480px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }}>
+            <div style={{ padding: '20px 24px', backgroundColor: '#002349' }}>
+              <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: 'white', marginBottom: '4px' }}>
+                Deny PTO Request
+              </h2>
+              <p style={{ fontSize: '13px', color: '#C29B40' }}>
+                Please provide a reason for the denial
+              </p>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <div style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '24px',
+              }}>
+                <div style={{ display: 'flex', gap: '24px' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Employee</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{selectedRequest.userName}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Date</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{formatPtoRequestDateDisplay(selectedRequest)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Hours</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{selectedRequest.hours}h</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: '#002349',
+                }}>
+                  Reason for Denial
+                  <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 'normal', color: '#64748b', marginLeft: '8px' }}>(optional)</span>
+                </label>
+                <textarea
+                  value={denyReason}
+                  onChange={(e) => setDenyReason(e.target.value)}
+                  rows={3}
+                  placeholder="Enter reason for denial..."
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    fontSize: '16px',
+                    color: '#002349',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    resize: 'none',
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}
+                />
+              </div>
+            </div>
+            <div className="form-actions-mobile" style={{
+              padding: '16px 24px',
+              backgroundColor: '#f8fafc',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={() => { setShowDenyModal(false); setSelectedRequest(null); }}
+                style={{
+                  backgroundColor: 'white',
+                  color: '#64748b',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  borderRadius: '6px',
+                  border: '1px solid #e2e8f0',
+                  cursor: 'pointer',
+                  minHeight: '44px',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeny}
+                disabled={processing !== null}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: processing !== null ? 'not-allowed' : 'pointer',
+                  opacity: processing !== null ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  minHeight: '44px',
+                }}
+              >
+                {processing !== null ? (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', animation: 'spin 1s linear infinite' }}>progress_activity</span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
+                    Deny Request
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
