@@ -11,12 +11,14 @@ import {
   deactivateUser,
   activateUser,
   setUserPassword,
+  getSystemSettings,
   type UserDto,
   type ManagerOptionDto,
   formatPtoRequestDateDisplay,
   type PtoRequestWithUserDto,
   type DailyTimeEntryDto,
 } from "../api";
+import { getWeekStart, addDays, toDateOnlyString } from "../utils/dateUtils";
 
 export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +35,7 @@ export default function AdminUserDetails() {
   const [managers, setManagers] = useState<ManagerOptionDto[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [weekStartDay, setWeekStartDay] = useState<number>(1); // default Monday
   const [showSetPassword, setShowSetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -61,7 +64,7 @@ export default function AdminUserDetails() {
     if (userId) {
       loadData();
     }
-  }, [userId]);
+  }, [userId, weekStartDay]);
 
   useEffect(() => {
     fetchManagers().then(setManagers).catch(() => setManagers([]));
@@ -69,6 +72,9 @@ export default function AdminUserDetails() {
       setDepartments(departments);
       setCategories(categories);
     }).catch(() => {});
+    getSystemSettings()
+      .then((settings) => setWeekStartDay(settings.workWeekStartDay))
+      .catch(() => {}); // fallback to default Monday
   }, []);
 
   const loadData = async () => {
@@ -101,27 +107,16 @@ export default function AdminUserDetails() {
         setPtoRequests([]);
       }
 
-      // Use current week (Mon-Sun) to match Team Time Entries
+      // Use current week based on configured work week start day
       const today = new Date();
-      const dayOfWeek = today.getDay();
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() + mondayOffset);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-
-      const toLocalDateStr = (d: Date) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
+      const weekStart = getWeekStart(today, weekStartDay);
+      const weekEnd = addDays(weekStart, 6);
 
       try {
         const entriesData = await fetchDailyTimeEntries(
           userId,
-          toLocalDateStr(weekStart),
-          toLocalDateStr(weekEnd)
+          toDateOnlyString(weekStart),
+          toDateOnlyString(weekEnd)
         );
         setTimeEntries(entriesData);
       } catch {

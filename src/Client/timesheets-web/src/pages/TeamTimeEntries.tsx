@@ -3,22 +3,14 @@ import {
   fetchWeeklySummary,
   fetchTeamTimeEntries,
   fetchMyTeamUsers,
+  getSystemSettings,
   type WeeklySummaryDto,
   type TeamTimeEntryDto,
   type UserDto,
 } from "../api";
+import { getWeekStart } from "../utils/dateUtils";
 
 type ViewType = "summary" | "detailed";
-
-// Helper to get Monday of the current week
-function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
@@ -26,12 +18,23 @@ function formatDate(date: Date): string {
 
 export default function TeamTimeEntries() {
   const [viewType, setViewType] = useState<ViewType>("summary");
-  const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
+  const [weekStartDay, setWeekStartDay] = useState<number>(1); // default Monday
+  const [weekStart, setWeekStart] = useState<Date>(getWeekStart(new Date(), 1));
   const [summary, setSummary] = useState<WeeklySummaryDto[]>([]);
   const [detailedEntries, setDetailedEntries] = useState<TeamTimeEntryDto[]>([]);
   const [users, setUsers] = useState<UserDto[]>([]);
   const [selectedUser, setSelectedUser] = useState<number | "all">("all");
   const [loading, setLoading] = useState(true);
+
+  // Fetch system settings for work week start day
+  useEffect(() => {
+    getSystemSettings()
+      .then((settings) => {
+        setWeekStartDay(settings.workWeekStartDay);
+        setWeekStart(getWeekStart(new Date(), settings.workWeekStartDay));
+      })
+      .catch(() => {}); // fallback to default Monday
+  }, []);
 
   useEffect(() => {
     loadUsers();
@@ -77,7 +80,7 @@ export default function TeamTimeEntries() {
   };
 
   const goToCurrentWeek = () => {
-    setWeekStart(getMonday(new Date()));
+    setWeekStart(getWeekStart(new Date(), weekStartDay));
   };
 
   const weekEnd = new Date(weekStart);
