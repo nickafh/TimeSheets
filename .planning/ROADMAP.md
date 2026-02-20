@@ -57,11 +57,11 @@ Plans:
   2. Overtime calculation counts only worked hours (PTO hours and holiday hours are excluded from the 40-hour threshold)
   3. Exempt employees see an informational warning banner when their weekly worked hours exceed 40
   4. Overtime calculation respects the workweek start day configured in system settings (not hardcoded)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Dynamic week start day: extract shared getWeekStart() utility, refactor all weekly views to use SystemSettings workWeekStartDay
+- [ ] 07-02-PLAN.md — OT row for non-exempt employees (per-day breakdown), exempt 40-hour warning badge, mobile OT display
 
 ### Phase 8: Clock In/Out
 **Goal**: Hourly employees can track their work time through real-time clock punches that auto-calculate daily hours and flow into the weekly time entry view

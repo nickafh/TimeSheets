@@ -19,7 +19,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 - [ ] **OT-01**: Non-exempt employees see a read-only Overtime row in the weekly time entry view showing hours beyond 40
 - [ ] **OT-02**: Overtime is calculated from worked hours only (PTO and holiday hours excluded)
 - [ ] **OT-03**: Exempt employees see an informational warning when weekly worked hours exceed 40
-- [ ] **OT-04**: Overtime calculation uses configured workweek start day from system settings
+- [x] **OT-04**: Overtime calculation uses configured workweek start day from system settings
 
 ### Clock In/Out
 
@@ -82,7 +82,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OT-01 | Phase 7 | Pending |
 | OT-02 | Phase 7 | Pending |
 | OT-03 | Phase 7 | Pending |
-| OT-04 | Phase 7 | Pending |
+| OT-04 | Phase 7 | Complete |
 | CLK-01 | Phase 8 | Pending |
 | CLK-02 | Phase 8 | Pending |
 | CLK-03 | Phase 8 | Pending |
