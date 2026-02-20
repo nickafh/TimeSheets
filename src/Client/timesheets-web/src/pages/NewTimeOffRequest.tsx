@@ -127,19 +127,9 @@ const NewTimeOffRequest = () => {
         return;
       }
     }
-    if (isRange && excludedHolidays.length > 0) {
-      setError(
-        `Cannot request PTO on company holidays. Your range includes: ${excludedHolidays.map((h) => h.name).join(", ")}. Please select workdays only.`
-      );
+    if (isRange && workingDays <= 0) {
+      setError("The selected date range contains no workdays. Please select a range that includes at least one workday.");
       return;
-    }
-    if (isRange && start && end) {
-      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
-        if (cur.getDay() === 0 || cur.getDay() === 6) {
-          setError("Cannot request PTO on weekends. Please select workdays only.");
-          return;
-        }
-      }
     }
 
     setSubmitting(true);

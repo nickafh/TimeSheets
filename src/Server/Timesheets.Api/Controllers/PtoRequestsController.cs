@@ -88,13 +88,49 @@ public class PtoRequestsController : ControllerBase
             .Select(h => h.HolidayDate.Date)
             .ToListAsync();
 
+        var hasWorkday = false;
         for (var d = start; d <= end; d = d.AddDays(1))
         {
             var dayOfWeek = d.DayOfWeek;
             if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
-                return BadRequest(new { message = "PTO cannot be requested on weekends. Please select workdays only." });
+                continue; // Skip weekends in date ranges
             if (holidayDates.Contains(d))
-                return BadRequest(new { message = $"PTO cannot be requested on company holidays. {d:MMMM d, yyyy} is a holiday." });
+                continue; // Skip holidays in date ranges
+            hasWorkday = true;
+        }
+
+        // For single-day requests, validate the specific day
+        if (start == end)
+        {
+            if (start.DayOfWeek == DayOfWeek.Saturday || start.DayOfWeek == DayOfWeek.Sunday)
+                return BadRequest(new { message = "PTO cannot be requested on weekends. Please select a workday." });
+            if (holidayDates.Contains(start))
+                return BadRequest(new { message = $"PTO cannot be requested on company holidays. {start:MMMM d, yyyy} is a holiday." });
+        }
+        else if (!hasWorkday)
+        {
+            return BadRequest(new { message = "The selected date range contains no workdays. Please select a range that includes at least one workday." });
+        }
+
+        // Check for overlapping approved or pending PTO requests
+        var existingRequests = await _db.PtoRequests
+            .Where(r => r.UserId == request.UserId && (r.Status == 0 || r.Status == 1)) // Pending or Approved
+            .ToListAsync();
+
+        foreach (var existing in existingRequests)
+        {
+            var existingStart = existing.DateOfLeave.Date;
+            var existingEnd = existing.EndDate?.Date ?? existingStart;
+
+            // Check if date ranges overlap
+            if (start <= existingEnd && end >= existingStart)
+            {
+                var statusText = existing.Status == 0 ? "pending" : "approved";
+                var dateText = existingStart == existingEnd
+                    ? existingStart.ToString("MMMM d, yyyy")
+                    : $"{existingStart:MMMM d, yyyy} – {existingEnd:MMMM d, yyyy}";
+                return BadRequest(new { message = $"You already have a {statusText} time off request for {dateText}. Please cancel the existing request first or choose different dates." });
+            }
         }
 
         var entity = new PtoRequest
