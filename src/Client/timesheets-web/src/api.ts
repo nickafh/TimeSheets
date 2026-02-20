@@ -72,6 +72,11 @@ export interface SystemSettingsDto {
   ptoAccrualEnabled: boolean;
   ptoAccrualRate: number;
   maxPtoCarryover: number;
+  ptoTier1MaxYears: number;
+  ptoTier1AnnualDays: number;
+  ptoTier2MaxYears: number;
+  ptoTier2AnnualDays: number;
+  ptoTier3AnnualDays: number;
   requirePtoApproval: boolean;
   minAdvanceNoticeDays: number;
   allowFutureTimeEntries: boolean;
@@ -492,6 +497,14 @@ export interface UserPtoSummary {
   /** Paid Time Off (type 1) only - for "Available PTO" display. */
   paidTimeOffRemaining: number;
   nextApprovedTimeOff: PtoRequestWithUserDto | null;
+  /** Current tenure tier (1, 2, or 3). */
+  currentTier: number;
+  /** Annual PTO allowance in hours based on tenure tier. */
+  annualAllowanceHours: number;
+  /** True if the user is in their first calendar year and accruing PTO per pay period. */
+  isFirstYearAccrual: boolean;
+  /** Hours accrued so far (only relevant when isFirstYearAccrual is true). */
+  accruedHours: number;
 }
 
 // Fetch PTO requests for a specific user

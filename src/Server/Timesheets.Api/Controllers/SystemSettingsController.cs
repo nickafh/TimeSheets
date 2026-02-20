@@ -74,6 +74,11 @@ public class SystemSettingsController : ControllerBase
             settings.PtoAccrualEnabled = model.PtoAccrualEnabled;
             settings.PtoAccrualRate = model.PtoAccrualRate;
             settings.MaxPtoCarryover = model.MaxPtoCarryover;
+            settings.PtoTier1MaxYears = model.PtoTier1MaxYears;
+            settings.PtoTier1AnnualDays = model.PtoTier1AnnualDays;
+            settings.PtoTier2MaxYears = model.PtoTier2MaxYears;
+            settings.PtoTier2AnnualDays = model.PtoTier2AnnualDays;
+            settings.PtoTier3AnnualDays = model.PtoTier3AnnualDays;
             settings.RequirePtoApproval = model.RequirePtoApproval;
             settings.MinAdvanceNoticeDays = model.MinAdvanceNoticeDays;
             settings.AllowFutureTimeEntries = model.AllowFutureTimeEntries;
@@ -86,9 +91,8 @@ public class SystemSettingsController : ControllerBase
             settings.SendWeeklyReminders = model.SendWeeklyReminders;
             settings.ReminderDayOfWeek = model.ReminderDayOfWeek;
 
-            // Keep PtoTypes(Id=1) "Paid Time Off" allowance in sync with
-            // the system-level DefaultPtoAllowance so that the dashboard
-            // balance calculation uses the admin-configured value.
+            // Derive DefaultPtoAllowance from tier 1 and sync to PtoType(1)
+            settings.DefaultPtoAllowance = settings.PtoTier1AnnualDays * settings.StandardWorkHoursPerDay;
             var ptoType1 = await _db.PtoTypes.FindAsync(1);
             if (ptoType1 != null)
             {

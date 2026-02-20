@@ -239,6 +239,13 @@ const Dashboard = () => {
                   <p style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
                     {ptoSummary?.paidTimeOffRemaining.toFixed(1) ?? '0.0'} <span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>hrs</span>
                   </p>
+                  {ptoSummary && (
+                    <p style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                      {ptoSummary.isFirstYearAccrual
+                        ? `Accrued (${ptoSummary.accruedHours.toFixed(0)}h of ${ptoSummary.annualAllowanceHours.toFixed(0)}h)`
+                        : `Tier ${ptoSummary.currentTier} — ${ptoSummary.annualAllowanceHours.toFixed(0)}h/year`}
+                    </p>
+                  )}
                 </div>
                 <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '4px' }}>
                   <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>

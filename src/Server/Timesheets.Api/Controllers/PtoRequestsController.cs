@@ -443,6 +443,9 @@ public class PtoRequestsController : ControllerBase
         var yearStart = new DateTime(targetYear, 1, 1);
         var yearEnd = new DateTime(targetYear, 12, 31);
 
+        // Load user for hire date
+        var userRecord = await _db.Users.FindAsync(userId);
+
         // Load all PTO types with their allowances
         var ptoTypes = await _db.PtoTypes.OrderBy(t => t.Id).ToListAsync();
 
@@ -452,10 +455,66 @@ public class PtoRequestsController : ControllerBase
                 && r.DateOfLeave >= yearStart && r.DateOfLeave <= yearEnd)
             .ToListAsync();
 
-        // Load system settings for defaults
+        // Load system settings for defaults and tier configuration
         var settings = await _db.SystemSettings.FindAsync(SettingsId);
-        var defaultAllowance = settings?.DefaultPtoAllowance ?? 120m;
         var maxCarryover = settings?.MaxPtoCarryover ?? 40m;
+        var standardHours = settings?.StandardWorkHoursPerDay ?? 8m;
+        var tier1MaxYears = settings?.PtoTier1MaxYears ?? 5;
+        var tier1Days = settings?.PtoTier1AnnualDays ?? 18;
+        var tier2MaxYears = settings?.PtoTier2MaxYears ?? 10;
+        var tier2Days = settings?.PtoTier2AnnualDays ?? 23;
+        var tier3Days = settings?.PtoTier3AnnualDays ?? 28;
+        var accrualEnabled = settings?.PtoAccrualEnabled ?? true;
+
+        // Calculate tenure and determine tier
+        var hireDate = userRecord?.HireDate;
+        int yearsOfService = 0;
+        int currentTier = 1;
+        int tierAnnualDays = tier1Days;
+        bool isFirstYearAccrual = false;
+        decimal accruedHours = 0;
+
+        if (hireDate.HasValue)
+        {
+            // Years of service relative to the target year
+            yearsOfService = targetYear - hireDate.Value.Year;
+            if (new DateTime(targetYear, hireDate.Value.Month, Math.Min(hireDate.Value.Day, DateTime.DaysInMonth(targetYear, hireDate.Value.Month))) > new DateTime(targetYear, 12, 31))
+                yearsOfService--;
+            yearsOfService = Math.Max(0, yearsOfService);
+
+            if (yearsOfService < tier1MaxYears)
+            {
+                currentTier = 1;
+                tierAnnualDays = tier1Days;
+            }
+            else if (yearsOfService < tier2MaxYears)
+            {
+                currentTier = 2;
+                tierAnnualDays = tier2Days;
+            }
+            else
+            {
+                currentTier = 3;
+                tierAnnualDays = tier3Days;
+            }
+
+            // First-year accrual check: hired in the target year
+            if (hireDate.Value.Year == targetYear && accrualEnabled)
+            {
+                isFirstYearAccrual = true;
+                var accrualRate = settings?.PtoAccrualRate ?? 4.62m;
+                // Calculate reference date for accrual
+                var referenceDate = targetYear == DateTime.UtcNow.Year
+                    ? DateTime.UtcNow.Date
+                    : new DateTime(targetYear, 12, 31);
+                var daysSinceHire = Math.Max(0, (referenceDate - hireDate.Value.Date).Days);
+                var periodsElapsed = daysSinceHire / 14;
+                var annualHours = tierAnnualDays * standardHours;
+                accruedHours = Math.Min(periodsElapsed * accrualRate, annualHours);
+            }
+        }
+
+        var annualAllowanceHours = tierAnnualDays * standardHours;
 
         // Group approved hours by PtoTypeId
         var approvedByType = approvedRequests
@@ -478,10 +537,17 @@ public class PtoRequestsController : ControllerBase
 
         foreach (var pt in ptoTypes.Where(t => t.IsSelectable))
         {
-            // Use per-type allowance; fall back to system default for type 1
-            var allowed = pt.AnnualAllowance > 0
-                ? pt.AnnualAllowance
-                : (pt.Id == 1 ? defaultAllowance : 0m);
+            decimal allowed;
+            if (pt.Id == 1)
+            {
+                // Use tenure-based allowance for PTO type 1
+                allowed = isFirstYearAccrual ? accruedHours : annualAllowanceHours;
+            }
+            else
+            {
+                allowed = pt.AnnualAllowance > 0 ? pt.AnnualAllowance : 0m;
+            }
+
             var approved = approvedByType.GetValueOrDefault(pt.Id, 0m);
 
             balances.Add(new
@@ -523,9 +589,7 @@ public class PtoRequestsController : ControllerBase
             .FirstOrDefaultAsync();
 
         // Paid Time Off remaining (type 1 specifically)
-        var ptoType1 = ptoTypes.FirstOrDefault(t => t.Id == 1);
-        var pto1Allowed = ptoType1 != null && ptoType1.AnnualAllowance > 0
-            ? ptoType1.AnnualAllowance : defaultAllowance;
+        var pto1Allowed = isFirstYearAccrual ? accruedHours : annualAllowanceHours;
         var pto1Approved = approvedByType.GetValueOrDefault(1, 0m);
 
         return Ok(new
@@ -538,6 +602,10 @@ public class PtoRequestsController : ControllerBase
             totalRemaining = Math.Max(0, totalAllowed - totalApproved),
             paidTimeOffRemaining = Math.Max(0, pto1Allowed - pto1Approved),
             nextApprovedTimeOff = nextApproved,
+            currentTier,
+            annualAllowanceHours,
+            isFirstYearAccrual,
+            accruedHours,
         });
     }
 

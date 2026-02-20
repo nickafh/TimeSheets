@@ -4,9 +4,11 @@ import {
   fetchHolidays,
   fetchEarlyClosures,
   fetchUserPtoSummary,
+  getSystemSettings,
   type HolidayDto,
   type EarlyClosureDto,
   type UserPtoSummary,
+  type SystemSettingsDto,
 } from "../api";
 
 const TimeOffSummary = () => {
@@ -14,6 +16,7 @@ const TimeOffSummary = () => {
   const [holidays, setHolidays] = useState<HolidayDto[]>([]);
   const [closures, setClosures] = useState<EarlyClosureDto[]>([]);
   const [ptoSummary, setPtoSummary] = useState<UserPtoSummary | null>(null);
+  const [sysSettings, setSysSettings] = useState<SystemSettingsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPto, setLoadingPto] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -29,12 +32,14 @@ const TimeOffSummary = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [holidayData, closureData] = await Promise.all([
+      const [holidayData, closureData, settingsData] = await Promise.all([
         fetchHolidays(),
         fetchEarlyClosures(),
+        getSystemSettings(),
       ]);
       setHolidays(holidayData);
       setClosures(closureData);
+      setSysSettings(settingsData);
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {
@@ -297,6 +302,31 @@ const TimeOffSummary = () => {
         </table>
       </div>
 
+      {/* First-Year Accrual Banner */}
+      {ptoSummary?.isFirstYearAccrual && (
+        <div style={{
+          backgroundColor: 'rgba(194, 155, 64, 0.05)',
+          border: '1px solid rgba(194, 155, 64, 0.3)',
+          borderLeft: '4px solid #C29B40',
+          borderRadius: '0 8px 8px 0',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        }}>
+          <span className="material-symbols-outlined" style={{ color: '#C29B40', fontSize: '24px' }}>info</span>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349', marginBottom: '2px' }}>
+              First-Year PTO Accrual
+            </div>
+            <div style={{ fontSize: '13px', color: '#666666' }}>
+              As a first-year employee, your PTO accrues each pay period. You have accrued <strong style={{ color: '#002349' }}>{ptoSummary.accruedHours.toFixed(1)} hours</strong> of your <strong style={{ color: '#002349' }}>{ptoSummary.annualAllowanceHours.toFixed(0)} hour</strong> annual allowance so far.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PTO Policy Section */}
       <div style={{
         backgroundColor: 'white',
@@ -312,51 +342,61 @@ const TimeOffSummary = () => {
           PTO is an all-purpose time off policy for employees to use for vacation, illness or personal business.
         </p>
         <div className="policy-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          <div style={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '8px',
-            padding: '24px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
-              Years 1-5
-            </div>
-            <div style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349' }}>
-              18
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>days per year</div>
-          </div>
-          <div style={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '8px',
-            padding: '24px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
-              Years 6-10
-            </div>
-            <div style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349' }}>
-              23
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>days per year</div>
-          </div>
-          <div style={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '8px',
-            padding: '24px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
-              Years 10+
-            </div>
-            <div style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349' }}>
-              28
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b' }}>days per year</div>
-          </div>
+          {[
+            {
+              label: `Years 1–${sysSettings?.ptoTier1MaxYears ?? 5}`,
+              days: sysSettings?.ptoTier1AnnualDays ?? 18,
+              tier: 1,
+            },
+            {
+              label: `Years ${(sysSettings?.ptoTier1MaxYears ?? 5) + 1}–${sysSettings?.ptoTier2MaxYears ?? 10}`,
+              days: sysSettings?.ptoTier2AnnualDays ?? 23,
+              tier: 2,
+            },
+            {
+              label: `Years ${(sysSettings?.ptoTier2MaxYears ?? 10)}+`,
+              days: sysSettings?.ptoTier3AnnualDays ?? 28,
+              tier: 3,
+            },
+          ].map((t) => {
+            const isCurrentTier = ptoSummary?.currentTier === t.tier;
+            return (
+              <div key={t.tier} style={{
+                backgroundColor: isCurrentTier ? 'rgba(194, 155, 64, 0.05)' : '#f8fafc',
+                border: isCurrentTier ? '2px solid #C29B40' : '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '24px',
+                textAlign: 'center',
+                position: 'relative',
+              }}>
+                {isCurrentTier && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: '#C29B40',
+                    color: 'white',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    padding: '2px 10px',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    Your Tier
+                  </div>
+                )}
+                <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '8px' }}>
+                  {t.label}
+                </div>
+                <div style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349' }}>
+                  {t.days}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>days per year</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

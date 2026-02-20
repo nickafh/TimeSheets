@@ -16,6 +16,11 @@ const DEFAULT_SETTINGS: SystemSettingsData = {
   ptoAccrualEnabled: true,
   ptoAccrualRate: 4.62,
   maxPtoCarryover: 40,
+  ptoTier1MaxYears: 5,
+  ptoTier1AnnualDays: 18,
+  ptoTier2MaxYears: 10,
+  ptoTier2AnnualDays: 23,
+  ptoTier3AnnualDays: 28,
   requirePtoApproval: true,
   minAdvanceNoticeDays: 3,
   allowFutureTimeEntries: false,
@@ -420,37 +425,128 @@ export default function SystemSettings() {
               </div>
               <div style={{ padding: '32px' }}>
                 <div style={{ display: 'grid', gap: '24px' }}>
-                  {/* Allowance Settings */}
+                  {/* Tenure-Based PTO Tiers */}
                   <div>
                     <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Allowance Settings
+                      Tenure-Based PTO Tiers
                     </h3>
-                    <div className="form-grid-2" style={{ gap: '16px' }}>
-                      <div>
-                        <label style={labelStyle}>Default Annual PTO (Hours)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={settings.defaultPtoAllowance}
-                          onChange={(e) => updateSetting("defaultPtoAllowance", Number(e.target.value))}
-                          style={inputStyle}
-                        />
-                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
-                          = {(settings.defaultPtoAllowance / settings.standardWorkHoursPerDay).toFixed(1)} days
+                    <div style={{ display: 'grid', gap: '16px' }}>
+                      {/* Tier 1 */}
+                      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#C29B40', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Tier 1
+                        </div>
+                        <div className="form-grid-2" style={{ gap: '16px' }}>
+                          <div>
+                            <label style={labelStyle}>Max Years of Service</label>
+                            <input
+                              type="number"
+                              min={1}
+                              value={settings.ptoTier1MaxYears}
+                              onChange={(e) => updateSetting("ptoTier1MaxYears", Number(e.target.value))}
+                              style={inputStyle}
+                            />
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                              Years 1–{settings.ptoTier1MaxYears}
+                            </div>
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Annual PTO Days</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={settings.ptoTier1AnnualDays}
+                              onChange={(e) => updateSetting("ptoTier1AnnualDays", Number(e.target.value))}
+                              style={inputStyle}
+                            />
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                              = {(settings.ptoTier1AnnualDays * settings.standardWorkHoursPerDay).toFixed(0)} hours
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <label style={labelStyle}>Max Carryover (Hours)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={settings.maxPtoCarryover}
-                          onChange={(e) => updateSetting("maxPtoCarryover", Number(e.target.value))}
-                          style={inputStyle}
-                        />
-                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
-                          = {(settings.maxPtoCarryover / settings.standardWorkHoursPerDay).toFixed(1)} days
+
+                      {/* Tier 2 */}
+                      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#C29B40', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Tier 2
                         </div>
+                        <div className="form-grid-2" style={{ gap: '16px' }}>
+                          <div>
+                            <label style={labelStyle}>Max Years of Service</label>
+                            <input
+                              type="number"
+                              min={1}
+                              value={settings.ptoTier2MaxYears}
+                              onChange={(e) => updateSetting("ptoTier2MaxYears", Number(e.target.value))}
+                              style={inputStyle}
+                            />
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                              Years {settings.ptoTier1MaxYears + 1}–{settings.ptoTier2MaxYears}
+                            </div>
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Annual PTO Days</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={settings.ptoTier2AnnualDays}
+                              onChange={(e) => updateSetting("ptoTier2AnnualDays", Number(e.target.value))}
+                              style={inputStyle}
+                            />
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                              = {(settings.ptoTier2AnnualDays * settings.standardWorkHoursPerDay).toFixed(0)} hours
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tier 3 */}
+                      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#C29B40', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Tier 3
+                        </div>
+                        <div className="form-grid-2" style={{ gap: '16px' }}>
+                          <div>
+                            <label style={labelStyle}>Years of Service</label>
+                            <div style={{ ...inputStyle, backgroundColor: '#f1f5f9', color: '#64748b', cursor: 'default' }}>
+                              {settings.ptoTier2MaxYears}+
+                            </div>
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Annual PTO Days</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={settings.ptoTier3AnnualDays}
+                              onChange={(e) => updateSetting("ptoTier3AnnualDays", Number(e.target.value))}
+                              style={inputStyle}
+                            />
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                              = {(settings.ptoTier3AnnualDays * settings.standardWorkHoursPerDay).toFixed(0)} hours
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Max Carryover */}
+                  <div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Carryover
+                    </h3>
+                    <div style={{ maxWidth: '300px' }}>
+                      <label style={labelStyle}>Max Carryover (Hours)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={settings.maxPtoCarryover}
+                        onChange={(e) => updateSetting("maxPtoCarryover", Number(e.target.value))}
+                        style={inputStyle}
+                      />
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                        = {(settings.maxPtoCarryover / settings.standardWorkHoursPerDay).toFixed(1)} days
                       </div>
                     </div>
                   </div>

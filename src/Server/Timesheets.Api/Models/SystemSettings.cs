@@ -24,6 +24,14 @@ public class SystemSettings
     public bool PtoAccrualEnabled { get; set; } = true;
     public decimal PtoAccrualRate { get; set; } = 4.62m; // hours per pay period
     public decimal MaxPtoCarryover { get; set; } = 40;
+
+    // Tenure-based PTO tiers
+    public int PtoTier1MaxYears { get; set; } = 5;
+    public int PtoTier1AnnualDays { get; set; } = 18;
+    public int PtoTier2MaxYears { get; set; } = 10;
+    public int PtoTier2AnnualDays { get; set; } = 23;
+    public int PtoTier3AnnualDays { get; set; } = 28;
+
     public bool RequirePtoApproval { get; set; } = true;
     public int MinAdvanceNoticeDays { get; set; } = 3;
 

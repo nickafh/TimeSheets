@@ -266,6 +266,27 @@ using (var scope = app.Services.CreateScope())
     }
     catch { /* column may already exist */ }
 
+    // Add tenure-based PTO tier columns to SystemSettings if missing
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'SystemSettings' AND column_name = 'PtoTier1MaxYears'",
+            "ALTER TABLE SystemSettings ADD COLUMN PtoTier1MaxYears INT NOT NULL DEFAULT 5");
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'SystemSettings' AND column_name = 'PtoTier1AnnualDays'",
+            "ALTER TABLE SystemSettings ADD COLUMN PtoTier1AnnualDays INT NOT NULL DEFAULT 18");
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'SystemSettings' AND column_name = 'PtoTier2MaxYears'",
+            "ALTER TABLE SystemSettings ADD COLUMN PtoTier2MaxYears INT NOT NULL DEFAULT 10");
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'SystemSettings' AND column_name = 'PtoTier2AnnualDays'",
+            "ALTER TABLE SystemSettings ADD COLUMN PtoTier2AnnualDays INT NOT NULL DEFAULT 23");
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'SystemSettings' AND column_name = 'PtoTier3AnnualDays'",
+            "ALTER TABLE SystemSettings ADD COLUMN PtoTier3AnnualDays INT NOT NULL DEFAULT 28");
+    }
+    catch { /* columns may already exist */ }
+
     // Seed users with passwords
     var hash = BCrypt.Net.BCrypt.HashPassword("Invest123");
 
