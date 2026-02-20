@@ -129,7 +129,7 @@ async function parseErrorResponse(res: Response, prefix: string): Promise<never>
   let msg = prefix;
   try {
     const body = JSON.parse(text) as { message?: string; hint?: string };
-    if (body?.message) msg += ` - ${body.message}`;
+    if (body?.message) msg = body.message;
     if (body?.hint) msg += ` (${body.hint})`;
   } catch {
     // ignore parse error
