@@ -101,7 +101,8 @@ public class DailyTimeEntriesController : ControllerBase
                 {
                     entry.Id,
                     entry.UserId,
-                    UserName = $"{user.FirstName} {user.LastName}",
+                    user.FirstName,
+                    user.LastName,
                     user.Department,
                     entry.WorkDate,
                     entry.WorkedHours,
@@ -110,8 +111,24 @@ public class DailyTimeEntriesController : ControllerBase
                     entry.Notes
                 })
             .OrderBy(x => x.WorkDate)
-            .ThenBy(x => x.UserName)
+            .ThenBy(x => x.FirstName)
+            .ThenBy(x => x.LastName)
             .ToListAsync();
+
+        var result = entries.Select(x => new
+        {
+            x.Id,
+            x.UserId,
+            UserName = $"{x.FirstName} {x.LastName}",
+            x.Department,
+            x.WorkDate,
+            x.WorkedHours,
+            x.PtoHours,
+            x.DayType,
+            x.Notes
+        });
+
+        return Ok(result);
 
         return Ok(entries);
     }

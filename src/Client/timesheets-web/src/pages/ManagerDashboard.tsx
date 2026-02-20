@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../auth/useAuth";
 import { fetchMyTeamUsers, fetchManagerPendingPtoRequests, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto } from "../api";
 import { Link } from "react-router-dom";
+
+type Toast = { message: string; type: "success" | "error" };
 
 export default function ManagerDashboard() {
   const { user } = useAuth();
@@ -10,9 +12,16 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [processing, setProcessing] = useState<number | null>(null);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [showDenyModal, setShowDenyModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<PtoRequestWithUserDto | null>(null);
   const [denyReason, setDenyReason] = useState("");
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = useCallback((message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,18 +55,23 @@ export default function ManagerDashboard() {
     }
   };
 
-  const handleApprove = async (request: PtoRequestWithUserDto) => {
-    if (!confirm(`Approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}?`)) {
-      return;
-    }
+  const openApproveModal = (request: PtoRequestWithUserDto) => {
+    setSelectedRequest(request);
+    setShowApproveModal(true);
+  };
+
+  const handleApprove = async () => {
+    if (!selectedRequest) return;
     try {
-      setProcessing(request.id);
-      await approvePtoRequest(request.id, user?.id ?? 1);
+      setProcessing(selectedRequest.id);
+      await approvePtoRequest(selectedRequest.id, user?.id ?? 1);
+      setShowApproveModal(false);
+      setSelectedRequest(null);
       await refreshPendingRequests();
-      alert("PTO request approved successfully!");
+      showToast("PTO request approved successfully!", "success");
     } catch (err) {
       console.error("Failed to approve request:", err);
-      alert("Failed to approve request. Please try again.");
+      showToast("Failed to approve request. Please try again.", "error");
     } finally {
       setProcessing(null);
     }
@@ -77,10 +91,10 @@ export default function ManagerDashboard() {
       setShowDenyModal(false);
       setSelectedRequest(null);
       await refreshPendingRequests();
-      alert("PTO request denied.");
+      showToast("PTO request denied.", "success");
     } catch (err) {
       console.error("Failed to deny request:", err);
-      alert("Failed to deny request. Please try again.");
+      showToast("Failed to deny request. Please try again.", "error");
     } finally {
       setProcessing(null);
     }
@@ -315,7 +329,7 @@ export default function ManagerDashboard() {
                         <td style={{ padding: '16px 24px', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                             <button
-                              onClick={() => handleApprove(request)}
+                              onClick={() => openApproveModal(request)}
                               disabled={processing === request.id}
                               style={{
                               backgroundColor: '#059669',
@@ -394,7 +408,7 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="mgr-pto-card__actions">
                     <button
-                      onClick={() => handleApprove(request)}
+                      onClick={() => openApproveModal(request)}
                       disabled={processing === request.id}
                       style={{
                       backgroundColor: '#059669',
@@ -600,6 +614,127 @@ export default function ManagerDashboard() {
         )}
       </div>
 
+      {/* Approve Confirmation Modal */}
+      {showApproveModal && selectedRequest && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '440px',
+            margin: '0 16px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }}>
+            <div style={{ padding: '20px 24px', backgroundColor: '#002349' }}>
+              <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: 'white', marginBottom: '4px' }}>
+                Approve PTO Request
+              </h2>
+              <p style={{ fontSize: '13px', color: '#C29B40' }}>
+                Confirm approval for this time-off request
+              </p>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <div style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '16px',
+              }}>
+                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Employee</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{selectedRequest.userName}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Date</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{formatPtoRequestDateDisplay(selectedRequest)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Hours</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{selectedRequest.hours}h</div>
+                  </div>
+                </div>
+                {selectedRequest.reason && (
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Reason</div>
+                    <div style={{ fontSize: '14px', color: '#002349' }}>{selectedRequest.reason}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="form-actions-mobile" style={{
+              padding: '16px 24px',
+              backgroundColor: '#f8fafc',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={() => { setShowApproveModal(false); setSelectedRequest(null); }}
+                style={{
+                  backgroundColor: 'white',
+                  color: '#64748b',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  borderRadius: '6px',
+                  border: '1px solid #e2e8f0',
+                  cursor: 'pointer',
+                  minHeight: '44px',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApprove}
+                disabled={processing !== null}
+                style={{
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: processing !== null ? 'not-allowed' : 'pointer',
+                  opacity: processing !== null ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  minHeight: '44px',
+                }}
+              >
+                {processing !== null ? (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', animation: 'spin 1s linear infinite' }}>progress_activity</span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check</span>
+                    Approve Request
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Deny Modal */}
       {showDenyModal && selectedRequest && (
         <div style={{
@@ -614,6 +749,7 @@ export default function ManagerDashboard() {
           <div style={{
             width: '100%',
             maxWidth: '480px',
+            margin: '0 16px',
             backgroundColor: 'white',
             borderRadius: '12px',
             overflow: 'hidden',
@@ -635,7 +771,7 @@ export default function ManagerDashboard() {
                 padding: '16px',
                 marginBottom: '24px',
               }}>
-                <div style={{ display: 'flex', gap: '24px' }}>
+                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
                   <div>
                     <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '4px' }}>Employee</div>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>{selectedRequest.userName}</div>
@@ -743,6 +879,47 @@ export default function ManagerDashboard() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '16px 20px',
+          backgroundColor: toast.type === 'success' ? '#002349' : '#dc2626',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+          fontSize: '14px',
+          fontWeight: 600,
+          animation: 'slideInRight 0.3s ease-out',
+          maxWidth: '400px',
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '20px', color: toast.type === 'success' ? '#C29B40' : '#fecaca' }}>
+            {toast.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          {toast.message}
+          <button
+            onClick={() => setToast(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'rgba(255,255,255,0.7)',
+              cursor: 'pointer',
+              padding: '0',
+              marginLeft: '8px',
+              display: 'flex',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+          </button>
         </div>
       )}
     </div>

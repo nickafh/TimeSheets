@@ -2978,3 +2978,23 @@ h1, h2, h3, h4 {
     min-width: 200px;
   }
 }
+
+/* ======================
+   TOAST / ANIMATIONS
+   ====================== */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
