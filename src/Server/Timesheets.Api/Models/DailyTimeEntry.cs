@@ -9,4 +9,6 @@ public class DailyTimeEntry
     public decimal PtoHours { get; set; }
     public string DayType { get; set; } = "Work";
     public string? Notes { get; set; }
+
+    public User User { get; set; } = null!;
 }

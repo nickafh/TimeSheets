@@ -41,21 +41,33 @@ public class DailyTimeEntriesController : ControllerBase
     [HttpPut("bulk")]
     public async Task<IActionResult> SaveBulk([FromBody] List<DailyTimeEntry> entries)
     {
+        if (entries.Count == 0) return NoContent();
+
+        // Batch-load all existing entries in a single query instead of one per entry
+        var userIds = entries.Select(e => e.UserId).Distinct().ToList();
+        var dates = entries.Select(e => e.WorkDate.Date).Distinct().ToList();
+        var minDate = dates.Min();
+        var maxDate = dates.Max();
+
+        var existingEntries = await _db.DailyTimeEntries
+            .Where(x => userIds.Contains(x.UserId) && x.WorkDate >= minDate && x.WorkDate <= maxDate)
+            .ToListAsync();
+
+        var existingLookup = existingEntries
+            .ToDictionary(x => (x.UserId, x.WorkDate.Date));
+
         foreach (var entry in entries)
         {
-            var existing = await _db.DailyTimeEntries
-                .FirstOrDefaultAsync(x => x.UserId == entry.UserId && x.WorkDate == entry.WorkDate);
-
-            if (existing == null)
-            {
-                _db.DailyTimeEntries.Add(entry);
-            }
-            else
+            if (existingLookup.TryGetValue((entry.UserId, entry.WorkDate.Date), out var existing))
             {
                 existing.WorkedHours = entry.WorkedHours;
                 existing.PtoHours = entry.PtoHours;
                 existing.DayType = entry.DayType;
                 existing.Notes = entry.Notes;
+            }
+            else
+            {
+                _db.DailyTimeEntries.Add(entry);
             }
         }
 

@@ -9,4 +9,6 @@ public class Notification
     public DateTime? ExpiresAt { get; set; }
     public sbyte IsActive { get; set; } = 1;
     public int CreatedByUserId { get; set; }
+
+    public User CreatedByUser { get; set; } = null!;
 }

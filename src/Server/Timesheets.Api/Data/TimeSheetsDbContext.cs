@@ -41,11 +41,57 @@ public class TimeSheetsDbContext : DbContext
             .HasForeignKey(um => um.ManagerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<PtoType>().ToTable("PtoTypes");
-        modelBuilder.Entity<PtoRequest>().ToTable("PtoRequests");
+        // --- DailyTimeEntry ---
         modelBuilder.Entity<DailyTimeEntry>().ToTable("DailyTimeEntries");
-        modelBuilder.Entity<Holiday>().ToTable("Holidays");
+        modelBuilder.Entity<DailyTimeEntry>()
+            .HasOne(d => d.User)
+            .WithMany()
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<DailyTimeEntry>()
+            .HasIndex(d => new { d.UserId, d.WorkDate })
+            .IsUnique()
+            .HasDatabaseName("UK_DailyTimeEntries_UserId_WorkDate");
+
+        // --- PtoRequest ---
+        modelBuilder.Entity<PtoRequest>().ToTable("PtoRequests");
+        modelBuilder.Entity<PtoRequest>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PtoRequest>()
+            .HasOne(p => p.PtoType)
+            .WithMany()
+            .HasForeignKey(p => p.PtoTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PtoRequest>()
+            .HasOne(p => p.ApproverUser)
+            .WithMany()
+            .HasForeignKey(p => p.ApprovedDeniedBy)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<PtoRequest>()
+            .HasIndex(p => p.UserId)
+            .HasDatabaseName("IX_PtoRequests_UserId");
+        modelBuilder.Entity<PtoRequest>()
+            .HasIndex(p => p.Status)
+            .HasDatabaseName("IX_PtoRequests_Status");
+
+        // --- PtoType ---
+        modelBuilder.Entity<PtoType>().ToTable("PtoTypes");
+
+        // --- Notification ---
         modelBuilder.Entity<Notification>().ToTable("Notifications");
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(n => n.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => n.IsActive)
+            .HasDatabaseName("IX_Notifications_IsActive");
+
+        modelBuilder.Entity<Holiday>().ToTable("Holidays");
         modelBuilder.Entity<EarlyClosure>().ToTable("EarlyClosures");
         modelBuilder.Entity<SystemSettings>().ToTable("SystemSettings");
     }

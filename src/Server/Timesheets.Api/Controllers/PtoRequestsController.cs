@@ -76,6 +76,16 @@ public class PtoRequestsController : ControllerBase
         if (request.PtoTypeId <= 0)
             return BadRequest(new { message = "PtoTypeId is required" });
 
+        // Validate that the referenced User exists
+        var userExists = await _db.Users.AnyAsync(u => u.Id == request.UserId);
+        if (!userExists)
+            return BadRequest(new { message = "User not found" });
+
+        // Validate that the referenced PtoType exists
+        var ptoTypeExists = await _db.PtoTypes.AnyAsync(t => t.Id == request.PtoTypeId);
+        if (!ptoTypeExists)
+            return BadRequest(new { message = "Invalid PTO type" });
+
         var start = request.DateOfLeave.Date;
         var end = request.EndDate.HasValue ? request.EndDate.Value.Date : start;
         if (end < start)
@@ -380,8 +390,13 @@ public class PtoRequestsController : ControllerBase
             return BadRequest("Request has already been processed");
         }
 
+        // Validate that the approver exists
+        var approverExists = await _db.Users.AnyAsync(u => u.Id == approvedBy);
+        if (!approverExists)
+            return BadRequest(new { message = "Approver user not found" });
+
         request.Status = 1; // Approved
-        request.ApprovedDeniedAt = DateTime.Now;
+        request.ApprovedDeniedAt = DateTime.UtcNow;
         request.ApprovedDeniedBy = approvedBy;
 
         await _db.SaveChangesAsync();
@@ -404,14 +419,126 @@ public class PtoRequestsController : ControllerBase
             return BadRequest("Request has already been processed");
         }
 
+        // Validate that the denier exists
+        var denierExists = await _db.Users.AnyAsync(u => u.Id == deniedBy);
+        if (!denierExists)
+            return BadRequest(new { message = "Denier user not found" });
+
         request.Status = 2; // Denied
-        request.ApprovedDeniedAt = DateTime.Now;
+        request.ApprovedDeniedAt = DateTime.UtcNow;
         request.ApprovedDeniedBy = deniedBy;
         request.DenyReason = denyRequest.Reason;
 
         await _db.SaveChangesAsync();
         await TrySendPtoDecisionNotificationAsync(request, approved: false, denyReason: denyRequest.Reason);
         return Ok(request);
+    }
+
+    // GET: api/ptorequests/summary/{userId} - Server-side PTO balance calculation
+    [HttpGet("summary/{userId}")]
+    public async Task<IActionResult> GetPtoSummary(int userId, [FromQuery] int? year = null)
+    {
+        var targetYear = year ?? DateTime.UtcNow.Year;
+
+        var yearStart = new DateTime(targetYear, 1, 1);
+        var yearEnd = new DateTime(targetYear, 12, 31);
+
+        // Load all PTO types with their allowances
+        var ptoTypes = await _db.PtoTypes.OrderBy(t => t.Id).ToListAsync();
+
+        // Load approved requests for this user in this year
+        var approvedRequests = await _db.PtoRequests
+            .Where(r => r.UserId == userId && r.Status == 1
+                && r.DateOfLeave >= yearStart && r.DateOfLeave <= yearEnd)
+            .ToListAsync();
+
+        // Load system settings for defaults
+        var settings = await _db.SystemSettings.FindAsync(SettingsId);
+        var defaultAllowance = settings?.DefaultPtoAllowance ?? 120m;
+        var maxCarryover = settings?.MaxPtoCarryover ?? 40m;
+
+        // Group approved hours by PtoTypeId
+        var approvedByType = approvedRequests
+            .GroupBy(r => r.PtoTypeId)
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.Hours));
+
+        var balances = new List<object>
+        {
+            new
+            {
+                typeName = $"{targetYear - 1} Vacation Carryover* (max {maxCarryover}h)",
+                hoursAllowed = 0m,
+                hoursApproved = 0m,
+                hoursRemaining = 0m,
+            }
+        };
+
+        decimal totalAllowed = 0;
+        decimal totalApproved = 0;
+
+        foreach (var pt in ptoTypes.Where(t => t.IsSelectable))
+        {
+            // Use per-type allowance; fall back to system default for type 1
+            var allowed = pt.AnnualAllowance > 0
+                ? pt.AnnualAllowance
+                : (pt.Id == 1 ? defaultAllowance : 0m);
+            var approved = approvedByType.GetValueOrDefault(pt.Id, 0m);
+
+            balances.Add(new
+            {
+                typeName = pt.Name,
+                hoursAllowed = allowed,
+                hoursApproved = approved,
+                hoursRemaining = Math.Max(0, allowed - approved),
+            });
+            totalAllowed += allowed;
+            totalApproved += approved;
+        }
+
+        // Next upcoming approved time off
+        var today = DateTime.UtcNow.Date;
+        var nextApproved = await _db.PtoRequests
+            .Where(r => r.UserId == userId && r.Status == 1 && r.DateOfLeave >= today)
+            .Join(_db.Users,
+                pto => pto.UserId,
+                user => user.Id,
+                (pto, user) => new
+                {
+                    pto.Id,
+                    pto.UserId,
+                    UserName = $"{user.FirstName} {user.LastName}",
+                    user.Department,
+                    pto.DateOfLeave,
+                    pto.EndDate,
+                    pto.Hours,
+                    pto.Reason,
+                    pto.PtoTypeId,
+                    pto.Status,
+                    pto.RequestedAt,
+                    pto.ApprovedDeniedAt,
+                    pto.ApprovedDeniedBy,
+                    pto.DenyReason
+                })
+            .OrderBy(r => r.DateOfLeave)
+            .FirstOrDefaultAsync();
+
+        // Paid Time Off remaining (type 1 specifically)
+        var ptoType1 = ptoTypes.FirstOrDefault(t => t.Id == 1);
+        var pto1Allowed = ptoType1 != null && ptoType1.AnnualAllowance > 0
+            ? ptoType1.AnnualAllowance : defaultAllowance;
+        var pto1Approved = approvedByType.GetValueOrDefault(1, 0m);
+
+        return Ok(new
+        {
+            userId,
+            year = targetYear,
+            balances,
+            totalAllowed,
+            totalApproved,
+            totalRemaining = Math.Max(0, totalAllowed - totalApproved),
+            paidTimeOffRemaining = Math.Max(0, pto1Allowed - pto1Approved),
+            nextApprovedTimeOff = nextApproved,
+        });
     }
 
     // DELETE: api/ptorequests/{id} - Cancel/delete a pending PTO request

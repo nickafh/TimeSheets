@@ -143,6 +143,117 @@ using (var scope = app.Services.CreateScope())
         // Table already exists — ignore
     }
 
+    // Add foreign keys and indexes for existing tables
+    async Task RunIfNotExists(TimeSheetsDbContext dbCtx, string checkSql, string alterSql)
+    {
+        var conn = dbCtx.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = checkSql;
+        var exists = Convert.ToInt32(await cmd.ExecuteScalarAsync()) > 0;
+        if (!exists)
+            await dbCtx.Database.ExecuteSqlRawAsync(alterSql);
+    }
+
+    // Unique index: DailyTimeEntries(UserId, WorkDate)
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'DailyTimeEntries' AND index_name = 'UK_DailyTimeEntries_UserId_WorkDate'",
+            "CREATE UNIQUE INDEX UK_DailyTimeEntries_UserId_WorkDate ON DailyTimeEntries (UserId, WorkDate)");
+    }
+    catch { /* index may already exist */ }
+
+    // Index: PtoRequests(UserId)
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'PtoRequests' AND index_name = 'IX_PtoRequests_UserId'",
+            "CREATE INDEX IX_PtoRequests_UserId ON PtoRequests (UserId)");
+    }
+    catch { /* index may already exist */ }
+
+    // Index: PtoRequests(Status)
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'PtoRequests' AND index_name = 'IX_PtoRequests_Status'",
+            "CREATE INDEX IX_PtoRequests_Status ON PtoRequests (Status)");
+    }
+    catch { /* index may already exist */ }
+
+    // Index: Notifications(IsActive)
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'Notifications' AND index_name = 'IX_Notifications_IsActive'",
+            "CREATE INDEX IX_Notifications_IsActive ON Notifications (IsActive)");
+    }
+    catch { /* index may already exist */ }
+
+    // FK: DailyTimeEntries.UserId -> Users.Id
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = 'DailyTimeEntries' AND constraint_name = 'FK_DailyTimeEntries_UserId'",
+            "ALTER TABLE DailyTimeEntries ADD CONSTRAINT FK_DailyTimeEntries_UserId FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE");
+    }
+    catch { /* constraint may already exist */ }
+
+    // FK: PtoRequests.UserId -> Users.Id
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = 'PtoRequests' AND constraint_name = 'FK_PtoRequests_UserId'",
+            "ALTER TABLE PtoRequests ADD CONSTRAINT FK_PtoRequests_UserId FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE");
+    }
+    catch { /* constraint may already exist */ }
+
+    // FK: PtoRequests.PtoTypeId -> PtoTypes.Id
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = 'PtoRequests' AND constraint_name = 'FK_PtoRequests_PtoTypeId'",
+            "ALTER TABLE PtoRequests ADD CONSTRAINT FK_PtoRequests_PtoTypeId FOREIGN KEY (PtoTypeId) REFERENCES PtoTypes(Id) ON DELETE RESTRICT");
+    }
+    catch { /* constraint may already exist */ }
+
+    // FK: PtoRequests.ApprovedDeniedBy -> Users.Id
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = 'PtoRequests' AND constraint_name = 'FK_PtoRequests_ApprovedDeniedBy'",
+            "ALTER TABLE PtoRequests ADD CONSTRAINT FK_PtoRequests_ApprovedDeniedBy FOREIGN KEY (ApprovedDeniedBy) REFERENCES Users(Id) ON DELETE SET NULL");
+    }
+    catch { /* constraint may already exist */ }
+
+    // FK: Notifications.CreatedByUserId -> Users.Id
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = DATABASE() AND table_name = 'Notifications' AND constraint_name = 'FK_Notifications_CreatedByUserId'",
+            "ALTER TABLE Notifications ADD CONSTRAINT FK_Notifications_CreatedByUserId FOREIGN KEY (CreatedByUserId) REFERENCES Users(Id) ON DELETE CASCADE");
+    }
+    catch { /* constraint may already exist */ }
+
+    // Add AnnualAllowance column to PtoTypes if missing
+    try
+    {
+        await RunIfNotExists(db,
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'PtoTypes' AND column_name = 'AnnualAllowance'",
+            "ALTER TABLE PtoTypes ADD COLUMN AnnualAllowance DECIMAL(10,2) NOT NULL DEFAULT 0");
+
+        // Seed default allowances for existing PTO types that haven't been configured
+        await db.Database.ExecuteSqlRawAsync(@"
+            UPDATE PtoTypes SET AnnualAllowance = 120 WHERE Id = 1 AND AnnualAllowance = 0;
+            UPDATE PtoTypes SET AnnualAllowance = 40  WHERE Id = 2 AND AnnualAllowance = 0;
+            UPDATE PtoTypes SET AnnualAllowance = 8   WHERE Id = 3 AND AnnualAllowance = 0;
+            UPDATE PtoTypes SET AnnualAllowance = 24  WHERE Id = 4 AND AnnualAllowance = 0;
+            UPDATE PtoTypes SET AnnualAllowance = 0   WHERE Id = 5 AND AnnualAllowance = 0;
+        ");
+    }
+    catch { /* column may already exist */ }
+
     // Seed users with passwords
     var hash = BCrypt.Net.BCrypt.HashPassword("Invest123");
 
