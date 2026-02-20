@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Mobile Fix** -- Phases 1-5 (shipped 2026-02-10)
-- 🚧 **v1.1 Pay Types & Time Tracking** -- Phases 6-10 (in progress)
+- 🚧 **v1.1 Pay Types & Time Tracking** -- Phases 6-11 (in progress)
 
 ## Phases
 
@@ -24,11 +24,12 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 **Milestone Goal:** Add salary/hourly classification with exempt/non-exempt status, FLSA-compliant overtime tracking, real-time clock in/out for hourly workers, early closures on the calendar, and styled email notifications.
 
-- [ ] **Phase 6: Pay Type Classification** - Admin can classify employees as Salary/Hourly and Exempt/Non-Exempt
+- [x] **Phase 6: Pay Type Classification** - Admin can classify employees as Salary/Hourly and Exempt/Non-Exempt (completed 2026-02-20)
 - [ ] **Phase 7: Overtime Tracking** - Non-exempt employees see overtime in weekly view; exempt employees see 40-hour warning
 - [ ] **Phase 8: Clock In/Out** - Hourly employees can clock in/out with real-time punches that auto-calculate daily hours
 - [ ] **Phase 9: Early Closure Calendar** - Early closures display on the Time Off Calendar with closing time
 - [ ] **Phase 10: Email Styling** - PTO and system emails use a branded HTML template matching app aesthetic
+- [ ] **Phase 11: ManageUsers Quick-Create Fix** - Add Pay Type/Exemption Status dropdowns to user creation modal (gap closure)
 
 ## Phase Details
 
@@ -104,10 +105,25 @@ Plans:
 Plans:
 - [ ] 10-01: TBD
 
+### Phase 11: ManageUsers Quick-Create Fix
+**Goal**: Add Pay Type and Exemption Status dropdowns to the ManageUsers quick-create modal so admins can set classification during user creation instead of requiring a separate edit step
+**Depends on**: Phase 6
+**Requirements**: PAY-01, PAY-02 (gap closure — create path)
+**Gap Closure**: Closes integration and flow gaps from v1.1 audit
+**Success Criteria** (what must be TRUE):
+  1. ManageUsers quick-create modal includes Pay Type dropdown (Salary/Hourly)
+  2. ManageUsers quick-create modal includes Exemption Status dropdown (Exempt/Non-Exempt)
+  3. Selecting Hourly auto-sets Exemption Status to Non-Exempt and disables the dropdown (matching AdminUserDetails behavior)
+  4. New users created via the modal have correct payType and exemptionStatus persisted to the database
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9 and 10 are independent and can execute in parallel with or after Phase 8.
+Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9, 10, and 11 are independent and can execute in parallel with or after Phase 8. Phase 11 depends only on Phase 6 (already complete) so it can execute immediately.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -116,11 +132,12 @@ Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9 and 
 | 3. Employee Pages | v1.0 | 1/1 | Complete | 2026-02-10 |
 | 4. Manager Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
 | 5. Admin Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
-| 6. Pay Type Classification | v1.1 | 0/2 | Planning complete | - |
+| 6. Pay Type Classification | v1.1 | Complete    | 2026-02-20 | - |
 | 7. Overtime Tracking | v1.1 | 0/? | Not started | - |
 | 8. Clock In/Out | v1.1 | 0/? | Not started | - |
 | 9. Early Closure Calendar | v1.1 | 0/? | Not started | - |
 | 10. Email Styling | v1.1 | 0/? | Not started | - |
+| 11. ManageUsers Quick-Create Fix | v1.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-10*
