@@ -251,6 +251,18 @@ using (var scope = app.Services.CreateScope())
             UPDATE PtoTypes SET AnnualAllowance = 24  WHERE Id = 4 AND AnnualAllowance = 0;
             UPDATE PtoTypes SET AnnualAllowance = 0   WHERE Id = 5 AND AnnualAllowance = 0;
         ");
+
+        // Sync PtoType(1) allowance from SystemSettings so they stay consistent
+        var settings = await db.SystemSettings.FindAsync(1);
+        if (settings != null)
+        {
+            var ptoType1 = await db.PtoTypes.FindAsync(1);
+            if (ptoType1 != null && ptoType1.AnnualAllowance != settings.DefaultPtoAllowance)
+            {
+                ptoType1.AnnualAllowance = settings.DefaultPtoAllowance;
+                await db.SaveChangesAsync();
+            }
+        }
     }
     catch { /* column may already exist */ }
 

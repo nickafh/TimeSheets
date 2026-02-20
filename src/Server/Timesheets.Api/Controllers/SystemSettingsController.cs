@@ -86,6 +86,15 @@ public class SystemSettingsController : ControllerBase
             settings.SendWeeklyReminders = model.SendWeeklyReminders;
             settings.ReminderDayOfWeek = model.ReminderDayOfWeek;
 
+            // Keep PtoTypes(Id=1) "Paid Time Off" allowance in sync with
+            // the system-level DefaultPtoAllowance so that the dashboard
+            // balance calculation uses the admin-configured value.
+            var ptoType1 = await _db.PtoTypes.FindAsync(1);
+            if (ptoType1 != null)
+            {
+                ptoType1.AnnualAllowance = settings.DefaultPtoAllowance;
+            }
+
             await _db.SaveChangesAsync();
             return Ok(settings);
         }
