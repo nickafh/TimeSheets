@@ -40,7 +40,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 **Milestone Goal:** Fix mobile UI overflow bugs, replace all native browser dialogs with styled components, standardize error/loading/empty states, and clean up known tech debt.
 
 - [x] **Phase 12: Shared Components Infrastructure** - Build ErrorBoundary, Toast, ConfirmDialog, LoadingSpinner, and EmptyState as reusable shared components (completed 2026-02-21)
-- [ ] **Phase 13: Mobile UI Overflow Fixes** - Fix header button overflow on admin pages and bottom nav white space on iPhone
+- [x] **Phase 13: Mobile UI Overflow Fixes** - Fix header button overflow on admin pages and bottom nav white space on iPhone (completed 2026-02-21)
 - [ ] **Phase 14: Alert/Confirm Replacement and Error States** - Replace all alert()/confirm() with Toast/ConfirmDialog and add visible error/loading/empty states to every page
 - [ ] **Phase 15: Code Cleanup** - Eliminate hardcoded literals, dead code, silent catch blocks, and CSS hacks
 
@@ -112,7 +112,7 @@ Plans:
 | 10. Email Styling | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 11. ManageUsers Quick-Create Fix | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
-| 13. Mobile UI Overflow Fixes | 1/2 | In Progress|  | - |
+| 13. Mobile UI Overflow Fixes | 2/2 | Complete   | 2026-02-21 | - |
 | 14. Alert/Confirm Replacement and Error States | v1.2 | 0/? | Not started | - |
 | 15. Code Cleanup | v1.2 | 0/? | Not started | - |
 
