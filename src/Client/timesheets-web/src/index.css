@@ -1269,11 +1269,6 @@ h1, h2, h3, h4 {
     letter-spacing: 0.35em;
   }
 
-  /* TODO: Remove this override once all pages use page-container class (see Task 2 migration) */
-  .app-main__content > div {
-    padding: 20px !important;
-  }
-
   /* Page header rows (title + button side by side) */
   .page-header-row {
     flex-direction: column;
