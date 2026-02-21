@@ -11,6 +11,7 @@ import {
   type SystemSettingsDto,
 } from "../api";
 import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 const TimeOffSummary = () => {
   const { user } = useAuth();
@@ -265,8 +266,8 @@ const TimeOffSummary = () => {
           <tbody>
             {loadingPto ? (
               <tr>
-                <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>
-                  Loading...
+                <td colSpan={4} style={{ padding: '32px', textAlign: 'center' }}>
+                  <LoadingSpinner size="sm" />
                 </td>
               </tr>
             ) : ptoSummary?.balances.map((balance, index) => (
@@ -465,8 +466,7 @@ const TimeOffSummary = () => {
 
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
-              <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>Loading...</div>
+              <LoadingSpinner size="sm" />
             </div>
           ) : filteredHolidays.length === 0 ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
@@ -582,8 +582,7 @@ const TimeOffSummary = () => {
 
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
-              <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>Loading...</div>
+              <LoadingSpinner size="sm" />
             </div>
           ) : filteredClosures.length === 0 ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
