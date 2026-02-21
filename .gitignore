@@ -37,6 +37,7 @@ test-results/
 # Logs
 *.log
 npm-debug.log*
+.md
 
 # Design references / working docs
 Style/
