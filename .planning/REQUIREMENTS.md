@@ -7,8 +7,8 @@
 
 ### Mobile UI Fixes
 
-- [ ] **MOB-01**: ManageUsers header buttons (Edit, Password Reset, Deactivate) visible without horizontal overflow at 375px
-- [ ] **MOB-02**: ManageNotifications header/action buttons visible without horizontal overflow at 375px
+- [x] **MOB-01**: ManageUsers header buttons (Edit, Password Reset, Deactivate) visible without horizontal overflow at 375px
+- [x] **MOB-02**: ManageNotifications header/action buttons visible without horizontal overflow at 375px
 - [ ] **MOB-03**: Bottom navigation has no white space gap while scrolling on iPhone
 
 ### Shared Components
@@ -62,8 +62,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOB-01 | Phase 13 | Pending |
-| MOB-02 | Phase 13 | Pending |
+| MOB-01 | Phase 13 | Complete |
+| MOB-02 | Phase 13 | Complete |
 | MOB-03 | Phase 13 | Pending |
 | COMP-01 | Phase 12 | Complete |
 | COMP-02 | Phase 12 | Complete |

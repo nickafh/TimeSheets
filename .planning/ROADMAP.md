@@ -70,7 +70,10 @@ Plans:
   1. ManageUsers page header buttons (Edit, Password Reset, Deactivate) are fully visible and tappable at 375px without horizontal scrolling
   2. ManageNotifications page header and action buttons are fully visible and tappable at 375px without horizontal scrolling
   3. Bottom navigation bar has no white space gap above it while scrolling on a real iPhone
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 13-01-PLAN.md — OverflowMenu component and integration into AdminUserDetails + ManageNotifications
+- [ ] 13-02-PLAN.md — Bottom nav white space fix with 100dvh viewport units
 
 ### Phase 14: Alert/Confirm Replacement and Error States
 **Goal**: All user-facing feedback uses styled components instead of native browser dialogs, and every page handles error, loading, and empty states visibly
@@ -108,8 +111,8 @@ Plans:
 | 9. Early Closure Calendar | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 10. Email Styling | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 11. ManageUsers Quick-Create Fix | v1.1 | 1/1 | Complete | 2026-02-21 |
-| 12. Shared Components Infrastructure | 3/3 | Complete   | 2026-02-21 | - |
-| 13. Mobile UI Overflow Fixes | v1.2 | 0/? | Not started | - |
+| 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
+| 13. Mobile UI Overflow Fixes | 1/2 | In Progress|  | - |
 | 14. Alert/Confirm Replacement and Error States | v1.2 | 0/? | Not started | - |
 | 15. Code Cleanup | v1.2 | 0/? | Not started | - |
 
