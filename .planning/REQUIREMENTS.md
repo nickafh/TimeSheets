@@ -9,7 +9,7 @@
 
 - [x] **MOB-01**: ManageUsers header buttons (Edit, Password Reset, Deactivate) visible without horizontal overflow at 375px
 - [x] **MOB-02**: ManageNotifications header/action buttons visible without horizontal overflow at 375px
-- [x] **MOB-03**: Bottom navigation has no white space gap while scrolling on iPhone
+- [ ] **MOB-03**: Bottom navigation has no white space gap while scrolling on iPhone
 
 ### Shared Components
 
@@ -25,7 +25,7 @@
 - [x] **UX-02**: All confirm() calls replaced with ConfirmDialog modals (10 instances gating destructive actions)
 - [x] **UX-03**: Dashboard shows visible error states per section instead of silent console.error
 - [x] **UX-04**: Pages with silent catch blocks show user-visible error feedback (9 instances)
-- [x] **UX-05**: All pages use standardized LoadingSpinner during data fetches
+- [ ] **UX-05**: All pages use standardized LoadingSpinner during data fetches
 - [x] **UX-06**: All pages use standardized EmptyState when no data exists
 
 ### Code Cleanup
@@ -64,7 +64,7 @@
 |-------------|-------|--------|
 | MOB-01 | Phase 13 | Complete |
 | MOB-02 | Phase 13 | Complete |
-| MOB-03 | Phase 13 | Complete |
+| MOB-03 | Phase 17 | Pending |
 | COMP-01 | Phase 12 | Complete |
 | COMP-02 | Phase 12 | Complete |
 | COMP-03 | Phase 12 | Complete |
@@ -74,7 +74,7 @@
 | UX-02 | Phase 14 | Complete |
 | UX-03 | Phase 14 | Complete |
 | UX-04 | Phase 14 | Complete |
-| UX-05 | Phase 14 | Complete |
+| UX-05 | Phase 16 | Pending |
 | UX-06 | Phase 14 | Complete |
 | CODE-01 | Phase 15 | Complete |
 | CODE-02 | Phase 15 | Complete |
@@ -89,4 +89,4 @@
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after roadmap creation*
+*Last updated: 2026-02-21 after gap closure phase creation*

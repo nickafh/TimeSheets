@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Mobile Fix** — Phases 1-5 (shipped 2026-02-10)
 - ✅ **v1.1 Pay Types & Time Tracking** — Phases 6-11 (shipped 2026-02-21)
-- 🚧 **v1.2 Polish & Hardening** — Phases 12-15 (in progress)
+- 🚧 **v1.2 Polish & Hardening** — Phases 12-17 (in progress)
 
 ## Phases
 
@@ -43,6 +43,8 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 13: Mobile UI Overflow Fixes** - Fix header button overflow on admin pages and bottom nav white space on iPhone (completed 2026-02-21)
 - [x] **Phase 14: Alert/Confirm Replacement and Error States** - Replace all alert()/confirm() with Toast/ConfirmDialog and add visible error/loading/empty states to every page (completed 2026-02-21)
 - [x] **Phase 15: Code Cleanup** - Eliminate hardcoded literals, dead code, silent catch blocks, and CSS hacks (completed 2026-02-21)
+- [ ] **Phase 16: Universal LoadingSpinner Adoption** - Replace all remaining ad-hoc loading indicators with shared LoadingSpinner across 7 pages
+- [ ] **Phase 17: iPhone Bottom Nav Verification** - Verify MOB-03 fix (100dvh) on physical iPhone device
 
 ## Phase Details
 
@@ -103,6 +105,30 @@ Plans:
 - [ ] 15-01-PLAN.md — Extract overtime utils to shared module and remove dead editingUser code
 - [ ] 15-02-PLAN.md — Replace empty catch blocks with console.error and remove CSS !important override
 
+### Phase 16: Universal LoadingSpinner Adoption
+**Goal**: Every page with a data fetch uses the shared LoadingSpinner component instead of ad-hoc loading markup
+**Depends on**: Phase 12 (LoadingSpinner component exists)
+**Requirements**: UX-05
+**Gap Closure:** Closes UX-05 gap from v1.2 audit
+**Success Criteria** (what must be TRUE):
+  1. TimeOffSummary.tsx uses LoadingSpinner for all 3 loading states (replacing ad-hoc hourglass_empty blocks)
+  2. WeeklyTimeEntries.tsx uses LoadingSpinner for both loading indicators
+  3. SystemReports.tsx, CalendarView.tsx, TimeOffRequests.tsx, AdminUserDetails.tsx, TeamMemberDetails.tsx each use LoadingSpinner for their loading states
+  4. Zero ad-hoc loading markup remains across all pages in src/pages/
+Plans:
+- [ ] 16-01-PLAN.md — Replace ad-hoc loading indicators with LoadingSpinner across 7 pages
+
+### Phase 17: iPhone Bottom Nav Verification
+**Goal**: Confirm bottom navigation has no white space gap on physical iPhone after 100dvh CSS fix
+**Depends on**: Phase 13 (100dvh fix already applied)
+**Requirements**: MOB-03
+**Gap Closure:** Closes MOB-03 gap from v1.2 audit — requires physical device testing
+**Success Criteria** (what must be TRUE):
+  1. Bottom navigation bar has no white space gap above it while scrolling on a physical iPhone (Safari)
+  2. Navigation remains fixed at bottom during scroll with dynamic toolbar
+Plans:
+- [ ] 17-01-PLAN.md — Physical iPhone verification checklist and any corrective fixes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -121,7 +147,9 @@ Plans:
 | 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
 | 13. Mobile UI Overflow Fixes | 2/2 | Complete    | 2026-02-21 | - |
 | 14. Alert/Confirm Replacement and Error States | 3/3 | Complete    | 2026-02-21 | - |
-| 15. Code Cleanup | 2/2 | Complete   | 2026-02-21 | - |
+| 15. Code Cleanup | 2/2 | Complete    | 2026-02-21 | - |
+| 16. Universal LoadingSpinner Adoption | v1.2 | 0/1 | Planned | - |
+| 17. iPhone Bottom Nav Verification | v1.2 | 0/1 | Planned | - |
 
 ---
 *Roadmap created: 2026-02-10*
