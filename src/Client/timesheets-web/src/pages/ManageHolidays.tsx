@@ -11,8 +11,14 @@ import {
   type HolidayDto,
   type EarlyClosureDto,
 } from "../api";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { EmptyState } from "../components/EmptyState";
 
 export default function ManageHolidays() {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [holidays, setHolidays] = useState<HolidayDto[]>([]);
   const [closures, setClosures] = useState<EarlyClosureDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +56,7 @@ export default function ManageHolidays() {
       setClosures(closureData);
     } catch (error) {
       console.error("Failed to load data:", error);
-      alert("Failed to load data. Please try again.");
+      showToast("Failed to load data. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -98,7 +104,7 @@ export default function ManageHolidays() {
   const handleHolidaySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!holidayForm.name || !holidayForm.holidayDate) {
-      alert("Name and Date are required");
+      showToast("Name and Date are required", "error");
       return;
     }
 
@@ -109,31 +115,31 @@ export default function ManageHolidays() {
           name: holidayForm.name,
           holidayDate: holidayForm.holidayDate,
         });
-        alert("Holiday updated successfully!");
+        showToast("Holiday updated successfully!", "success");
       } else {
         await createHoliday({
           name: holidayForm.name,
           holidayDate: holidayForm.holidayDate,
         });
-        alert("Holiday created successfully!");
+        showToast("Holiday created successfully!", "success");
       }
       setShowHolidayModal(false);
       await loadData();
     } catch (error) {
       console.error("Failed to save holiday:", error);
-      alert("Failed to save holiday. Please try again.");
+      showToast("Failed to save holiday. Please try again.", "error");
     }
   };
 
   const handleDeleteHoliday = async (holiday: HolidayDto) => {
-    if (!confirm(`Are you sure you want to delete "${holiday.name}"?`)) return;
+    if (!(await confirm("delete this holiday", "Delete"))) return;
     try {
       await deleteHoliday(holiday.id);
       await loadData();
-      alert("Holiday deleted successfully!");
+      showToast("Holiday deleted successfully!", "success");
     } catch (error) {
       console.error("Failed to delete holiday:", error);
-      alert("Failed to delete holiday. Please try again.");
+      showToast("Failed to delete holiday. Please try again.", "error");
     }
   };
 
@@ -157,7 +163,7 @@ export default function ManageHolidays() {
   const handleClosureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!closureForm.name || !closureForm.closureDate || !closureForm.closeTime) {
-      alert("Name, Date, and Close Time are required");
+      showToast("Name, Date, and Close Time are required", "error");
       return;
     }
 
@@ -169,32 +175,32 @@ export default function ManageHolidays() {
           closureDate: closureForm.closureDate,
           closeTime: closureForm.closeTime,
         });
-        alert("Early closure updated successfully!");
+        showToast("Early closure updated successfully!", "success");
       } else {
         await createEarlyClosure({
           name: closureForm.name,
           closureDate: closureForm.closureDate,
           closeTime: closureForm.closeTime,
         });
-        alert("Early closure created successfully!");
+        showToast("Early closure created successfully!", "success");
       }
       setShowClosureModal(false);
       await loadData();
     } catch (error) {
       console.error("Failed to save early closure:", error);
-      alert("Failed to save early closure. Please try again.");
+      showToast("Failed to save early closure. Please try again.", "error");
     }
   };
 
   const handleDeleteClosure = async (closure: EarlyClosureDto) => {
-    if (!confirm(`Are you sure you want to delete "${closure.name}"?`)) return;
+    if (!(await confirm("delete this early closure", "Delete"))) return;
     try {
       await deleteEarlyClosure(closure.id);
       await loadData();
-      alert("Early closure deleted successfully!");
+      showToast("Early closure deleted successfully!", "success");
     } catch (error) {
       console.error("Failed to delete early closure:", error);
-      alert("Failed to delete early closure. Please try again.");
+      showToast("Failed to delete early closure. Please try again.", "error");
     }
   };
 
@@ -221,12 +227,7 @@ export default function ManageHolidays() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-        <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading...</span>
-      </div>
-    );
+    return <LoadingSpinner fullPage message="Loading holidays..." />;
   }
 
   return (
@@ -426,12 +427,7 @@ export default function ManageHolidays() {
           </div>
 
           {filteredHolidays.length === 0 ? (
-            <div style={{ padding: '48px', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>celebration</span>
-              <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-                No holidays for {selectedYear}
-              </p>
-            </div>
+            <EmptyState icon="celebration" message={`No holidays for ${selectedYear}`} ctaLabel="Add Holiday" onCtaClick={openAddHolidayModal} />
           ) : (
             <>
             <div className="admin-table-desktop">
@@ -663,12 +659,7 @@ export default function ManageHolidays() {
           </div>
 
           {filteredClosures.length === 0 ? (
-            <div style={{ padding: '48px', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>schedule</span>
-              <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-                No early closures for {selectedYear}
-              </p>
-            </div>
+            <EmptyState icon="schedule" message={`No early closures for ${selectedYear}`} ctaLabel="Add Early Closure" onCtaClick={openAddClosureModal} />
           ) : (
             <>
             <div className="admin-table-desktop">
