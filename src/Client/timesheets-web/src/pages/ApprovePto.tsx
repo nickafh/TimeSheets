@@ -8,11 +8,17 @@ import {
   formatPtoRequestDateDisplay,
   type PtoRequestWithUserDto,
 } from "../api";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { EmptyState } from "../components/EmptyState";
 
 type TabType = "pending" | "approved" | "denied" | "all";
 
 export default function ApprovePto() {
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [requests, setRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("pending");
@@ -43,14 +49,14 @@ export default function ApprovePto() {
       setRequests(data);
     } catch (error) {
       console.error("Failed to load PTO requests:", error);
-      alert("Failed to load PTO requests. Please try again.");
+      showToast("Failed to load PTO requests.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleApprove = async (request: PtoRequestWithUserDto) => {
-    if (!confirm(`Approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}?`)) {
+    if (!(await confirm(`approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}`, "Approve"))) {
       return;
     }
 
@@ -58,10 +64,10 @@ export default function ApprovePto() {
       setProcessing(request.id);
       await approvePtoRequest(request.id, user?.id ?? 1);
       await loadRequests();
-      alert("PTO request approved successfully!");
+      showToast("PTO request approved!", "success");
     } catch (error) {
       console.error("Failed to approve request:", error);
-      alert("Failed to approve request. Please try again.");
+      showToast("Failed to approve PTO request.", "error");
     } finally {
       setProcessing(null);
     }
@@ -82,10 +88,10 @@ export default function ApprovePto() {
       setShowDenyModal(false);
       setSelectedRequest(null);
       await loadRequests();
-      alert("PTO request denied.");
+      showToast("PTO request denied.", "success");
     } catch (error) {
       console.error("Failed to deny request:", error);
-      alert("Failed to deny request. Please try again.");
+      showToast("Failed to deny PTO request.", "error");
     } finally {
       setProcessing(null);
     }
@@ -185,31 +191,18 @@ export default function ApprovePto() {
 
       {/* Loading State */}
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-          <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading...</span>
-        </div>
+        <LoadingSpinner fullPage message="Loading PTO requests..." />
       ) : requests.length === 0 ? (
-        <div style={{
-          backgroundColor: 'white',
-          border: '1px solid #e2e8f0',
-          borderRadius: '12px',
-          padding: '48px',
-          textAlign: 'center',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>
-            {activeTab === "pending" ? "hourglass_empty" : activeTab === "approved" ? "check_circle" : activeTab === "denied" ? "cancel" : "list"}
-          </span>
-          <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-            {activeTab === "pending"
-              ? "No pending PTO requests."
-              : activeTab === "approved"
-              ? "No approved requests."
-              : activeTab === "denied"
-              ? "No denied requests."
-              : "No PTO requests found."}
-          </p>
-        </div>
+        <EmptyState
+          icon={activeTab === "pending" ? "hourglass_empty" : activeTab === "approved" ? "check_circle" : activeTab === "denied" ? "cancel" : "list"}
+          message={activeTab === "pending"
+            ? "No pending PTO requests."
+            : activeTab === "approved"
+            ? "No approved requests."
+            : activeTab === "denied"
+            ? "No denied requests."
+            : "No PTO requests found."}
+        />
       ) : (
         <>
           {/* Request Count */}
