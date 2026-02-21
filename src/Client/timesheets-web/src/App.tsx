@@ -3,6 +3,9 @@ import { AuthProvider } from "./auth/useAuth";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { RoleProtectedRoute } from "./auth/RoleProtectedRoute";
 import { PageWrapper } from "./components/Layout/PageWrapper";
+import { ToastProvider } from "./components/Toast";
+import { ConfirmProvider } from "./components/ConfirmDialog";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -26,6 +29,9 @@ import SystemSettings from "./pages/SystemSettings";
 function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
+        <ConfirmProvider>
+          <ErrorBoundary level="app">
       <Routes>
         {/* Public login */}
         <Route path="/login" element={<Login />} />
@@ -237,6 +243,9 @@ function App() {
         {/* Default */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+          </ErrorBoundary>
+        </ConfirmProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }
