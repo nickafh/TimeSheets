@@ -14,8 +14,8 @@
 ### Shared Components
 
 - [ ] **COMP-01**: ErrorBoundary component catches render errors and shows recovery UI instead of white screen
-- [ ] **COMP-02**: Toast notification system extracted from ManagerDashboard with success/error/info variants and auto-dismiss
-- [ ] **COMP-03**: ConfirmDialog component extracted from ManagerDashboard for destructive action confirmation
+- [x] **COMP-02**: Toast notification system extracted from ManagerDashboard with success/error/info variants and auto-dismiss
+- [x] **COMP-03**: ConfirmDialog component extracted from ManagerDashboard for destructive action confirmation
 - [x] **COMP-04**: Shared LoadingSpinner component replaces ad-hoc loading markup across pages
 - [x] **COMP-05**: Shared EmptyState component replaces ad-hoc "no data" markup across pages
 
@@ -66,8 +66,8 @@
 | MOB-02 | Phase 13 | Pending |
 | MOB-03 | Phase 13 | Pending |
 | COMP-01 | Phase 12 | Pending |
-| COMP-02 | Phase 12 | Pending |
-| COMP-03 | Phase 12 | Pending |
+| COMP-02 | Phase 12 | Complete |
+| COMP-03 | Phase 12 | Complete |
 | COMP-04 | Phase 12 | Complete |
 | COMP-05 | Phase 12 | Complete |
 | UX-01 | Phase 14 | Pending |
