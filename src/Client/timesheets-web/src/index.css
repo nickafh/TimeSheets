@@ -2829,6 +2829,33 @@ h1, h2, h3, h4 {
 /* END MOBILE UX FIXES */
 
 /* ======================
+   OVERFLOW MENU: show/hide toggle at sm breakpoint (640px)
+   ====================== */
+
+.header-actions-full {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-actions-overflow {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .header-actions-full {
+    display: none !important;
+  }
+  .header-actions-overflow {
+    display: block !important;
+  }
+  .page-header-with-action {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+}
+
+/* ======================
    DATEPICKER
    ====================== */
 
