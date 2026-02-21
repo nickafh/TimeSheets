@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import {
   fetchMyTeamUsers,
@@ -13,6 +13,9 @@ import {
   type NeedsAttentionItemDto,
 } from "../api";
 import { Link } from "react-router-dom";
+import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { EmptyState } from "../components/EmptyState";
 
 const PUNCH_TYPE_LABELS: Record<string, string> = {
   ClockIn: "Clock In",
@@ -23,10 +26,9 @@ const PUNCH_TYPE_LABELS: Record<string, string> = {
 
 const EXPECTED_PUNCH_ORDER = ["ClockIn", "LunchOut", "LunchIn", "ClockOut"];
 
-type Toast = { message: string; type: "success" | "error" };
-
 export default function ManagerDashboard() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [teamMembers, setTeamMembers] = useState<UserDto[]>([]);
   const [pendingPtoRequests, setPendingPtoRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,6 @@ export default function ManagerDashboard() {
   const [showDenyModal, setShowDenyModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<PtoRequestWithUserDto | null>(null);
   const [denyReason, setDenyReason] = useState("");
-  const [toast, setToast] = useState<Toast | null>(null);
 
   // Needs Attention state
   const [needsAttentionItems, setNeedsAttentionItems] = useState<NeedsAttentionItemDto[]>([]);
@@ -47,11 +48,6 @@ export default function ManagerDashboard() {
   const [correctionItem, setCorrectionItem] = useState<NeedsAttentionItemDto | null>(null);
   const [correctionValues, setCorrectionValues] = useState<Record<number, string>>({});
   const [savingCorrection, setSavingCorrection] = useState(false);
-
-  const showToast = useCallback((message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,6 +64,7 @@ export default function ManagerDashboard() {
       } catch (error) {
         console.error("Failed to fetch manager dashboard data:", error);
         setError("Failed to load manager dashboard data.");
+        showToast("Failed to load dashboard data.", "error");
       } finally {
         setLoading(false);
       }
@@ -85,6 +82,7 @@ export default function ManagerDashboard() {
         setNeedsAttentionItems(items);
       } catch (err) {
         console.error("Failed to load needs attention:", err);
+        showToast("Failed to load attention items.", "error");
       } finally {
         setLoadingAttention(false);
       }
@@ -98,6 +96,7 @@ export default function ManagerDashboard() {
       setNeedsAttentionItems(items);
     } catch (err) {
       console.error("Failed to refresh needs attention:", err);
+      showToast("Failed to load attention items.", "error");
     }
   };
 
@@ -107,6 +106,7 @@ export default function ManagerDashboard() {
       setPendingPtoRequests(pending);
     } catch (err) {
       console.error("Failed to refresh pending requests:", err);
+      showToast("Failed to load pending requests.", "error");
     }
   };
 
@@ -226,12 +226,7 @@ export default function ManagerDashboard() {
 
   if (loading) {
     return (
-      <div className="page-container page-container--centered">
-        <div style={{ textAlign: 'center' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
-          <div style={{ fontSize: '16px', color: '#666666', marginTop: '12px' }}>Loading manager dashboard...</div>
-        </div>
-      </div>
+      <LoadingSpinner fullPage message="Loading manager dashboard..." />
     );
   }
 
@@ -407,16 +402,9 @@ export default function ManagerDashboard() {
         </div>
 
         {loadingAttention ? (
-          <div style={{ padding: '48px', textAlign: 'center' }}>
-            <div style={{ fontSize: '14px', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
-          </div>
+          <LoadingSpinner size="sm" />
         ) : needsAttentionItems.length === 0 ? (
-          <div style={{ padding: '48px', textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#059669', opacity: 0.5 }}>check_circle</span>
-            <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>
-              All clear -- no incomplete punches to review.
-            </div>
-          </div>
+          <EmptyState icon="check_circle" message="No items need attention" />
         ) : (
           <div style={{ padding: '0' }}>
             {needsAttentionItems.map((item, index) => {
@@ -549,12 +537,7 @@ export default function ManagerDashboard() {
         </div>
 
         {pendingPtoRequests.length === 0 ? (
-          <div style={{ padding: '48px', textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#059669', opacity: 0.5 }}>task_alt</span>
-            <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>
-              No pending PTO requests at this time.
-            </div>
-          </div>
+          <EmptyState icon="check_circle" message="No pending PTO requests" />
         ) : (
           <>
             <div className="mgr-pto-table">
@@ -1309,47 +1292,6 @@ export default function ManagerDashboard() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Toast Notification */}
-      {toast && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          zIndex: 100,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px 20px',
-          backgroundColor: toast.type === 'success' ? '#002349' : '#dc2626',
-          color: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
-          fontSize: '14px',
-          fontWeight: 600,
-          animation: 'slideInRight 0.3s ease-out',
-          maxWidth: '400px',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '20px', color: toast.type === 'success' ? '#C29B40' : '#fecaca' }}>
-            {toast.type === 'success' ? 'check_circle' : 'error'}
-          </span>
-          {toast.message}
-          <button
-            onClick={() => setToast(null)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.7)',
-              cursor: 'pointer',
-              padding: '0',
-              marginLeft: '8px',
-              display: 'flex',
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
-          </button>
         </div>
       )}
     </div>
