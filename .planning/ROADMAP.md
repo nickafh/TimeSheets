@@ -26,7 +26,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 - [x] **Phase 6: Pay Type Classification** - Admin can classify employees as Salary/Hourly and Exempt/Non-Exempt (completed 2026-02-20)
 - [x] **Phase 7: Overtime Tracking** - Non-exempt employees see overtime in weekly view; exempt employees see 40-hour warning (completed 2026-02-20)
-- [ ] **Phase 8: Clock In/Out** - Hourly employees can clock in/out with real-time punches that auto-calculate daily hours
+- [x] **Phase 8: Clock In/Out** - Hourly employees can clock in/out with real-time punches that auto-calculate daily hours (completed 2026-02-21)
 - [ ] **Phase 9: Early Closure Calendar** - Early closures display on the Time Off Calendar with closing time
 - [ ] **Phase 10: Email Styling** - PTO and system emails use a branded HTML template matching app aesthetic
 - [x] **Phase 11: ManageUsers Quick-Create Fix** - Add Pay Type/Exemption Status dropdowns to user creation modal (gap closure) (completed 2026-02-21)
@@ -135,7 +135,7 @@ Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9, 10,
 | 5. Admin Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
 | 6. Pay Type Classification | v1.1 | Complete    | 2026-02-20 | - |
 | 7. Overtime Tracking | v1.1 | 2/2 | Complete | 2026-02-20 |
-| 8. Clock In/Out | v1.1 | 0/4 | Not started | - |
+| 8. Clock In/Out | 4/4 | Complete   | 2026-02-21 | - |
 | 9. Early Closure Calendar | v1.1 | 0/? | Not started | - |
 | 10. Email Styling | v1.1 | 0/? | Not started | - |
 | 11. ManageUsers Quick-Create Fix | v1.1 | Complete    | 2026-02-21 | 2026-02-21 |

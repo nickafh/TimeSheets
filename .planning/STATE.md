@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 8 of 11 (Clock In/Out)
-Plan: 3 of 4 in current phase (08-03 complete)
-Status: Executing
-Last activity: 2026-02-21 -- Completed 08-03-PLAN.md
+Phase: 8 of 11 (Clock In/Out) -- COMPLETE
+Plan: 4 of 4 in current phase (08-04 complete)
+Status: Phase complete -- ready for Phase 9
+Last activity: 2026-02-21 -- Completed 08-04-PLAN.md (verification)
 
 Progress: [################....] 82% (9/11 phases in progress)
 
@@ -38,6 +38,7 @@ Progress: [################....] 82% (9/11 phases in progress)
 | 08    | 01   | 2 min    | 2     | 4     |
 | 08    | 02   | 4 min    | 2     | 2     |
 | 08    | 03   | 7 min    | 2     | 2     |
+| 08    | 04   | 20 min   | 1     | 2     |
 
 ## Accumulated Context
 
@@ -75,8 +76,11 @@ v1.1 decisions:
 
 v1.1 pending decisions:
 - Maximum shift duration for missed-punch flagging (research recommends 12 hours)
-- [Phase 08]: Clock status card spans full width at top of dashboard grid, uses status dot with glow for active states
-- [Phase 08]: Needs Attention card uses amber border when items exist, correction modal uses datetime-local with 1-minute change threshold
+
+v1.1 resolved decisions (08-04):
+- [Phase 08]: Clock status card redesigned to compact 2-column layout to fit dashboard 2x2 grid (original plan had full-width)
+- [Phase 08]: This Week's Hours card hidden for hourly employees since clock view replaces weekly grid entry
+- [Phase 08]: OXC parser stricter than Babel -- conditional JSX requires ternary with null, not && with fragment
 
 ### Pending Todos
 
@@ -88,8 +92,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21 (08-03 execution)
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-02-21 (08-04 verification)
+Stopped at: Completed 08-04-PLAN.md -- Phase 08 Clock In/Out fully complete
 Resume file: None
 
 ---
