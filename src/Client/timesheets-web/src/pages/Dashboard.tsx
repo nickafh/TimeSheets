@@ -411,8 +411,8 @@ const Dashboard = () => {
         {/* Clock Status Card (hourly employees only) */}
         {renderClockStatusCard()}
 
-        {/* This Week's Hours */}
-        <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+        {/* This Week's Hours (salary employees only — hourly employees have Clock Status instead) */}
+        {!isHourly && <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{ padding: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>This Week's Hours</h3>
@@ -453,7 +453,7 @@ const Dashboard = () => {
               Enter Time
             </Link>
           </div>
-        </div>
+        </div>}
 
         {/* Time Off Overview */}
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
