@@ -1,7 +1,7 @@
 // src/pages/CalendarView.tsx
 
 import { useEffect, useState } from "react";
-import { fetchHolidays, fetchAllPtoRequests, fetchCalendarToken, API_BASE_URL } from "../api";
+import { fetchHolidays, fetchAllPtoRequests, fetchEarlyClosures, fetchCalendarToken, API_BASE_URL } from "../api";
 
 interface Holiday {
   id: number;
@@ -26,6 +26,13 @@ interface PtoEntry {
   hoursForThisDay: number;
 }
 
+interface EarlyClosureEvent {
+  id: number;
+  name: string;
+  date: string;
+  closeTime: string;
+}
+
 interface CalendarDay {
   date: Date;
   dateStr: string;
@@ -33,6 +40,7 @@ interface CalendarDay {
   isToday: boolean;
   holidays: Holiday[];
   ptoEntries: PtoEntry[];
+  earlyClosures: EarlyClosureEvent[];
 }
 
 // Department color scheme - vibrant colors matching the design
@@ -142,6 +150,7 @@ export default function CalendarView() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [ptoRequests, setPtoRequests] = useState<PtoRequest[]>([]);
+  const [earlyClosures, setEarlyClosures] = useState<EarlyClosureEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
@@ -180,8 +189,18 @@ export default function CalendarView() {
           reason: p.reason
         }));
 
+        // Fetch early closures
+        const earlyClosuresData = await fetchEarlyClosures();
+        const mappedClosures: EarlyClosureEvent[] = earlyClosuresData.map(ec => ({
+          id: ec.id,
+          name: ec.name,
+          date: ec.closureDate.split('T')[0],
+          closeTime: ec.closeTime,
+        }));
+
         setHolidays(mappedHolidays);
         setPtoRequests(mappedPto);
+        setEarlyClosures(mappedClosures);
       } catch (error: any) {
         console.error("Failed to fetch calendar data:", error);
         setError(error?.message || "Failed to load calendar data");
@@ -339,13 +358,18 @@ export default function CalendarView() {
       ptoEntries.push({ pto, hoursForThisDay });
     }
 
+    const dayEarlyClosures = dayHolidays.length > 0
+      ? []
+      : earlyClosures.filter(ec => ec.date === dateStr);
+
     return {
       date,
       dateStr,
       isCurrentMonth,
       isToday,
       holidays: dayHolidays,
-      ptoEntries
+      ptoEntries,
+      earlyClosures: dayEarlyClosures,
     };
   });
 
@@ -605,7 +629,7 @@ export default function CalendarView() {
                   {calendarDays.slice(weekIdx * 7, (weekIdx + 1) * 7).map((day, dayIdx) => {
                     const isWeekend = day.date.getDay() === 0 || day.date.getDay() === 6;
                     const isSelected = day.dateStr === selectedDate;
-                    const hasEvents = day.holidays.length > 0 || day.ptoEntries.filter(e => e.hoursForThisDay > 0).length > 0;
+                    const hasEvents = day.holidays.length > 0 || day.ptoEntries.filter(e => e.hoursForThisDay > 0).length > 0 || day.earlyClosures.length > 0;
 
                     return (
                       <td
