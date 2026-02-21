@@ -356,11 +356,12 @@ export default function AdminUserDetails() {
       )}
 
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div style={{
+      <div className="user-detail-header" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="user-detail-identity" style={{ display: 'flex', alignItems: 'center', gap: '24px', minWidth: 0 }}>
+          <div className="user-detail-avatar" style={{
             width: '80px',
             height: '80px',
+            minWidth: '56px',
             borderRadius: '50%',
             backgroundColor: '#002349',
             display: 'flex',
@@ -373,12 +374,12 @@ export default function AdminUserDetails() {
           }}>
             {user.firstName.charAt(0)}{user.lastName.charAt(0)}
           </div>
-          <div>
-            <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '4px' }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 className="user-detail-name" style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '4px' }}>
               {user.firstName} {user.lastName}
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span style={{ color: '#666666', fontSize: '15px' }}>{user.email}</span>
+            <div className="user-detail-meta" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span className="user-detail-email" style={{ color: '#666666', fontSize: '15px' }}>{user.email}</span>
               <span style={{
                 padding: '4px 12px',
                 borderRadius: '4px',
