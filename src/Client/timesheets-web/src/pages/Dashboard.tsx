@@ -246,7 +246,6 @@ const Dashboard = () => {
         border: '1px solid #e2e8f0',
         borderRadius: '2px',
         overflow: 'hidden',
-        gridColumn: '1 / -1',
       }}>
         <div style={{ padding: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
