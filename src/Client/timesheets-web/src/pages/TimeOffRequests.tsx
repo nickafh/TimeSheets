@@ -7,10 +7,12 @@ import {
   type PtoRequestWithUserDto,
 } from "../api";
 import { useAuth } from "../auth/useAuth";
+import { useConfirm } from "../components/ConfirmDialog";
 
 const TimeOffRequests = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { confirm } = useConfirm();
 
   const [requests, setRequests] = useState<PtoRequestWithUserDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,10 +80,7 @@ const TimeOffRequests = () => {
   };
 
   const handleCancelRequest = async (request: PtoRequestWithUserDto) => {
-    const confirmed = window.confirm(
-      `Cancel your request for ${formatPtoRequestDateDisplay(request)}?`
-    );
-    if (!confirmed) return;
+    if (!(await confirm(`cancel your PTO request for ${formatPtoRequestDateDisplay(request)}`, "Cancel Request"))) return;
 
     try {
       setCancellingId(request.id);

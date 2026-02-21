@@ -9,6 +9,8 @@ import {
   type UserDto,
 } from "../api";
 import { getWeekStart } from "../utils/dateUtils";
+import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 type ViewType = "summary" | "detailed";
 
@@ -17,6 +19,7 @@ function formatDate(date: Date): string {
 }
 
 export default function TeamTimeEntries() {
+  const { showToast } = useToast();
   const [viewType, setViewType] = useState<ViewType>("summary");
   const [weekStartDay, setWeekStartDay] = useState<number>(1); // default Monday
   const [weekStart, setWeekStart] = useState<Date>(getWeekStart(new Date(), 1));
@@ -50,6 +53,7 @@ export default function TeamTimeEntries() {
       setUsers(data);
     } catch (error) {
       console.error("Failed to load users:", error);
+      showToast("Failed to load team members.", "error");
     }
   };
 
@@ -68,6 +72,7 @@ export default function TeamTimeEntries() {
       }
     } catch (error) {
       console.error("Failed to load time entries:", error);
+      showToast("Failed to load time entries.", "error");
     } finally {
       setLoading(false);
     }
@@ -238,10 +243,7 @@ export default function TeamTimeEntries() {
 
       {/* Loading State */}
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-          <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading...</span>
-        </div>
+        <LoadingSpinner fullPage message="Loading team entries..." />
       ) : viewType === "summary" ? (
         <>
           {/* Summary Stats */}

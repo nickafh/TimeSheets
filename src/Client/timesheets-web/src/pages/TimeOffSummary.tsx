@@ -10,9 +10,11 @@ import {
   type UserPtoSummary,
   type SystemSettingsDto,
 } from "../api";
+import { useToast } from "../components/Toast";
 
 const TimeOffSummary = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [holidays, setHolidays] = useState<HolidayDto[]>([]);
   const [closures, setClosures] = useState<EarlyClosureDto[]>([]);
   const [ptoSummary, setPtoSummary] = useState<UserPtoSummary | null>(null);
@@ -42,6 +44,7 @@ const TimeOffSummary = () => {
       setSysSettings(settingsData);
     } catch (error) {
       console.error("Failed to load data:", error);
+      showToast("Failed to load time off data.", "error");
     } finally {
       setLoading(false);
     }
@@ -55,6 +58,7 @@ const TimeOffSummary = () => {
       setPtoSummary(summary);
     } catch (error) {
       console.error("Failed to load PTO summary:", error);
+      showToast("Failed to load PTO summary.", "error");
     } finally {
       setLoadingPto(false);
     }

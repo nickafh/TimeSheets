@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSystemSettings, updateSystemSettings, type SystemSettingsDto } from "../api";
+import { useConfirm } from "../components/ConfirmDialog";
 
 type SystemSettingsData = SystemSettingsDto;
 
@@ -38,6 +39,7 @@ const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "F
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function SystemSettings() {
+  const { confirm } = useConfirm();
   const [settings, setSettings] = useState<SystemSettingsData>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -75,10 +77,9 @@ export default function SystemSettings() {
     }
   };
 
-  const handleReset = () => {
-    if (confirm("Are you sure you want to reset all settings to defaults? This only affects this form; save to apply.")) {
-      setSettings({ ...DEFAULT_SETTINGS, id: settings.id });
-    }
+  const handleReset = async () => {
+    if (!(await confirm("reset all settings to defaults", "Reset"))) return;
+    setSettings({ ...DEFAULT_SETTINGS, id: settings.id });
   };
 
   const updateSetting = <K extends keyof SystemSettingsData>(key: K, value: SystemSettingsData[K]) => {

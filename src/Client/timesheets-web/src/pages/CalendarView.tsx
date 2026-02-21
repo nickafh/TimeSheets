@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchHolidays, fetchAllPtoRequests, fetchEarlyClosures, fetchCalendarToken, API_BASE_URL } from "../api";
+import { useToast } from "../components/Toast";
 
 interface Holiday {
   id: number;
@@ -144,6 +145,7 @@ function getWorkdaysInRange(startStr: string, endStr: string, holidayDates: Set<
 }
 
 export default function CalendarView() {
+  const { showToast } = useToast();
   const today = new Date();
 
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -204,6 +206,7 @@ export default function CalendarView() {
       } catch (error: any) {
         console.error("Failed to fetch calendar data:", error);
         setError(error?.message || "Failed to load calendar data");
+        showToast("Failed to load calendar data.", "error");
       } finally {
         setLoading(false);
       }
@@ -258,6 +261,7 @@ export default function CalendarView() {
         .catch((err) => {
           console.error('Failed to fetch calendar token:', err);
           setCalendarTokenError(err?.message || 'Failed to load calendar link. Please try again.');
+          showToast("Failed to load sharing token.", "error");
           setIsLoadingToken(false);
         });
     }
@@ -303,6 +307,7 @@ export default function CalendarView() {
     } catch (err) {
       console.error('Failed to copy:', err);
       setCalendarTokenError('Failed to copy URL to clipboard. Please try again.');
+      showToast("Failed to copy URL to clipboard.", "error");
     }
   };
 
@@ -322,6 +327,7 @@ export default function CalendarView() {
     } catch (err) {
       console.error('Failed to copy:', err);
       setCalendarTokenError('Failed to copy URL to clipboard. Please try again.');
+      showToast("Failed to copy URL to clipboard.", "error");
     }
   };
 
