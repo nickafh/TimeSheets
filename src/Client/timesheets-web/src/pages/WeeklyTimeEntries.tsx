@@ -290,29 +290,30 @@ function HourlyClockView({
         {/* Card Header */}
         <div style={{
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "20px 24px",
+          gap: "8px",
+          padding: "16px 20px",
           borderBottom: "1px solid #e2e8f0",
           backgroundColor: "#f8fafc",
         }}>
-          <div>
-            <div style={{
-              fontSize: "18px",
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: 700,
-              color: "#002349",
-            }}>
-              Clock - {todayFormatted}
-            </div>
+          <div style={{
+            fontSize: "16px",
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            color: "#002349",
+          }}>
+            Clock - {todayFormatted}
           </div>
           <div style={{
             backgroundColor: isDayComplete ? "#059669" : state === "lunch_out" ? "#d97706" : state === "not_started" ? "#64748b" : "#2563eb",
             color: "white",
-            padding: "8px 16px",
+            padding: "6px 14px",
             borderRadius: "6px",
             fontSize: "13px",
             fontWeight: 700,
+            whiteSpace: "nowrap",
           }}>
             {STATE_LABELS[state] ?? state}
           </div>
@@ -371,12 +372,14 @@ function HourlyClockView({
           )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - 2x2 grid on mobile, single row on desktop */}
         <div style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
           gap: "12px",
           padding: "0 24px 24px",
-          justifyContent: "center",
+          maxWidth: "720px",
+          margin: "0 auto",
         }}>
           {buttonConfig.map((btn) => {
             const isValid = validActions.includes(btn.type);
@@ -387,10 +390,8 @@ function HourlyClockView({
                 disabled={!isValid || punching}
                 onClick={() => handlePunch(btn.type)}
                 style={{
-                  flex: 1,
-                  maxWidth: "180px",
-                  padding: "16px 12px",
-                  fontSize: "13px",
+                  padding: "18px 12px",
+                  fontSize: "14px",
                   fontWeight: 700,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
@@ -571,11 +572,11 @@ function HourlyClockView({
         </div>
       </div>
 
-      {/* Undo Toast */}
+      {/* Undo Toast - bottom: 80px to clear mobile bottom nav */}
       {undoPunchId !== null && (
         <div style={{
           position: "fixed",
-          bottom: "24px",
+          bottom: "80px",
           left: "50%",
           transform: "translateX(-50%)",
           backgroundColor: "#1e293b",
