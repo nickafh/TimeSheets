@@ -402,7 +402,7 @@ export default function ManagerDashboard() {
         </div>
 
         {loadingAttention ? (
-          <LoadingSpinner size="sm" />
+          <LoadingSpinner />
         ) : needsAttentionItems.length === 0 ? (
           <EmptyState icon="check_circle" message="No items need attention" />
         ) : (

@@ -294,7 +294,7 @@ const Dashboard = () => {
           </div>
 
           {loadingClock ? (
-            <LoadingSpinner size="sm" />
+            <LoadingSpinner />
           ) : clockError ? (
             <EmptyState icon="error" message="Unable to load clock status" />
           ) : (
@@ -392,7 +392,7 @@ const Dashboard = () => {
       {/* Notifications Section */}
       {loadingNotifications && (
         <div style={{ marginBottom: '32px' }}>
-          <LoadingSpinner size="sm" />
+          <LoadingSpinner />
         </div>
       )}
       {!loadingNotifications && notificationError && (
@@ -448,7 +448,7 @@ const Dashboard = () => {
                 {weekRange.monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – {weekRange.friday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </p>
               {loadingWeek ? (
-                <LoadingSpinner size="sm" />
+                <LoadingSpinner />
               ) : weekError ? (
                 <EmptyState icon="error" message="Unable to load weekly hours" />
               ) : (
@@ -495,7 +495,7 @@ const Dashboard = () => {
               A quick snapshot of your PTO balance and next upcoming approved day off.
             </p>
             {loadingPto ? (
-              <LoadingSpinner size="sm" />
+              <LoadingSpinner />
             ) : ptoError ? (
               <EmptyState icon="error" message="Unable to load PTO summary" />
             ) : (
@@ -539,7 +539,7 @@ const Dashboard = () => {
             </div>
 
             {loadingHolidays ? (
-              <LoadingSpinner size="sm" />
+              <LoadingSpinner />
             ) : holidayError ? (
               <EmptyState icon="error" message="Unable to load holidays" />
             ) : filteredHolidays.length === 0 ? (
@@ -618,7 +618,7 @@ const Dashboard = () => {
             </div>
 
             {loadingHolidays ? (
-              <LoadingSpinner size="sm" />
+              <LoadingSpinner />
             ) : holidayError ? (
               <EmptyState icon="error" message="Unable to load early closures" />
             ) : filteredClosures.length === 0 ? (

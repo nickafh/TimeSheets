@@ -267,7 +267,7 @@ const TimeOffSummary = () => {
             {loadingPto ? (
               <tr>
                 <td colSpan={4} style={{ padding: '32px', textAlign: 'center' }}>
-                  <LoadingSpinner size="sm" />
+                  <LoadingSpinner />
                 </td>
               </tr>
             ) : ptoSummary?.balances.map((balance, index) => (
@@ -466,7 +466,7 @@ const TimeOffSummary = () => {
 
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
-              <LoadingSpinner size="sm" />
+              <LoadingSpinner />
             </div>
           ) : filteredHolidays.length === 0 ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
@@ -582,7 +582,7 @@ const TimeOffSummary = () => {
 
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
-              <LoadingSpinner size="sm" />
+              <LoadingSpinner />
             </div>
           ) : filteredClosures.length === 0 ? (
             <div style={{ padding: '48px', textAlign: 'center' }}>
