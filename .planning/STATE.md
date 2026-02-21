@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Accurately track employee hours based on pay type and exemption status, with overtime handling and real-time clock punches for hourly workers
-**Current focus:** Phase 15 - Code Cleanup
+**Current focus:** Phase 16 - Universal Loading Spinner
 
 ## Current Position
 
-Phase: 15 of 15 (Code Cleanup)
-Plan: 2 of 2
+Phase: 16 of 17 (Universal Loading Spinner)
+Plan: 1 of 1
 Status: Complete
-Last activity: 2026-02-21 — Completed 15-02 Empty Catch Blocks and CSS Override Removal
+Last activity: 2026-02-21 — Completed 16-01 Universal LoadingSpinner replacement across 9 pages
 
-Progress: [██████████████████████████████] 100% (15/15 phases)
+Progress: [████████████████████████████░░] 94% (16/17 phases)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [███████████████████████
 | 14    | 03   | 10 min   | 2     | 6     |
 | 15    | 01   | 3 min    | 2     | 4     |
 | 15    | 02   | 2 min    | 2     | 7     |
+| 16    | 01   | 5 min    | 2     | 9     |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ All v1.0 and v1.1 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 14]: useConfirm async guard pattern: if (!(await confirm("action", "Label"))) return; as standard for all destructive actions
 - [Phase 15]: Shared utils pattern for domain constants (overtimeUtils.ts follows dateUtils.ts convention)
 - [Phase 15]: console.error only (no toasts) for background/optional load failures to avoid user noise while enabling developer debugging
+- [Phase 16]: Button-level submission spinners (progress_activity in save/submit buttons) left as-is — different concern from page-level loading consistency
+- [Phase 16]: Default md size everywhere for LoadingSpinner — no size='sm' usage
 
 ### Pending Todos
 
@@ -84,7 +87,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 15-02-PLAN.md
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
 
 ---

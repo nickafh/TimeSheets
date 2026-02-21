@@ -43,7 +43,7 @@ See: `.planning/milestones/v1.1-ROADMAP.md` for full details.
 - [x] **Phase 13: Mobile UI Overflow Fixes** - Fix header button overflow on admin pages and bottom nav white space on iPhone (completed 2026-02-21)
 - [x] **Phase 14: Alert/Confirm Replacement and Error States** - Replace all alert()/confirm() with Toast/ConfirmDialog and add visible error/loading/empty states to every page (completed 2026-02-21)
 - [x] **Phase 15: Code Cleanup** - Eliminate hardcoded literals, dead code, silent catch blocks, and CSS hacks (completed 2026-02-21)
-- [ ] **Phase 16: Universal LoadingSpinner Adoption** - Replace all remaining ad-hoc loading indicators with shared LoadingSpinner across 7 pages
+- [x] **Phase 16: Universal LoadingSpinner Adoption** - Replace all remaining ad-hoc loading indicators with shared LoadingSpinner across 9 pages (completed 2026-02-21)
 - [ ] **Phase 17: iPhone Bottom Nav Verification** - Verify MOB-03 fix (100dvh) on physical iPhone device
 
 ## Phase Details
@@ -115,8 +115,9 @@ Plans:
   2. WeeklyTimeEntries.tsx uses LoadingSpinner for both loading indicators
   3. SystemReports.tsx, CalendarView.tsx, TimeOffRequests.tsx, AdminUserDetails.tsx, TeamMemberDetails.tsx each use LoadingSpinner for their loading states
   4. Zero ad-hoc loading markup remains across all pages in src/pages/
+**Plans**: 1 plan
 Plans:
-- [ ] 16-01-PLAN.md — Replace ad-hoc loading indicators with LoadingSpinner across 7 pages
+- [x] 16-01-PLAN.md — Replace ad-hoc loading indicators and standardize size across 9 pages (completed 2026-02-21)
 
 ### Phase 17: iPhone Bottom Nav Verification
 **Goal**: Confirm bottom navigation has no white space gap on physical iPhone after 100dvh CSS fix
@@ -148,7 +149,7 @@ Plans:
 | 13. Mobile UI Overflow Fixes | 2/2 | Complete    | 2026-02-21 | - |
 | 14. Alert/Confirm Replacement and Error States | 3/3 | Complete    | 2026-02-21 | - |
 | 15. Code Cleanup | 2/2 | Complete    | 2026-02-21 | - |
-| 16. Universal LoadingSpinner Adoption | v1.2 | 0/1 | Planned | - |
+| 16. Universal LoadingSpinner Adoption | v1.2 | 1/1 | Complete | 2026-02-21 |
 | 17. iPhone Bottom Nav Verification | v1.2 | 0/1 | Planned | - |
 
 ---
