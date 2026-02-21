@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { OverflowMenu } from "../components/OverflowMenu";
 import {
   fetchUserById,
   fetchUserPtoRequests,
@@ -398,73 +399,84 @@ export default function AdminUserDetails() {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div>
           {!isEditing ? (
             <>
-              <button
-                onClick={() => setIsEditing(true)}
-                style={{
-                  backgroundColor: '#002349',
-                  color: 'white',
-                  padding: '12px 24px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  minHeight: '44px',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
-                Edit User
-              </button>
-              <button
-                onClick={() => { setShowSetPassword(!showSetPassword); setPasswordMsg(null); setNewPassword(""); }}
-                style={{
-                  backgroundColor: '#C29B40',
-                  color: 'white',
-                  padding: '12px 24px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  minHeight: '44px',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>lock_reset</span>
-                Set Password
-              </button>
-              <button
-                onClick={handleToggleActive}
-                disabled={saving}
-                style={{
-                  backgroundColor: user.isActive === 1 ? '#dc2626' : '#059669',
-                  color: 'white',
-                  padding: '12px 24px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                  opacity: saving ? 0.7 : 1,
-                  minHeight: '44px',
-                }}
-              >
-                {user.isActive === 1 ? 'Deactivate' : 'Activate'}
-              </button>
+              {/* Full buttons - visible at sm+ (>=640px) */}
+              <div className="header-actions-full">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    backgroundColor: '#002349',
+                    color: 'white',
+                    padding: '12px 24px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                  Edit User
+                </button>
+                <button
+                  onClick={() => { setShowSetPassword(!showSetPassword); setPasswordMsg(null); setNewPassword(""); }}
+                  style={{
+                    backgroundColor: '#C29B40',
+                    color: 'white',
+                    padding: '12px 24px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    minHeight: '44px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>lock_reset</span>
+                  Set Password
+                </button>
+                <button
+                  onClick={handleToggleActive}
+                  disabled={saving}
+                  style={{
+                    backgroundColor: user.isActive === 1 ? '#dc2626' : '#059669',
+                    color: 'white',
+                    padding: '12px 24px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    minHeight: '44px',
+                  }}
+                >
+                  {user.isActive === 1 ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+              {/* Overflow menu - visible at <640px */}
+              <div className="header-actions-overflow">
+                <OverflowMenu items={[
+                  { label: 'Edit User', icon: 'edit', onClick: () => setIsEditing(true) },
+                  { label: 'Set Password', icon: 'lock_reset', onClick: () => { setShowSetPassword(!showSetPassword); setPasswordMsg(null); setNewPassword(""); } },
+                  { label: user.isActive === 1 ? 'Deactivate' : 'Activate', icon: user.isActive === 1 ? 'person_off' : 'person', onClick: handleToggleActive, variant: user.isActive === 1 ? 'danger' : 'default' },
+                ]} />
+              </div>
             </>
           ) : (
             <>

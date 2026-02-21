@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
+import { OverflowMenu } from "../components/OverflowMenu";
 import {
   fetchAllNotifications,
   createNotification,
@@ -203,7 +204,7 @@ export default function ManageNotifications() {
   return (
     <div className="page-container">
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="page-header-with-action" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ fontSize: '36px', fontFamily: "'Playfair Display', serif", color: '#002349', marginBottom: '8px' }}>
             Manage Notifications
@@ -541,7 +542,8 @@ export default function ManageNotifications() {
                   <span>{new Date(notification.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                 </div>
               )}
-              <div className="admin-card__actions">
+              {/* Full card buttons - visible at sm+ */}
+              <div className="admin-card__actions header-actions-full">
                 <button
                   onClick={() => openEditModal(notification)}
                   style={{
@@ -641,6 +643,14 @@ export default function ManageNotifications() {
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
                   Delete
                 </button>
+              </div>
+              {/* Overflow menu - visible at <640px */}
+              <div className="header-actions-overflow" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                <OverflowMenu items={[
+                  { label: 'Edit', icon: 'edit', onClick: () => openEditModal(notification) },
+                  { label: notification.isActive === 1 ? 'Hide' : 'Show', icon: notification.isActive === 1 ? 'visibility_off' : 'visibility', onClick: () => notification.isActive === 1 ? handleDeactivate(notification) : handleActivate(notification) },
+                  { label: 'Delete', icon: 'delete', onClick: () => handleDelete(notification), variant: 'danger' },
+                ]} />
               </div>
             </div>
           ))
