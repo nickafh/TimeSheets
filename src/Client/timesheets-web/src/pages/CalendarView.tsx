@@ -376,6 +376,7 @@ export default function CalendarView() {
   // Legend items matching the image
   const legendItems = [
     { label: "Company Holiday", color: "#94a3b8", outline: true },
+    { label: "Early Closure", color: "#C29B40" },
     { label: "IT", color: "#3b82f6" },
     { label: "Marketing", color: "#ef4444" },
     { label: "Accounting", color: "#22c55e" },
@@ -682,6 +683,28 @@ export default function CalendarView() {
                             </div>
                           ))}
 
+                          {/* Early Closures */}
+                          {day.earlyClosures.map(ec => (
+                            <div
+                              key={`ec-${ec.id}`}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: isSelected ? 'white' : '#92700C',
+                                backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(194, 155, 64, 0.12)',
+                                borderLeft: `3px solid ${isSelected ? 'white' : '#C29B40'}`,
+                                borderRadius: '0 4px 4px 0',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                              title={`${ec.name} - Close at ${ec.closeTime}`}
+                            >
+                              Early Close {ec.closeTime}
+                            </div>
+                          ))}
+
                           {/* PTO Requests - workdays only, hours per day */}
                           {day.ptoEntries.filter(e => e.hoursForThisDay > 0).map(entry => {
                             const colors = getDepartmentColors(entry.pto.department);
@@ -712,9 +735,12 @@ export default function CalendarView() {
                         {/* Events - Mobile (dots only) */}
                         {hasEvents && (
                           <div className="calendar-cell__events--mobile" style={{ display: 'none', justifyContent: 'center', gap: '3px', marginTop: '4px' }}>
-                            {day.holidays.length > 0 && (
+                            {day.holidays.length > 0 ? (
                               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? 'white' : '#C29B40' }} />
-                            )}
+                            ) : null}
+                            {day.earlyClosures.length > 0 ? (
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.8)' : '#C29B40' }} />
+                            ) : null}
                             {day.ptoEntries.filter(e => e.hoursForThisDay > 0).slice(0, 3).map((_, i) => (
                               <span key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.7)' : '#C29B40' }} />
                             ))}
@@ -759,11 +785,29 @@ export default function CalendarView() {
           </div>
         ))}
 
-        {peopleAway.length === 0 && selectedDayData?.holidays.length === 0 && (
+        {selectedDayData?.earlyClosures.map(ec => (
+          <div key={`ec-detail-${ec.id}`} style={{
+            backgroundColor: 'rgba(194, 155, 64, 0.08)',
+            padding: '16px',
+            borderRadius: '8px',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}>
+            <span className="material-symbols-outlined" style={{ color: '#C29B40', fontSize: '20px' }}>schedule</span>
+            <div>
+              <p style={{ fontWeight: 600, color: '#002349' }}>Early Close {ec.closeTime}</p>
+              <p style={{ fontSize: '12px', color: '#C29B40' }}>{ec.name}</p>
+            </div>
+          </div>
+        ))}
+
+        {peopleAway.length === 0 && selectedDayData?.holidays.length === 0 && selectedDayData?.earlyClosures.length === 0 ? (
           <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }}>
             No time off scheduled for this date
           </div>
-        )}
+        ) : null}
 
         {peopleAway.map(entry => {
           const colors = getDepartmentColors(entry.pto.department);
