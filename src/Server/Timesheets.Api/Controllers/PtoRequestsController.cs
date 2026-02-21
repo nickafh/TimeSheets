@@ -16,12 +16,14 @@ public class PtoRequestsController : ControllerBase
     private const int SettingsId = 1;
     private readonly TimeSheetsDbContext _db;
     private readonly IAppEmailSender _emailSender;
+    private readonly EmailTemplateService _emailTemplateService;
     private readonly ILogger<PtoRequestsController> _logger;
 
-    public PtoRequestsController(TimeSheetsDbContext db, IAppEmailSender emailSender, ILogger<PtoRequestsController> logger)
+    public PtoRequestsController(TimeSheetsDbContext db, IAppEmailSender emailSender, EmailTemplateService emailTemplateService, ILogger<PtoRequestsController> logger)
     {
         _db = db;
         _emailSender = emailSender;
+        _emailTemplateService = emailTemplateService;
         _logger = logger;
     }
 
@@ -687,18 +689,17 @@ public class PtoRequestsController : ControllerBase
             if (managerEmails.Count == 0)
                 return;
 
-            var subject = "PTO request submitted – " + employeeName;
-            var body = $@"
-<p><strong>{employeeName}</strong> has submitted a time off request.</p>
-<ul>
-<li><strong>Dates:</strong> {dateRange}</li>
-<li><strong>Hours:</strong> {request.Hours}</li>
-</ul>
-<p>Please review and approve or deny in the timesheet app.</p>";
+            var ptoType = await _db.PtoTypes.FindAsync(request.PtoTypeId);
+            var ptoTypeName = ptoType?.Name ?? "PTO";
+
+            var subject = $"New PTO Request to Review \u2013 {employeeName}";
             foreach (var to in managerEmails)
             {
                 try
                 {
+                    var manager = await _db.Users.FirstOrDefaultAsync(u => u.Email == to.Trim());
+                    var managerFirstName = manager?.FirstName ?? "there";
+                    var body = _emailTemplateService.BuildPtoSubmittedEmail(managerFirstName, employeeName, dateRange, request.Hours, ptoTypeName, request.Id);
                     await _emailSender.SendAsync(to.Trim(), subject, body.Trim());
                 }
                 catch (Exception ex)
@@ -726,14 +727,17 @@ public class PtoRequestsController : ControllerBase
                 return;
 
             var dateRange = request.EndDate.HasValue && request.EndDate.Value > request.DateOfLeave
-                ? $"{request.DateOfLeave:MMM d, yyyy} – {request.EndDate.Value:MMM d, yyyy}"
+                ? $"{request.DateOfLeave:MMM d, yyyy} \u2013 {request.EndDate.Value:MMM d, yyyy}"
                 : request.DateOfLeave.ToString("MMM d, yyyy");
 
-            var subject = approved ? "Your PTO request was approved" : "Your PTO request was denied";
+            var ptoType = await _db.PtoTypes.FindAsync(request.PtoTypeId);
+            var ptoTypeName = ptoType?.Name ?? "PTO";
+            var employeeFirstName = employee.FirstName ?? "there";
+
+            var subject = approved ? "Your PTO Has Been Approved" : "Your PTO Request Was Denied";
             var body = approved
-                ? $@"<p>Your time off request for <strong>{dateRange}</strong> ({request.Hours} hours) has been <strong>approved</strong>.</p>"
-                : $@"<p>Your time off request for <strong>{dateRange}</strong> ({request.Hours} hours) has been <strong>denied</strong>.</p>"
-                  + (string.IsNullOrWhiteSpace(denyReason) ? "" : $"<p><strong>Reason:</strong> {System.Net.WebUtility.HtmlEncode(denyReason)}</p>");
+                ? _emailTemplateService.BuildPtoApprovedEmail(employeeFirstName, dateRange, request.Hours, ptoTypeName, request.Id)
+                : _emailTemplateService.BuildPtoDeniedEmail(employeeFirstName, dateRange, request.Hours, ptoTypeName, denyReason, request.Id);
 
             await _emailSender.SendAsync(employee.Email.Trim(), subject, body.Trim());
         }

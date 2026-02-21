@@ -18,13 +18,15 @@ public class SystemSettingsController : ControllerBase
     private const int SettingsId = 1;
     private readonly TimeSheetsDbContext _db;
     private readonly IAppEmailSender _emailSender;
+    private readonly EmailTemplateService _emailTemplateService;
     private readonly IWebHostEnvironment _env;
     private readonly IConfiguration _config;
 
-    public SystemSettingsController(TimeSheetsDbContext db, IAppEmailSender emailSender, IWebHostEnvironment env, IConfiguration config)
+    public SystemSettingsController(TimeSheetsDbContext db, IAppEmailSender emailSender, EmailTemplateService emailTemplateService, IWebHostEnvironment env, IConfiguration config)
     {
         _db = db;
         _emailSender = emailSender;
+        _emailTemplateService = emailTemplateService;
         _env = env;
         _config = config;
     }
@@ -124,8 +126,8 @@ public class SystemSettingsController : ControllerBase
         {
             await _emailSender.SendAsync(
                 to.Trim(),
-                "Timesheets – test email",
-                "<p>This is a test email from your timesheet application. If you received this, Microsoft Graph API and System Email are configured correctly.</p>",
+                "AFH TimeSheets \u2013 Test Email",
+                _emailTemplateService.BuildTestEmail(),
                 isBodyHtml: true,
                 cancellationToken);
             return Ok(new { message = "Test email sent to " + to });
