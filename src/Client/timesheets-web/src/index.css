@@ -2983,6 +2983,17 @@ h1, h2, h3, h4 {
    TOAST / ANIMATIONS
    ====================== */
 
+@keyframes slideInDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
