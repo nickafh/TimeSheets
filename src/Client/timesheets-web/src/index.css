@@ -72,6 +72,7 @@ h1, h2, h3, h4 {
 .app-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh; /* iOS Safari: use dynamic viewport height */
   width: 100%;
 }
 
@@ -88,6 +89,7 @@ h1, h2, h3, h4 {
   flex-direction: column;
   position: fixed;
   height: 100vh;
+  height: 100dvh; /* iOS Safari: use dynamic viewport height */
   z-index: 20;
 }
 
@@ -446,6 +448,7 @@ h1, h2, h3, h4 {
 
 .login-page {
   min-height: 100vh;
+  min-height: 100dvh; /* iOS Safari: use dynamic viewport height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1159,6 +1162,7 @@ h1, h2, h3, h4 {
     right: -280px;
     width: 280px;
     height: 100vh;
+    height: 100dvh; /* iOS Safari: use dynamic viewport height */
     background: white;
     z-index: 101;
     transition: right 0.3s ease;
@@ -1406,6 +1410,7 @@ h1, h2, h3, h4 {
     max-width: 100% !important;
     margin: 0 !important;
     max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 120px); /* iOS Safari: use dynamic viewport height */
     overflow-y: auto;
   }
 
@@ -1556,6 +1561,7 @@ h1, h2, h3, h4 {
 
 .page-container {
   min-height: 100vh;
+  min-height: 100dvh; /* iOS Safari: use dynamic viewport height */
   background-color: var(--bg-main);
   padding: 40px;
 }
