@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 7 of 10 (Overtime Tracking)
-Plan: 1 of 2 in current phase
-Status: In Progress
-Last activity: 2026-02-20 -- Completed 07-01-PLAN.md
+Phase: 7 of 10 (Overtime Tracking) -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-02-20 -- Completed 07-02-PLAN.md
 
-Progress: [#############.......] 65% (6.5/10 phases)
+Progress: [##############......] 70% (7/10 phases)
 
 ## Performance Metrics
 
@@ -24,15 +24,16 @@ Progress: [#############.......] 65% (6.5/10 phases)
 - Total execution time: 0.51 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 2
-- Average duration: 1.5 minutes
-- Total execution time: 0.05 hours
+- Total plans completed: 3
+- Average duration: 1.7 minutes
+- Total execution time: 0.08 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 06    | 01   | 1 min    | 2     | 4     |
 | 06    | 02   | 2 min    | 2     | 4     |
 | 07    | 01   | 4 min    | 2     | 5     |
+| 07    | 02   | 2 min    | 1     | 1     |
 
 ## Accumulated Context
 
@@ -49,6 +50,11 @@ v1.1 decisions:
 
 - Shared dateUtils.ts exports getWeekStart, addDays, toDateOnlyString, getDayName, formatWeekLabel for reuse across pages
 - Each page independently fetches workWeekStartDay from SystemSettings on mount (no prop-drilling or context)
+- OT_THRESHOLD constant (40) defined once at module level, referenced throughout
+- Overtime row uses plain text (not input elements) for read-only display
+- Amber (#d97706) color for overtime values and exempt warning badge
+- Non-exempt weekly total badge uses "X / 40h" format to show threshold
+- Exempt warning badge replaces normal badge only when worked > 40, shows neutral message
 
 v1.1 pending decisions:
 - Maximum shift duration for missed-punch flagging (research recommends 12 hours)
@@ -63,8 +69,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20 (07-01 execution)
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-02-20 (07-02 execution)
+Stopped at: Completed 07-02-PLAN.md (Phase 7 complete)
 Resume file: None
 
 ---

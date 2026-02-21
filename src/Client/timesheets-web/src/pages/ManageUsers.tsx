@@ -38,7 +38,10 @@ export default function ManageUsers() {
     isPartTime: 0,
     isIntern: 0,
     role: "Employee",
+    payType: "",
+    exemptionStatus: "",
   });
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -102,15 +105,23 @@ export default function ManageUsers() {
       isPartTime: 0,
       isIntern: 0,
       role: "Employee",
+      payType: "",
+      exemptionStatus: "",
     });
+    setSubmitted(false);
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
 
     if (!formData.firstName || !formData.lastName || !formData.email) {
       alert("First Name, Last Name, and Email are required");
+      return;
+    }
+
+    if (!editingUser && (!formData.payType || !formData.exemptionStatus)) {
       return;
     }
 
@@ -140,8 +151,8 @@ export default function ManageUsers() {
           isPartTime: formData.isPartTime || 0,
           isIntern: formData.isIntern || 0,
           role: formData.role || "Employee",
-          payType: "Salary",
-          exemptionStatus: "Exempt",
+          payType: formData.payType || "Salary",
+          exemptionStatus: formData.exemptionStatus || "Exempt",
         });
         await updateUserManagers(created.id, formData.managerIds ?? []);
       }
@@ -973,6 +984,67 @@ export default function ManageUsers() {
                   </select>
                 </div>
               </div>
+
+              {/* Pay Type and Exemption Status */}
+              {!editingUser && (
+                <div className="form-grid-2" style={{ marginBottom: '16px' }}>
+                  <div>
+                    <label style={labelStyle}>
+                      Pay Type <span style={{ color: '#dc2626' }}>*</span>
+                    </label>
+                    <select
+                      value={formData.payType || ""}
+                      onChange={(e) => {
+                        const newPayType = e.target.value;
+                        setFormData({
+                          ...formData,
+                          payType: newPayType,
+                          exemptionStatus: newPayType === "Hourly" ? "NonExempt" : "",
+                        });
+                      }}
+                      style={{ ...inputStyle, cursor: 'pointer' }}
+                    >
+                      <option value="">-- Select --</option>
+                      <option value="Salary">Salary</option>
+                      <option value="Hourly">Hourly</option>
+                    </select>
+                    {submitted && !formData.payType && (
+                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>
+                        Pay Type is required
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label style={labelStyle}>
+                      Exemption Status <span style={{ color: '#dc2626' }}>*</span>
+                    </label>
+                    <select
+                      value={formData.exemptionStatus || ""}
+                      onChange={(e) => setFormData({ ...formData, exemptionStatus: e.target.value })}
+                      disabled={formData.payType === "Hourly"}
+                      style={{
+                        ...inputStyle,
+                        cursor: formData.payType === "Hourly" ? 'not-allowed' : 'pointer',
+                        opacity: formData.payType === "Hourly" ? 0.6 : 1,
+                      }}
+                    >
+                      <option value="">-- Select --</option>
+                      <option value="Exempt">Exempt</option>
+                      <option value="NonExempt">Non-Exempt</option>
+                    </select>
+                    {formData.payType === "Hourly" && (
+                      <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#64748b', marginTop: '6px' }}>
+                        Hourly employees are always Non-Exempt
+                      </div>
+                    )}
+                    {submitted && !formData.exemptionStatus && (
+                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>
+                        Exemption Status is required
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Employee Type Checkboxes */}
               <div style={{
