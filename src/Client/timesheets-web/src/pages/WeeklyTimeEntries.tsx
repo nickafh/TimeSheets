@@ -1,17 +1,21 @@
 // src/pages/WeeklyTimeEntries.tsx
 
-import { useEffect, useMemo, useState } from "react";
-import type { DailyTimeEntryDto, PtoRequestWithUserDto } from "../api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DailyTimeEntryDto, PtoRequestWithUserDto, ClockStatusDto, ClockPunchDto } from "../api";
 import {
   fetchDailyTimeEntries,
   saveDailyTimeEntriesBulk,
   fetchUserPtoRequests,
   getSystemSettings,
+  fetchClockStatus,
+  recordPunch,
+  undoLastPunch,
 } from "../api";
 import { useAuth } from "../auth/useAuth";
 import { getWeekStart, addDays, toDateOnlyString, getDayName, formatWeekLabel } from "../utils/dateUtils";
 
 const OT_THRESHOLD = 40;
+const UNDO_WINDOW_MS = 5000;
 
 function calculateDailyOvertime(days: { workedHours: number }[]): number[] {
   let cumulativeWorked = 0;
@@ -51,9 +55,570 @@ function isWeekend(dateStr: string): boolean {
   return day === 0 || day === 6;
 }
 
+// --- Punch type labels and colors ---
+const PUNCH_TYPE_LABELS: Record<string, string> = {
+  ClockIn: "Clock In",
+  LunchOut: "Lunch Out",
+  LunchIn: "Lunch In",
+  ClockOut: "Clock Out",
+};
+
+const STATE_LABELS: Record<string, string> = {
+  not_started: "Not Started",
+  clocked_in: "Clocked In",
+  lunch_out: "On Lunch",
+  lunch_in: "Back from Lunch",
+  clocked_out: "Day Complete",
+};
+
+function formatTime(isoString: string): string {
+  const d = new Date(isoString);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// ----- Hourly Clock View (inline) -----
+
+function HourlyClockView({
+  userId,
+  weekStartDay,
+}: {
+  userId: number;
+  weekStartDay: number;
+}) {
+  const today = useMemo(() => new Date(), []);
+
+  // Clock status state
+  const [clockStatus, setClockStatus] = useState<ClockStatusDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [punching, setPunching] = useState(false);
+  const [error, setError] = useState("");
+
+  // Undo state
+  const [undoPunchId, setUndoPunchId] = useState<number | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Elapsed time
+  const [elapsed, setElapsed] = useState<string>("00:00:00");
+
+  // Weekly summary state
+  const [weekStart] = useState<Date>(() => getWeekStart(today, weekStartDay));
+  const [weeklyHours, setWeeklyHours] = useState<{ date: string; dayName: string; hours: number }[]>([]);
+
+  // Fetch clock status on mount
+  useEffect(() => {
+    setLoading(true);
+    fetchClockStatus()
+      .then((s) => setClockStatus(s))
+      .catch((e) => setError(e?.message ?? "Failed to load clock status"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Live elapsed timer
+  useEffect(() => {
+    if (!clockStatus?.clockInTime) {
+      setElapsed("00:00:00");
+      return;
+    }
+
+    const clockInMs = new Date(clockStatus.clockInTime).getTime();
+    const lunchMs = (clockStatus.lunchMinutes ?? 0) * 60 * 1000;
+    const state = clockStatus.currentState;
+
+    function tick() {
+      const now = Date.now();
+      let elapsedMs = now - clockInMs - lunchMs;
+
+      // If on lunch, freeze elapsed at the pre-lunch value
+      if (state === "lunch_out") {
+        elapsedMs = now - clockInMs - lunchMs;
+        // lunchMinutes hasn't been updated yet for the active lunch, so we need to
+        // calculate by finding when lunch started
+        const lunchOutPunch = clockStatus?.todayPunches
+          ?.filter((p: ClockPunchDto) => p.punchType === "LunchOut")
+          .pop();
+        if (lunchOutPunch) {
+          const lunchStartMs = new Date(lunchOutPunch.punchTime).getTime();
+          const activeLunchMs = now - lunchStartMs;
+          elapsedMs = now - clockInMs - lunchMs - activeLunchMs;
+        }
+      }
+
+      if (elapsedMs < 0) elapsedMs = 0;
+      setElapsed(formatElapsed(Math.floor(elapsedMs / 1000)));
+    }
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [clockStatus]);
+
+  // Fetch weekly summary
+  useEffect(() => {
+    const start = toDateOnlyString(weekStart);
+    const end = toDateOnlyString(addDays(weekStart, 6));
+
+    fetchDailyTimeEntries(userId, start, end)
+      .then((entries) => {
+        const hoursByDate = new Map<string, number>();
+        for (const e of entries) {
+          hoursByDate.set(e.workDate.slice(0, 10), e.workedHours);
+        }
+
+        const days: { date: string; dayName: string; hours: number }[] = [];
+        for (let i = 0; i < 7; i++) {
+          const d = addDays(weekStart, i);
+          const ds = toDateOnlyString(d);
+          days.push({
+            date: ds,
+            dayName: getDayName(ds),
+            hours: hoursByDate.get(ds) ?? 0,
+          });
+        }
+        setWeeklyHours(days);
+      })
+      .catch(() => {});
+  }, [userId, weekStart, clockStatus?.currentState]);
+
+  // Clear undo timer on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
+
+  const handlePunch = useCallback(async (punchType: string) => {
+    setPunching(true);
+    setError("");
+
+    // Clear any existing undo state
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+    setUndoPunchId(null);
+
+    try {
+      const result = await recordPunch(punchType);
+      setClockStatus(result);
+
+      // Set undo for the newly created punch
+      const newPunch = result.todayPunches[result.todayPunches.length - 1];
+      if (newPunch) {
+        setUndoPunchId(newPunch.id);
+        undoTimerRef.current = setTimeout(() => {
+          setUndoPunchId(null);
+          undoTimerRef.current = null;
+        }, UNDO_WINDOW_MS);
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to record punch");
+    } finally {
+      setPunching(false);
+    }
+  }, []);
+
+  const handleUndo = useCallback(async () => {
+    if (!undoPunchId) return;
+
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+
+    try {
+      const result = await undoLastPunch(undoPunchId);
+      setClockStatus(result);
+      setUndoPunchId(null);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to undo punch");
+      setUndoPunchId(null);
+    }
+  }, [undoPunchId]);
+
+  const todayFormatted = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const weeklyTotal = weeklyHours.reduce((s, d) => s + d.hours, 0);
+
+  if (loading) {
+    return (
+      <div style={{
+        backgroundColor: "white",
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        padding: "48px",
+        textAlign: "center",
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "#C29B40", opacity: 0.5 }}>hourglass_empty</span>
+        <div style={{ fontSize: "14px", color: "#666666", marginTop: "12px" }}>Loading clock status...</div>
+      </div>
+    );
+  }
+
+  const state = clockStatus?.currentState ?? "not_started";
+  const validActions = clockStatus?.validNextActions ?? [];
+  const isDayComplete = state === "clocked_out";
+
+  const buttonConfig: { type: string; label: string; activeColor: string; activeBorder: string; activeText: string }[] = [
+    { type: "ClockIn", label: "Clock In", activeColor: "#ecfdf5", activeBorder: "#059669", activeText: "#059669" },
+    { type: "LunchOut", label: "Lunch Out", activeColor: "#fffbeb", activeBorder: "#d97706", activeText: "#d97706" },
+    { type: "LunchIn", label: "Lunch In", activeColor: "#fffbeb", activeBorder: "#d97706", activeText: "#d97706" },
+    { type: "ClockOut", label: "Clock Out", activeColor: "#fef2f2", activeBorder: "#dc2626", activeText: "#dc2626" },
+  ];
+
+  return (
+    <>
+      {/* Clock Controls Card */}
+      <div style={{
+        backgroundColor: "white",
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        overflow: "hidden",
+        marginBottom: "24px",
+      }}>
+        {/* Card Header */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "20px 24px",
+          borderBottom: "1px solid #e2e8f0",
+          backgroundColor: "#f8fafc",
+        }}>
+          <div>
+            <div style={{
+              fontSize: "18px",
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: 700,
+              color: "#002349",
+            }}>
+              Clock - {todayFormatted}
+            </div>
+          </div>
+          <div style={{
+            backgroundColor: isDayComplete ? "#059669" : state === "lunch_out" ? "#d97706" : state === "not_started" ? "#64748b" : "#2563eb",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}>
+            {STATE_LABELS[state] ?? state}
+          </div>
+        </div>
+
+        {/* Elapsed Time + Day Complete */}
+        <div style={{ padding: "32px 24px", textAlign: "center" }}>
+          {isDayComplete ? (
+            <div>
+              <div style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "#64748b",
+                marginBottom: "8px",
+              }}>
+                Day Complete
+              </div>
+              <div style={{
+                fontSize: "48px",
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: 700,
+                color: "#059669",
+              }}>
+                {clockStatus?.totalHoursToday != null ? clockStatus.totalHoursToday.toFixed(2) : "--"} hrs
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "#64748b",
+                marginBottom: "8px",
+              }}>
+                {state === "not_started" ? "Ready to Clock In" : "Elapsed Time"}
+              </div>
+              <div style={{
+                fontSize: "48px",
+                fontFamily: "monospace",
+                fontWeight: 700,
+                color: state === "lunch_out" ? "#d97706" : "#002349",
+                letterSpacing: "0.05em",
+              }}>
+                {state === "not_started" ? "--:--:--" : elapsed}
+              </div>
+              {state === "lunch_out" && (
+                <div style={{ fontSize: "13px", color: "#d97706", marginTop: "4px" }}>
+                  Timer paused during lunch
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{
+          display: "flex",
+          gap: "12px",
+          padding: "0 24px 24px",
+          justifyContent: "center",
+        }}>
+          {buttonConfig.map((btn) => {
+            const isValid = validActions.includes(btn.type);
+            return (
+              <button
+                key={btn.type}
+                type="button"
+                disabled={!isValid || punching}
+                onClick={() => handlePunch(btn.type)}
+                style={{
+                  flex: 1,
+                  maxWidth: "180px",
+                  padding: "16px 12px",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  borderRadius: "8px",
+                  cursor: isValid && !punching ? "pointer" : "not-allowed",
+                  opacity: isValid ? 1 : 0.4,
+                  backgroundColor: isValid ? btn.activeColor : "#f8fafc",
+                  border: `2px solid ${isValid ? btn.activeBorder : "#e2e8f0"}`,
+                  color: isValid ? btn.activeText : "#94a3b8",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {btn.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <div style={{
+            margin: "0 24px 16px",
+            borderLeft: "4px solid #ef4444",
+            backgroundColor: "#fef2f2",
+            padding: "12px 16px",
+            borderRadius: "0 8px 8px 0",
+            fontSize: "14px",
+            color: "#b91c1c",
+          }}>
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {/* Today's Punch Log */}
+        {clockStatus && clockStatus.todayPunches.length > 0 && (
+          <div style={{
+            borderTop: "1px solid #e2e8f0",
+            padding: "16px 24px",
+            backgroundColor: "#fafafa",
+          }}>
+            <div style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "#64748b",
+              marginBottom: "8px",
+            }}>
+              Today's Punches
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              {clockStatus.todayPunches.map((punch: ClockPunchDto) => (
+                <div
+                  key={punch.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "6px 0",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#002349", fontWeight: 600, fontFamily: "monospace" }}>
+                    {formatTime(punch.punchTime)}
+                  </span>
+                  <span style={{ color: "#64748b" }}>
+                    {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Read-Only Weekly Summary */}
+      <div style={{
+        backgroundColor: "white",
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "16px 24px",
+          borderBottom: "1px solid #e2e8f0",
+          backgroundColor: "#f8fafc",
+        }}>
+          <div style={{
+            fontSize: "14px",
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            color: "#002349",
+          }}>
+            Weekly Summary
+          </div>
+          <div style={{
+            backgroundColor: weeklyTotal >= 40 ? "#059669" : "#64748b",
+            color: "white",
+            padding: "4px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            fontWeight: 700,
+          }}>
+            {weeklyTotal.toFixed(1)} / 40h
+          </div>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#002349" }}>
+                {weeklyHours.map((day) => (
+                  <th
+                    key={day.date}
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "center",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      color: "white",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    <div>{day.dayName}</div>
+                    <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.6)", marginTop: "2px" }}>
+                      {day.date.slice(5)}
+                    </div>
+                  </th>
+                ))}
+                <th style={{
+                  padding: "12px 16px",
+                  textAlign: "right",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "white",
+                  letterSpacing: "0.05em",
+                }}>
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {weeklyHours.map((day) => (
+                  <td
+                    key={day.date}
+                    style={{
+                      padding: "16px 8px",
+                      textAlign: "center",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: day.hours > 0 ? "#002349" : "#cbd5e1",
+                      fontFamily: "'Playfair Display', serif",
+                    }}
+                  >
+                    {day.hours > 0 ? day.hours.toFixed(1) : "--"}
+                  </td>
+                ))}
+                <td style={{
+                  padding: "16px",
+                  textAlign: "right",
+                  fontSize: "18px",
+                  fontFamily: "'Playfair Display', serif",
+                  fontWeight: 700,
+                  color: "#002349",
+                  backgroundColor: "#f8fafc",
+                }}>
+                  {weeklyTotal.toFixed(1)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Undo Toast */}
+      {undoPunchId !== null && (
+        <div style={{
+          position: "fixed",
+          bottom: "24px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "#1e293b",
+          color: "white",
+          padding: "12px 24px",
+          borderRadius: "8px",
+          fontSize: "14px",
+          fontWeight: 500,
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          zIndex: 1000,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+        }}>
+          <span>Punch recorded.</span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#60a5fa",
+              fontSize: "14px",
+              fontWeight: 700,
+              cursor: "pointer",
+              textDecoration: "underline",
+              padding: 0,
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ----- Main Component -----
+
 export default function WeeklyTimeEntries() {
   const today = useMemo(() => new Date(), []);
   const { user: authUser } = useAuth();
+  const isHourly = authUser?.payType === "Hourly";
   const isNonExempt = authUser?.exemptionStatus === "NonExempt";
   const isExempt = authUser?.exemptionStatus === "Exempt";
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -102,16 +667,18 @@ export default function WeeklyTimeEntries() {
     }
   }, [authUser]);
 
-  // Load approved PTO requests for this user
+  // Load approved PTO requests for this user (salary path only)
   useEffect(() => {
+    if (isHourly) return;
     if (!selectedUserId) return;
     fetchUserPtoRequests(selectedUserId)
       .then((reqs) => setApprovedPtoRequests(reqs.filter((r) => r.status === 1)))
       .catch(() => {});
-  }, [selectedUserId]);
+  }, [selectedUserId, isHourly]);
 
   // Build a set of dates with approved PTO and a map of date -> { hours, reason, ptoTypeName }
   const approvedPtoByDate = useMemo(() => {
+    if (isHourly) return new Map<string, { hours: number; note: string }>();
     const PTO_TYPE_NAMES: Record<number, string> = {
       1: "PTO", 2: "Jury Duty", 3: "Volunteer", 4: "Bereavement", 5: "Leave",
     };
@@ -124,22 +691,22 @@ export default function WeeklyTimeEntries() {
       const typeName = PTO_TYPE_NAMES[req.ptoTypeId] || "PTO";
 
       if (startStr === endStr) {
-        // Single day – use exact hours from request
-        const note = `Approved ${typeName}${req.reason ? ` – ${req.reason}` : ""}`;
+        // Single day - use exact hours from request
+        const note = `Approved ${typeName}${req.reason ? ` - ${req.reason}` : ""}`;
         const existing = map.get(startStr);
         map.set(startStr, {
           hours: (existing?.hours || 0) + req.hours,
           note: existing ? `${existing.note}; ${note}` : note,
         });
       } else {
-        // Date range – count working days and distribute hours evenly
+        // Date range - count working days and distribute hours evenly
         let workDays = 0;
         for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
           const dow = cur.getDay();
           if (dow !== 0 && dow !== 6) workDays++;
         }
         const hoursPerDay = workDays > 0 ? req.hours / workDays : req.hours;
-        const note = `Approved ${typeName}${req.reason ? ` – ${req.reason}` : ""}`;
+        const note = `Approved ${typeName}${req.reason ? ` - ${req.reason}` : ""}`;
         for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
           const dow = cur.getDay();
           if (dow === 0 || dow === 6) continue;
@@ -153,10 +720,11 @@ export default function WeeklyTimeEntries() {
       }
     }
     return map;
-  }, [approvedPtoRequests]);
+  }, [approvedPtoRequests, isHourly]);
 
-  // Load time entries
+  // Load time entries (salary path only)
   useEffect(() => {
+    if (isHourly) return;
     if (!selectedUserId) return;
 
     (async () => {
@@ -228,7 +796,7 @@ export default function WeeklyTimeEntries() {
         setLoading(false);
       }
     })();
-  }, [selectedUserId, currentWeekStart, weeksToShow, approvedPtoByDate]);
+  }, [selectedUserId, currentWeekStart, weeksToShow, approvedPtoByDate, isHourly]);
 
   // Navigation
   const handlePrevWeek = () => {
@@ -331,6 +899,26 @@ export default function WeeklyTimeEntries() {
     }
   };
 
+  // --- Hourly employee: render clock interface ---
+  if (isHourly && selectedUserId) {
+    return (
+      <div className="page-container">
+        {/* Header */}
+        <div style={{ marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "36px", fontFamily: "'Playfair Display', serif", color: "#002349", marginBottom: "8px" }}>
+            Time Entries
+          </h1>
+          <p style={{ color: "#666666", fontSize: "15px" }}>
+            Clock in and out to track your work hours.
+          </p>
+        </div>
+
+        <HourlyClockView userId={selectedUserId} weekStartDay={weekStartDay} />
+      </div>
+    );
+  }
+
+  // --- Salary employee: existing weekly grid ---
   return (
     <div className="page-container">
       {/* Header */}
@@ -415,7 +1003,7 @@ export default function WeeklyTimeEntries() {
               <div style={{ minWidth: '150px', textAlign: 'center', padding: '0 8px' }}>
                 <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>Week of</div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: '#002349', marginTop: '4px' }}>
-                  {weeks[0]?.weekLabel || "—"}
+                  {weeks[0]?.weekLabel || "\u2014"}
                 </div>
               </div>
 
@@ -559,7 +1147,7 @@ export default function WeeklyTimeEntries() {
                 }}>
                   <div>
                     <div style={{ fontSize: '18px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#002349' }}>
-                      {week.weekLabel} • {new Date(week.weekStart).getFullYear()}
+                      {week.weekLabel} {"\u2022"} {new Date(week.weekStart).getFullYear()}
                     </div>
                   </div>
 
@@ -881,7 +1469,7 @@ export default function WeeklyTimeEntries() {
                               value={day.notes || ""}
                               readOnly
                               tabIndex={-1}
-                              placeholder={day.approvedPto ? "" : "—"}
+                              placeholder={day.approvedPto ? "" : "\u2014"}
                               style={{
                                 width: '100%',
                                 minWidth: '80px',
@@ -968,7 +1556,7 @@ export default function WeeklyTimeEntries() {
                           value={day.notes || ""}
                           readOnly
                           tabIndex={-1}
-                          placeholder={day.approvedPto ? "" : "—"}
+                          placeholder={day.approvedPto ? "" : "\u2014"}
                           className="timesheet-day-card__notes"
                           style={{ backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc', color: day.approvedPto ? '#2563eb' : '#94a3b8', borderColor: day.approvedPto ? '#93c5fd' : '#e2e8f0', cursor: 'default' }}
                         />
@@ -1029,8 +1617,8 @@ export default function WeeklyTimeEntries() {
         <div>
           <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#002349', marginBottom: '4px' }}>Quick Tips</div>
           <div style={{ fontSize: '13px', color: '#666666' }}>
-            Use <strong style={{ color: '#002349' }}>0.5 increments</strong> (30 min) •
-            Click <strong style={{ color: '#C29B40' }}>Fill 8h M-F</strong> for standard weeks •
+            Use <strong style={{ color: '#002349' }}>0.5 increments</strong> (30 min) {"\u2022"}
+            Click <strong style={{ color: '#C29B40' }}>Fill 8h M-F</strong> for standard weeks {"\u2022"}
             Navigate with <strong style={{ color: '#002349' }}>arrow buttons</strong>
           </div>
         </div>
