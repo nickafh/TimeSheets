@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAppEmailSender, AppEmailSender>();
+builder.Services.AddScoped<EmailTemplateService>();
 
 // CORS — configurable origins via Cors:AllowedOrigins, defaults to Vite dev server
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
