@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Accurately track employee hours based on pay type and exemption status, with overtime handling and real-time clock punches for hourly workers
-**Current focus:** Phase 14 - Alert/Confirm Replacement and Error States
+**Current focus:** Phase 15 - Code Cleanup
 
 ## Current Position
 
-Phase: 14 of 15 (Alert/Confirm Replacement and Error States)
-Plan: 3 of 3 (complete)
-Status: Phase Complete
-Last activity: 2026-02-21 — Completed 14-03 Remaining Pages Alert/Confirm Conversion
+Phase: 15 of 15 (Code Cleanup)
+Plan: 1 of 2
+Status: In Progress
+Last activity: 2026-02-21 — Completed 15-01 Overtime Utils Extraction and Dead Code Removal
 
-Progress: [████████████████████████████░░] 93% (14/15 phases)
+Progress: [█████████████████████████████░] 97% (14.5/15 phases)
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [███████████████████████
 | 14    | 01   | 7 min    | 2     | 3     |
 | 14    | 02   | 8 min    | 2     | 2     |
 | 14    | 03   | 10 min   | 2     | 6     |
+| 15    | 01   | 3 min    | 2     | 4     |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ All v1.0 and v1.1 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 14]: showToast alongside console.error in every catch for user-visible feedback without losing developer debugging
 - [Phase 14]: Pages with existing inline error/success state (TimeOffRequests, SystemSettings) keep that pattern rather than adding duplicate toast feedback
 - [Phase 14]: useConfirm async guard pattern: if (!(await confirm("action", "Label"))) return; as standard for all destructive actions
+- [Phase 15]: Shared utils pattern for domain constants (overtimeUtils.ts follows dateUtils.ts convention)
 
 ### Pending Todos
 
@@ -80,7 +82,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 14-03-PLAN.md (Phase 14 complete)
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
 
 ---

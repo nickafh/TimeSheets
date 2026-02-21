@@ -30,9 +30,9 @@
 
 ### Code Cleanup
 
-- [ ] **CODE-01**: Hardcoded `40` literals replaced with shared OT_THRESHOLD constant (6 instances in WeeklyTimeEntries + Dashboard)
-- [ ] **CODE-02**: calculateDailyOvertime exported from WeeklyTimeEntries for reuse
-- [ ] **CODE-03**: Dead editingUser branch removed from ManageUsers handleSubmit
+- [x] **CODE-01**: Hardcoded `40` literals replaced with shared OT_THRESHOLD constant (6 instances in WeeklyTimeEntries + Dashboard)
+- [x] **CODE-02**: calculateDailyOvertime exported from WeeklyTimeEntries for reuse
+- [x] **CODE-03**: Dead editingUser branch removed from ManageUsers handleSubmit
 - [ ] **CODE-04**: Silent empty catch blocks replaced with proper error handling (9 instances)
 - [ ] **CODE-05**: CSS !important override on page-container padding removed after confirming all pages use page-container
 
@@ -76,9 +76,9 @@
 | UX-04 | Phase 14 | Complete |
 | UX-05 | Phase 14 | Complete |
 | UX-06 | Phase 14 | Complete |
-| CODE-01 | Phase 15 | Pending |
-| CODE-02 | Phase 15 | Pending |
-| CODE-03 | Phase 15 | Pending |
+| CODE-01 | Phase 15 | Complete |
+| CODE-02 | Phase 15 | Complete |
+| CODE-03 | Phase 15 | Complete |
 | CODE-04 | Phase 15 | Pending |
 | CODE-05 | Phase 15 | Pending |
 

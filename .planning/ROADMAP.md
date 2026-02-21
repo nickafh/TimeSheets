@@ -98,7 +98,10 @@ Plans:
   1. All overtime threshold comparisons use the shared OT_THRESHOLD constant with zero hardcoded `40` literals remaining
   2. calculateDailyOvertime is exported and importable from a shared module, and the dead editingUser branch is removed from ManageUsers
   3. No empty catch blocks exist in the codebase, and the CSS !important override on page-container padding is removed
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 15-01-PLAN.md — Extract overtime utils to shared module and remove dead editingUser code
+- [ ] 15-02-PLAN.md — Replace empty catch blocks with console.error and remove CSS !important override
 
 ## Progress
 
@@ -118,7 +121,7 @@ Plans:
 | 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
 | 13. Mobile UI Overflow Fixes | 2/2 | Complete    | 2026-02-21 | - |
 | 14. Alert/Confirm Replacement and Error States | 3/3 | Complete    | 2026-02-21 | - |
-| 15. Code Cleanup | v1.2 | 0/? | Not started | - |
+| 15. Code Cleanup | 1/2 | In Progress|  | - |
 
 ---
 *Roadmap created: 2026-02-10*
