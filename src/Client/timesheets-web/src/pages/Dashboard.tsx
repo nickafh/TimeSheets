@@ -404,48 +404,50 @@ const Dashboard = () => {
         {/* Clock Status (hourly) OR This Week's Hours (salary) — first grid cell */}
         {isHourly ? renderClockStatusCard() : null}
         {/* This Week's Hours (salary employees only — hourly employees have Clock Status instead) */}
-        {!isHourly && <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ padding: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>This Week's Hours</h3>
-              <span className="material-symbols-outlined" style={{ color: '#C29B40', fontSize: '28px', opacity: 0.5 }}>schedule</span>
+        {!isHourly && (
+          <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ padding: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>This Week's Hours</h3>
+                <span className="material-symbols-outlined" style={{ color: '#C29B40', fontSize: '28px', opacity: 0.5 }}>schedule</span>
+              </div>
+              <p style={{ fontSize: '13px', color: '#666666', marginBottom: '24px' }}>
+                {weekRange.monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – {weekRange.friday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </p>
+              {loadingWeek ? (
+                <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                      {totalLogged.toFixed(1)}<span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}> / {weeklyTarget}h</span>
+                    </span>
+                    <span style={{ fontSize: '13px', color: progressPct >= 100 ? '#059669' : '#666666', fontWeight: 600 }}>
+                      {progressPct >= 100 ? 'Complete' : `${remaining.toFixed(1)}h remaining`}
+                    </span>
+                  </div>
+                  <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${progressPct}%`,
+                      backgroundColor: progressPct >= 100 ? '#059669' : '#C29B40',
+                      borderRadius: '4px',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                </>
+              )}
             </div>
-            <p style={{ fontSize: '13px', color: '#666666', marginBottom: '24px' }}>
-              {weekRange.monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – {weekRange.friday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-            </p>
-            {loadingWeek ? (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
-            ) : (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
-                    {totalLogged.toFixed(1)}<span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}> / {weeklyTarget}h</span>
-                  </span>
-                  <span style={{ fontSize: '13px', color: progressPct >= 100 ? '#059669' : '#666666', fontWeight: 600 }}>
-                    {progressPct >= 100 ? 'Complete' : `${remaining.toFixed(1)}h remaining`}
-                  </span>
-                </div>
-                <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${progressPct}%`,
-                    backgroundColor: progressPct >= 100 ? '#059669' : '#C29B40',
-                    borderRadius: '4px',
-                    transition: 'width 0.3s ease',
-                  }} />
-                </div>
-              </>
-            )}
+            <div style={{ padding: '16px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
+                {weekEntries.length} of 5 days logged
+              </span>
+              <Link to="/timesheets/weekly" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
+                Enter Time
+              </Link>
+            </div>
           </div>
-          <div style={{ padding: '16px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
-              {weekEntries.length} of 5 days logged
-            </span>
-            <Link to="/timesheets/weekly" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
-              Enter Time
-            </Link>
-          </div>
-        </div>}
+        )}
 
         {/* Time Off Overview */}
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
