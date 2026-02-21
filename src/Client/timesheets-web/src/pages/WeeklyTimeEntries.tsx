@@ -13,20 +13,9 @@ import {
 } from "../api";
 import { useAuth } from "../auth/useAuth";
 import { getWeekStart, addDays, toDateOnlyString, getDayName, formatWeekLabel } from "../utils/dateUtils";
+import { OT_THRESHOLD, calculateDailyOvertime } from "../utils/overtimeUtils";
 
-const OT_THRESHOLD = 40;
 const UNDO_WINDOW_MS = 5000;
-
-function calculateDailyOvertime(days: { workedHours: number }[]): number[] {
-  let cumulativeWorked = 0;
-  return days.map((day) => {
-    const prevCumulative = cumulativeWorked;
-    cumulativeWorked += day.workedHours;
-    if (cumulativeWorked <= OT_THRESHOLD) return 0;
-    if (prevCumulative >= OT_THRESHOLD) return day.workedHours;
-    return cumulativeWorked - OT_THRESHOLD;
-  });
-}
 
 interface WeekEntry {
   date: string;
@@ -491,14 +480,14 @@ function HourlyClockView({
             Weekly Summary
           </div>
           <div style={{
-            backgroundColor: weeklyTotal >= 40 ? "#059669" : "#64748b",
+            backgroundColor: weeklyTotal >= OT_THRESHOLD ? "#059669" : "#64748b",
             color: "white",
             padding: "4px 12px",
             borderRadius: "6px",
             fontSize: "12px",
             fontWeight: 700,
           }}>
-            {weeklyTotal.toFixed(1)} / 40h
+            {weeklyTotal.toFixed(1)} / {OT_THRESHOLD}h
           </div>
         </div>
 
@@ -1116,9 +1105,9 @@ export default function WeeklyTimeEntries() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {weeks.map((week, weekIdx) => {
             const totalCombined = week.totalWorked + week.totalPto;
-            const isUnderHours = totalCombined < 40;
-            const isOverHours = totalCombined > 40;
-            const isPerfect = totalCombined === 40;
+            const isUnderHours = totalCombined < OT_THRESHOLD;
+            const isOverHours = totalCombined > OT_THRESHOLD;
+            const isPerfect = totalCombined === OT_THRESHOLD;
 
             // Overtime calculation for non-exempt employees
             const overtimeByDay = calculateDailyOvertime(week.days);
@@ -1178,8 +1167,8 @@ export default function WeeklyTimeEntries() {
                           ? `${totalCombined.toFixed(1)} / ${OT_THRESHOLD}h`
                           : `${totalCombined.toFixed(1)}h Total`}
                         {isPerfect && " \u2713"}
-                        {isUnderHours && ` (-${(40 - totalCombined).toFixed(1)})`}
-                        {isOverHours && ` (+${(totalCombined - 40).toFixed(1)})`}
+                        {isUnderHours && ` (-${(OT_THRESHOLD - totalCombined).toFixed(1)})`}
+                        {isOverHours && ` (+${(totalCombined - OT_THRESHOLD).toFixed(1)})`}
                       </div>
                     )}
 

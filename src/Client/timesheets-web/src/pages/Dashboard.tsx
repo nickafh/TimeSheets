@@ -18,6 +18,7 @@ import {
 import { useToast } from "../components/Toast";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { EmptyState } from "../components/EmptyState";
+import { OT_THRESHOLD } from "../utils/overtimeUtils";
 
 const STATE_COLORS: Record<string, string> = {
   not_started: "#94a3b8",
@@ -216,9 +217,8 @@ const Dashboard = () => {
   const totalWorked = weekEntries.reduce((sum, e) => sum + e.workedHours, 0);
   const totalPto = weekEntries.reduce((sum, e) => sum + e.ptoHours, 0);
   const totalLogged = totalWorked + totalPto;
-  const weeklyTarget = 40;
-  const remaining = Math.max(0, weeklyTarget - totalLogged);
-  const progressPct = Math.min(100, (totalLogged / weeklyTarget) * 100);
+  const remaining = Math.max(0, OT_THRESHOLD - totalLogged);
+  const progressPct = Math.min(100, (totalLogged / OT_THRESHOLD) * 100);
 
   const currentMonth = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
@@ -455,7 +455,7 @@ const Dashboard = () => {
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
                     <span style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
-                      {totalLogged.toFixed(1)}<span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}> / {weeklyTarget}h</span>
+                      {totalLogged.toFixed(1)}<span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}> / {OT_THRESHOLD}h</span>
                     </span>
                     <span style={{ fontSize: '13px', color: progressPct >= 100 ? '#059669' : '#666666', fontWeight: 600 }}>
                       {progressPct >= 100 ? 'Complete' : `${remaining.toFixed(1)}h remaining`}
