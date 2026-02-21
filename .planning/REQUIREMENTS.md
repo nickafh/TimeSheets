@@ -75,8 +75,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PAY-01 | Phase 6 | Complete |
-| PAY-02 | Phase 6 | Complete |
+| PAY-01 | Phase 6, Phase 11 | Complete |
+| PAY-02 | Phase 6, Phase 11 | Complete |
 | PAY-03 | Phase 6 | Complete |
 | PAY-04 | Phase 6 | Complete |
 | OT-01 | Phase 7 | Complete |
@@ -104,4 +104,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-20*
-*Last updated: 2026-02-20 after roadmap creation*
+*Last updated: 2026-02-21 after Phase 11 execution*

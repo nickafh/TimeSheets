@@ -25,11 +25,11 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 **Milestone Goal:** Add salary/hourly classification with exempt/non-exempt status, FLSA-compliant overtime tracking, real-time clock in/out for hourly workers, early closures on the calendar, and styled email notifications.
 
 - [x] **Phase 6: Pay Type Classification** - Admin can classify employees as Salary/Hourly and Exempt/Non-Exempt (completed 2026-02-20)
-- [ ] **Phase 7: Overtime Tracking** - Non-exempt employees see overtime in weekly view; exempt employees see 40-hour warning
+- [x] **Phase 7: Overtime Tracking** - Non-exempt employees see overtime in weekly view; exempt employees see 40-hour warning (completed 2026-02-20)
 - [ ] **Phase 8: Clock In/Out** - Hourly employees can clock in/out with real-time punches that auto-calculate daily hours
 - [ ] **Phase 9: Early Closure Calendar** - Early closures display on the Time Off Calendar with closing time
 - [ ] **Phase 10: Email Styling** - PTO and system emails use a branded HTML template matching app aesthetic
-- [ ] **Phase 11: ManageUsers Quick-Create Fix** - Add Pay Type/Exemption Status dropdowns to user creation modal (gap closure)
+- [x] **Phase 11: ManageUsers Quick-Create Fix** - Add Pay Type/Exemption Status dropdowns to user creation modal (gap closure) (completed 2026-02-21)
 
 ## Phase Details
 
@@ -115,10 +115,10 @@ Plans:
   2. ManageUsers quick-create modal includes Exemption Status dropdown (Exempt/Non-Exempt)
   3. Selecting Hourly auto-sets Exemption Status to Non-Exempt and disables the dropdown (matching AdminUserDetails behavior)
   4. New users created via the modal have correct payType and exemptionStatus persisted to the database
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 11-01: TBD
+- [x] 11-01-PLAN.md — Add Pay Type and Exemption Status dropdowns to quick-create modal with validation and Hourly->NonExempt auto-lock
 
 ## Progress
 
@@ -133,11 +133,11 @@ Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9, 10,
 | 4. Manager Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
 | 5. Admin Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
 | 6. Pay Type Classification | v1.1 | Complete    | 2026-02-20 | - |
-| 7. Overtime Tracking | v1.1 | 0/? | Not started | - |
+| 7. Overtime Tracking | v1.1 | 2/2 | Complete | 2026-02-20 |
 | 8. Clock In/Out | v1.1 | 0/? | Not started | - |
 | 9. Early Closure Calendar | v1.1 | 0/? | Not started | - |
 | 10. Email Styling | v1.1 | 0/? | Not started | - |
-| 11. ManageUsers Quick-Create Fix | v1.1 | 0/? | Not started | - |
+| 11. ManageUsers Quick-Create Fix | v1.1 | Complete    | 2026-02-21 | 2026-02-21 |
 
 ---
 *Roadmap created: 2026-02-10*
