@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 8 of 11 (Clock In/Out)
-Plan: 1 of 4 in current phase (08-01 complete)
+Plan: 2 of 4 in current phase (08-02 complete)
 Status: Executing
-Last activity: 2026-02-21 -- Completed 08-01-PLAN.md
+Last activity: 2026-02-21 -- Completed 08-02-PLAN.md
 
 Progress: [################....] 82% (9/11 phases in progress)
 
@@ -24,9 +24,9 @@ Progress: [################....] 82% (9/11 phases in progress)
 - Total execution time: 0.51 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 4
-- Average duration: 1.8 minutes
-- Total execution time: 0.12 hours
+- Total plans completed: 5
+- Average duration: 2.0 minutes
+- Total execution time: 0.17 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -36,6 +36,7 @@ Progress: [################....] 82% (9/11 phases in progress)
 | 07    | 02   | 2 min    | 1     | 1     |
 | 11    | 01   | 1 min    | 1     | 1     |
 | 08    | 01   | 2 min    | 2     | 4     |
+| 08    | 02   | 4 min    | 2     | 2     |
 
 ## Accumulated Context
 
@@ -65,6 +66,12 @@ v1.1 decisions:
 - Stale punch detection at startup groups by UserId+PunchDate for batch efficiency
 - PayType validation at punch time rejects non-hourly employees with 400
 
+- HourlyClockView inline in WeeklyTimeEntries.tsx (not separate file) to stay within 2-file plan scope
+- Weekly summary uses fetchDailyTimeEntries (not fetchPunchHistory) since DailyTimeEntry has calculated hours
+- Elapsed timer freezes during lunch by subtracting active lunch duration from total elapsed
+- Undo toast uses 5-second auto-dismiss with useRef for cleanup
+- Salary-only hooks guarded with `if (isHourly) return;` to prevent unnecessary API calls
+
 v1.1 pending decisions:
 - Maximum shift duration for missed-punch flagging (research recommends 12 hours)
 
@@ -78,8 +85,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21 (08-01 execution)
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-02-21 (08-02 execution)
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
 
 ---
