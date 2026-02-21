@@ -17,6 +17,7 @@ public class TimeSheetsDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<EarlyClosure> EarlyClosures => Set<EarlyClosure>();
     public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+    public DbSet<ClockPunch> ClockPunches => Set<ClockPunch>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -94,5 +95,16 @@ public class TimeSheetsDbContext : DbContext
         modelBuilder.Entity<Holiday>().ToTable("Holidays");
         modelBuilder.Entity<EarlyClosure>().ToTable("EarlyClosures");
         modelBuilder.Entity<SystemSettings>().ToTable("SystemSettings");
+
+        // --- ClockPunch ---
+        modelBuilder.Entity<ClockPunch>().ToTable("ClockPunches");
+        modelBuilder.Entity<ClockPunch>()
+            .HasOne(cp => cp.User)
+            .WithMany()
+            .HasForeignKey(cp => cp.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ClockPunch>()
+            .HasIndex(cp => new { cp.UserId, cp.PunchDate })
+            .HasDatabaseName("IX_ClockPunches_UserId_PunchDate");
     }
 }

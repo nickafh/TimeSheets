@@ -73,12 +73,13 @@ Plans:
   3. Incomplete punch records (e.g., clocked in but never clocked out) are flagged as "Needs Attention" and not auto-calculated
   4. Hourly employees see a clock status card on their dashboard showing current punch state
   5. Clock In/Out navigation item appears only for hourly employees (salary employees never see it)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
-- [ ] 08-03: TBD
+- [ ] 08-01-PLAN.md — Backend: ClockPunch entity, database table, ClockPunchesController with punch/status/undo/corrections endpoints
+- [ ] 08-02-PLAN.md — Frontend: ClockPunch DTOs/API helpers, conditional clock controls on Time Entries page with read-only weekly summary
+- [ ] 08-03-PLAN.md — Frontend: Dashboard clock status card for hourly employees, Manager "Needs Attention" card with correction modal
+- [ ] 08-04-PLAN.md — Visual verification: end-to-end clock flow testing
 
 ### Phase 9: Early Closure Calendar
 **Goal**: Employees can see upcoming early closures on the Time Off Calendar with distinct styling and closing times
@@ -134,7 +135,7 @@ Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9, 10,
 | 5. Admin Pages | v1.0 | 3/3 | Complete | 2026-02-10 |
 | 6. Pay Type Classification | v1.1 | Complete    | 2026-02-20 | - |
 | 7. Overtime Tracking | v1.1 | 2/2 | Complete | 2026-02-20 |
-| 8. Clock In/Out | v1.1 | 0/? | Not started | - |
+| 8. Clock In/Out | v1.1 | 0/4 | Not started | - |
 | 9. Early Closure Calendar | v1.1 | 0/? | Not started | - |
 | 10. Email Styling | v1.1 | 0/? | Not started | - |
 | 11. ManageUsers Quick-Create Fix | v1.1 | Complete    | 2026-02-21 | 2026-02-21 |

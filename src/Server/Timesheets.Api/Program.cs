@@ -373,6 +373,66 @@ using (var scope = app.Services.CreateScope())
             await db.SaveChangesAsync();
         }
     }
+
+    // Create ClockPunches table
+    try
+    {
+        await db.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS ClockPunches (
+                Id INT AUTO_INCREMENT PRIMARY KEY,
+                UserId INT NOT NULL,
+                PunchDate DATE NOT NULL,
+                PunchTime DATETIME NOT NULL,
+                PunchType VARCHAR(20) NOT NULL,
+                Status VARCHAR(20) NOT NULL DEFAULT 'Active',
+                OriginalPunchTime DATETIME NULL,
+                CorrectedByUserId INT NULL,
+                CorrectedAt DATETIME NULL,
+                FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
+                FOREIGN KEY (CorrectedByUserId) REFERENCES Users(Id) ON DELETE SET NULL,
+                INDEX IX_ClockPunches_UserId_PunchDate (UserId, PunchDate)
+            )");
+    }
+    catch { /* Table may already exist */ }
+
+    // Flag stale open punches from previous days as NeedsAttention
+    try
+    {
+        var stalePunches = await db.ClockPunches
+            .Where(p => p.PunchDate < DateTime.UtcNow.Date
+                && p.Status == "Active"
+                && p.PunchType != "ClockOut")
+            .ToListAsync();
+
+        // Group by UserId + PunchDate to batch-check for ClockOut
+        var staleGroups = stalePunches
+            .GroupBy(p => new { p.UserId, p.PunchDate })
+            .ToList();
+
+        foreach (var group in staleGroups)
+        {
+            var hasClockOut = await db.ClockPunches
+                .AnyAsync(p => p.UserId == group.Key.UserId
+                    && p.PunchDate == group.Key.PunchDate
+                    && p.PunchType == "ClockOut"
+                    && p.Status == "Active");
+
+            if (!hasClockOut)
+            {
+                // Flag all Active punches for this user+date
+                var dayPunches = await db.ClockPunches
+                    .Where(p => p.UserId == group.Key.UserId
+                        && p.PunchDate == group.Key.PunchDate
+                        && p.Status == "Active")
+                    .ToListAsync();
+                foreach (var dp in dayPunches)
+                    dp.Status = "NeedsAttention";
+            }
+        }
+
+        await db.SaveChangesAsync();
+    }
+    catch { /* Table may not exist yet on first startup */ }
 }
 
 app.UseForwardedHeaders();
