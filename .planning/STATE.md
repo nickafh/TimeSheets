@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Accurately track employee hours based on pay type and exemption status, with overtime handling and real-time clock punches for hourly workers
-**Current focus:** Phase 11 - ManageUsers Quick-Create Fix
+**Current focus:** Phase 8 - Clock In/Out
 
 ## Current Position
 
-Phase: 11 of 11 (ManageUsers Quick-Create Fix) -- COMPLETE
-Plan: 1 of 1 in current phase
-Status: Phase Complete
-Last activity: 2026-02-21 -- Completed 11-01-PLAN.md
+Phase: 8 of 11 (Clock In/Out)
+Plan: 1 of 4 in current phase (08-01 complete)
+Status: Executing
+Last activity: 2026-02-21 -- Completed 08-01-PLAN.md
 
-Progress: [################....] 80% (8/11 phases)
+Progress: [################....] 82% (9/11 phases in progress)
 
 ## Performance Metrics
 
@@ -24,9 +24,9 @@ Progress: [################....] 80% (8/11 phases)
 - Total execution time: 0.51 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 3
-- Average duration: 1.7 minutes
-- Total execution time: 0.08 hours
+- Total plans completed: 4
+- Average duration: 1.8 minutes
+- Total execution time: 0.12 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -35,6 +35,7 @@ Progress: [################....] 80% (8/11 phases)
 | 07    | 01   | 4 min    | 2     | 5     |
 | 07    | 02   | 2 min    | 1     | 1     |
 | 11    | 01   | 1 min    | 1     | 1     |
+| 08    | 01   | 2 min    | 2     | 4     |
 
 ## Accumulated Context
 
@@ -58,6 +59,12 @@ v1.1 decisions:
 - Non-exempt weekly total badge uses "X / 40h" format to show threshold
 - Exempt warning badge replaces normal badge only when worked > 40, shows neutral message
 
+- Punch state machine: static helper GetValidNextActions() returns string[] for valid transitions, shared across endpoints
+- Hours calculation via shared CalculateWorkedHours() helper, reused in Punch and Correct endpoints
+- Hard delete for undo within 30-second window (not soft delete)
+- Stale punch detection at startup groups by UserId+PunchDate for batch efficiency
+- PayType validation at punch time rejects non-hourly employees with 400
+
 v1.1 pending decisions:
 - Maximum shift duration for missed-punch flagging (research recommends 12 hours)
 
@@ -71,8 +78,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21 (11-01 execution)
-Stopped at: Completed 11-01-PLAN.md (Phase 11 complete)
+Last session: 2026-02-21 (08-01 execution)
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
 
 ---

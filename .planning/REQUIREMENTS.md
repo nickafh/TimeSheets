@@ -23,13 +23,13 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Clock In/Out
 
-- [ ] **CLK-01**: Hourly employees can clock in with a real-time timestamp
-- [ ] **CLK-02**: Hourly employees can clock out for lunch with a real-time timestamp
-- [ ] **CLK-03**: Hourly employees can clock back in from lunch with a real-time timestamp
-- [ ] **CLK-04**: Hourly employees can clock out for the day with a real-time timestamp
-- [ ] **CLK-05**: System auto-calculates daily worked hours from clock punches and syncs to DailyTimeEntry
+- [x] **CLK-01**: Hourly employees can clock in with a real-time timestamp
+- [x] **CLK-02**: Hourly employees can clock out for lunch with a real-time timestamp
+- [x] **CLK-03**: Hourly employees can clock back in from lunch with a real-time timestamp
+- [x] **CLK-04**: Hourly employees can clock out for the day with a real-time timestamp
+- [x] **CLK-05**: System auto-calculates daily worked hours from clock punches and syncs to DailyTimeEntry
 - [ ] **CLK-06**: Hourly employees see punch-derived hours as read-only in the weekly time entry grid
-- [ ] **CLK-07**: Incomplete punch records are flagged as "Needs Attention" (not auto-calculated)
+- [x] **CLK-07**: Incomplete punch records are flagged as "Needs Attention" (not auto-calculated)
 - [ ] **CLK-08**: Hourly employees see a clock status card on their dashboard
 - [ ] **CLK-09**: Clock In/Out appears as a nav item only for hourly employees
 
@@ -83,13 +83,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OT-02 | Phase 7 | Complete |
 | OT-03 | Phase 7 | Complete |
 | OT-04 | Phase 7 | Complete |
-| CLK-01 | Phase 8 | Pending |
-| CLK-02 | Phase 8 | Pending |
-| CLK-03 | Phase 8 | Pending |
-| CLK-04 | Phase 8 | Pending |
-| CLK-05 | Phase 8 | Pending |
+| CLK-01 | Phase 8 | Complete |
+| CLK-02 | Phase 8 | Complete |
+| CLK-03 | Phase 8 | Complete |
+| CLK-04 | Phase 8 | Complete |
+| CLK-05 | Phase 8 | Complete |
 | CLK-06 | Phase 8 | Pending |
-| CLK-07 | Phase 8 | Pending |
+| CLK-07 | Phase 8 | Complete |
 | CLK-08 | Phase 8 | Pending |
 | CLK-09 | Phase 8 | Pending |
 | CAL-01 | Phase 9 | Pending |
