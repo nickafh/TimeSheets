@@ -88,10 +88,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Early closures appear on the Time Off Calendar with visually distinct styling (different from holidays and PTO)
   2. The closing time is prominently displayed for each early closure on the calendar
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 09-01: TBD
+- [ ] 09-01-PLAN.md — Fetch early closures, render amber bars/dots/detail panel/legend on CalendarView with holiday overlap suppression
 
 ### Phase 10: Email Styling
 **Goal**: All PTO and system emails use a professional branded HTML template that renders correctly in Outlook and other email clients

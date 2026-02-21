@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Accurately track employee hours based on pay type and exemption status, with overtime handling and real-time clock punches for hourly workers
-**Current focus:** Phase 8 - Clock In/Out
+**Current focus:** Phase 9 - Early Closure Calendar
 
 ## Current Position
 
-Phase: 8 of 11 (Clock In/Out) -- COMPLETE
-Plan: 4 of 4 in current phase (08-04 complete)
-Status: Phase complete -- ready for Phase 9
-Last activity: 2026-02-21 -- Completed 08-04-PLAN.md (verification)
+Phase: 9 of 11 (Early Closure Calendar) -- COMPLETE
+Plan: 1 of 1 in current phase (09-01 complete)
+Status: Phase complete -- ready for Phase 10
+Last activity: 2026-02-21 -- Completed 09-01-PLAN.md (early closure calendar)
 
-Progress: [################....] 82% (9/11 phases in progress)
+Progress: [##################..] 91% (10/11 phases in progress)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [################....] 82% (9/11 phases in progress)
 | 08    | 02   | 4 min    | 2     | 2     |
 | 08    | 03   | 7 min    | 2     | 2     |
 | 08    | 04   | 20 min   | 1     | 2     |
+| 09    | 01   | 2 min    | 2     | 1     |
 
 ## Accumulated Context
 
@@ -82,6 +83,10 @@ v1.1 resolved decisions (08-04):
 - [Phase 08]: This Week's Hours card hidden for hourly employees since clock view replaces weekly grid entry
 - [Phase 08]: OXC parser stricter than Babel -- conditional JSX requires ternary with null, not && with fragment
 
+v1.1 resolved decisions (09-01):
+- [Phase 09]: Early closure bars placed between holidays and PTO in desktop rendering order
+- [Phase 09]: Ternary with null used for all new conditional JSX (OXC parser compatibility)
+
 ### Pending Todos
 
 None.
@@ -92,8 +97,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21 (08-04 verification)
-Stopped at: Completed 08-04-PLAN.md -- Phase 08 Clock In/Out fully complete
+Last session: 2026-02-21 (09-01 execution)
+Stopped at: Completed 09-01-PLAN.md -- Phase 09 Early Closure Calendar fully complete
 Resume file: None
 
 ---

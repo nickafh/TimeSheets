@@ -35,7 +35,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Calendar
 
-- [ ] **CAL-01**: Early closures display on the Time Off Calendar with distinct styling and closing time shown
+- [x] **CAL-01**: Early closures display on the Time Off Calendar with distinct styling and closing time shown
 
 ### Email Styling
 
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLK-07 | Phase 8 | Complete |
 | CLK-08 | Phase 8 | Complete |
 | CLK-09 | Phase 8 | Complete |
-| CAL-01 | Phase 9 | Pending |
+| CAL-01 | Phase 9 | Complete |
 | EML-01 | Phase 10 | Pending |
 | EML-02 | Phase 10 | Pending |
 | EML-03 | Phase 10 | Pending |
