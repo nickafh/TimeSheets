@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 8 of 11 (Clock In/Out)
-Plan: 2 of 4 in current phase (08-02 complete)
+Plan: 3 of 4 in current phase (08-03 complete)
 Status: Executing
-Last activity: 2026-02-21 -- Completed 08-02-PLAN.md
+Last activity: 2026-02-21 -- Completed 08-03-PLAN.md
 
 Progress: [################....] 82% (9/11 phases in progress)
 
@@ -37,6 +37,7 @@ Progress: [################....] 82% (9/11 phases in progress)
 | 11    | 01   | 1 min    | 1     | 1     |
 | 08    | 01   | 2 min    | 2     | 4     |
 | 08    | 02   | 4 min    | 2     | 2     |
+| 08    | 03   | 7 min    | 2     | 2     |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ v1.1 decisions:
 
 v1.1 pending decisions:
 - Maximum shift duration for missed-punch flagging (research recommends 12 hours)
+- [Phase 08]: Clock status card spans full width at top of dashboard grid, uses status dot with glow for active states
+- [Phase 08]: Needs Attention card uses amber border when items exist, correction modal uses datetime-local with 1-minute change threshold
 
 ### Pending Todos
 
@@ -85,8 +88,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21 (08-02 execution)
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-02-21 (08-03 execution)
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
 
 ---

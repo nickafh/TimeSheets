@@ -30,7 +30,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 - [x] **CLK-05**: System auto-calculates daily worked hours from clock punches and syncs to DailyTimeEntry
 - [x] **CLK-06**: Hourly employees see punch-derived hours as read-only in the weekly time entry grid
 - [x] **CLK-07**: Incomplete punch records are flagged as "Needs Attention" (not auto-calculated)
-- [ ] **CLK-08**: Hourly employees see a clock status card on their dashboard
+- [x] **CLK-08**: Hourly employees see a clock status card on their dashboard
 - [x] **CLK-09**: Clock In/Out appears as a nav item only for hourly employees
 
 ### Calendar
@@ -90,7 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLK-05 | Phase 8 | Complete |
 | CLK-06 | Phase 8 | Complete |
 | CLK-07 | Phase 8 | Complete |
-| CLK-08 | Phase 8 | Pending |
+| CLK-08 | Phase 8 | Complete |
 | CLK-09 | Phase 8 | Complete |
 | CAL-01 | Phase 9 | Pending |
 | EML-01 | Phase 10 | Pending |
