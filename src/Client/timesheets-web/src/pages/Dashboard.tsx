@@ -7,12 +7,45 @@ import {
   fetchEarlyClosures,
   fetchUserPtoSummary,
   fetchDailyTimeEntries,
+  fetchClockStatus,
   type NotificationDto,
   type HolidayDto,
   type EarlyClosureDto,
   type UserPtoSummary,
   type DailyTimeEntryDto,
+  type ClockStatusDto,
 } from "../api";
+
+const PUNCH_TYPE_LABELS: Record<string, string> = {
+  ClockIn: "Clock In",
+  LunchOut: "Lunch Out",
+  LunchIn: "Lunch In",
+  ClockOut: "Clock Out",
+};
+
+const STATE_LABELS: Record<string, string> = {
+  not_started: "Not Clocked In",
+  clocked_in: "Clocked In",
+  lunch_out: "On Lunch Break",
+  lunch_in: "Back from Lunch",
+  clocked_out: "Clocked Out for Today",
+};
+
+const STATE_COLORS: Record<string, string> = {
+  not_started: "#94a3b8",
+  clocked_in: "#059669",
+  lunch_out: "#d97706",
+  lunch_in: "#059669",
+  clocked_out: "#002349",
+};
+
+function formatElapsed(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -26,9 +59,15 @@ const Dashboard = () => {
   const [loadingPto, setLoadingPto] = useState(true);
   const [loadingWeek, setLoadingWeek] = useState(true);
 
+  // Clock status state (hourly employees only)
+  const isHourly = user?.payType === "Hourly";
+  const [clockStatus, setClockStatus] = useState<ClockStatusDto | null>(null);
+  const [loadingClock, setLoadingClock] = useState(true);
+  const [elapsedTime, setElapsedTime] = useState("");
+
   const currentYear = new Date().getFullYear();
 
-  // Calculate current week (Monday–Friday)
+  // Calculate current week (Monday-Friday)
   const getWeekRange = () => {
     const now = new Date();
     const day = now.getDay(); // 0=Sun, 1=Mon, ...
@@ -49,6 +88,70 @@ const Dashboard = () => {
     loadPtoSummary();
     loadWeekEntries();
   }, [user?.id]);
+
+  // Load clock status for hourly employees
+  useEffect(() => {
+    if (!isHourly) {
+      setLoadingClock(false);
+      return;
+    }
+    const loadClock = async () => {
+      try {
+        setLoadingClock(true);
+        const status = await fetchClockStatus();
+        setClockStatus(status);
+      } catch (err) {
+        console.error("Failed to load clock status:", err);
+      } finally {
+        setLoadingClock(false);
+      }
+    };
+    loadClock();
+  }, [isHourly]);
+
+  // Live elapsed time ticker
+  useEffect(() => {
+    if (!clockStatus) return;
+
+    const { currentState, clockInTime, lunchMinutes } = clockStatus;
+
+    // Only tick for active states
+    if (currentState !== "clocked_in" && currentState !== "lunch_in" && currentState !== "lunch_out") {
+      setElapsedTime("");
+      return;
+    }
+
+    if (!clockInTime) {
+      setElapsedTime("");
+      return;
+    }
+
+    // For lunch_out state, show frozen elapsed time (pre-lunch value)
+    if (currentState === "lunch_out") {
+      const clockInMs = new Date(clockInTime).getTime();
+      const lunchOutPunch = clockStatus.todayPunches.find(p => p.punchType === "LunchOut");
+      if (lunchOutPunch) {
+        const lunchOutMs = new Date(lunchOutPunch.punchTime).getTime();
+        const workedMs = lunchOutMs - clockInMs;
+        setElapsedTime(formatElapsed(Math.max(0, workedMs)));
+      }
+      return;
+    }
+
+    // For clocked_in and lunch_in, tick every second
+    const lunchDeductionMs = (lunchMinutes ?? 0) * 60 * 1000;
+    const clockInMs = new Date(clockInTime).getTime();
+
+    const update = () => {
+      const now = Date.now();
+      const elapsed = now - clockInMs - lunchDeductionMs;
+      setElapsedTime(formatElapsed(Math.max(0, elapsed)));
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [clockStatus]);
 
   const loadNotifications = async () => {
     try {
@@ -127,6 +230,138 @@ const Dashboard = () => {
   const upcomingHolidays = filteredHolidays.filter(h => !isPast(h.holidayDate));
   const upcomingClosures = filteredClosures.filter(c => !isPast(c.closureDate));
 
+  // Clock status card helper
+  const renderClockStatusCard = () => {
+    if (!isHourly) return null;
+
+    const state = clockStatus?.currentState ?? "not_started";
+    const stateLabel = STATE_LABELS[state] ?? state;
+    const stateColor = STATE_COLORS[state] ?? "#94a3b8";
+    const isActive = state === "clocked_in" || state === "lunch_in";
+    const isOnLunch = state === "lunch_out";
+
+    return (
+      <div style={{
+        backgroundColor: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '2px',
+        overflow: 'hidden',
+        gridColumn: '1 / -1',
+      }}>
+        <div style={{ padding: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>Clock Status</h3>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              backgroundColor: stateColor,
+              boxShadow: isActive ? `0 0 8px ${stateColor}` : 'none',
+            }} />
+          </div>
+
+          {loadingClock ? (
+            <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+          ) : (
+            <>
+              {/* Current State */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                  Current Status
+                </p>
+                <p style={{ fontSize: '18px', fontWeight: 600, color: stateColor }}>
+                  {stateLabel}
+                </p>
+              </div>
+
+              {/* Live Elapsed Time */}
+              {(isActive || isOnLunch) && elapsedTime && (
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                    {isOnLunch ? "Worked Before Lunch" : "Elapsed Time"}
+                  </p>
+                  <p style={{
+                    fontSize: '36px',
+                    fontFamily: "'Courier New', monospace",
+                    fontWeight: 700,
+                    color: isOnLunch ? '#d97706' : '#002349',
+                    letterSpacing: '2px',
+                  }}>
+                    {elapsedTime}
+                  </p>
+                  {isOnLunch && (
+                    <p style={{ fontSize: '13px', color: '#d97706', marginTop: '4px', fontStyle: 'italic' }}>
+                      On lunch break
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Total Hours (when clocked out) */}
+              {state === "clocked_out" && clockStatus?.totalHoursToday != null && (
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                    Total Hours Today
+                  </p>
+                  <p style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                    {clockStatus.totalHoursToday.toFixed(2)} <span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>hrs</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Today's Punch Log */}
+              <div>
+                <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '12px' }}>
+                  Today's Punches
+                </p>
+                {(!clockStatus?.todayPunches || clockStatus.todayPunches.length === 0) ? (
+                  <p style={{ fontSize: '14px', color: '#94a3b8', fontStyle: 'italic' }}>
+                    No punches today
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {clockStatus.todayPunches.map((punch) => (
+                      <div key={punch.id} style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '10px 14px',
+                        backgroundColor: '#f8fafc',
+                        borderRadius: '4px',
+                        border: '1px solid #f1f5f9',
+                      }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
+                          {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                        </span>
+                        <span style={{ fontSize: '14px', fontFamily: "'Courier New', monospace", color: '#64748b' }}>
+                          {new Date(punch.punchTime).toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: true,
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{ padding: '16px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
+            {clockStatus?.todayPunches?.length ?? 0} punch{(clockStatus?.todayPunches?.length ?? 0) !== 1 ? "es" : ""} today
+          </span>
+          <Link to="/timesheets/weekly" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
+            Go to Time Entries
+          </Link>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="page-container dashboard-container">
       {/* Header */}
@@ -174,6 +409,9 @@ const Dashboard = () => {
 
       {/* Dashboard Cards - 2x2 Grid on desktop, single column on mobile */}
       <div className="dashboard-cards-grid">
+        {/* Clock Status Card (hourly employees only) */}
+        {renderClockStatusCard()}
+
         {/* This Week's Hours */}
         <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{ padding: '32px' }}>
