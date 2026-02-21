@@ -100,6 +100,36 @@ export function updateSystemSettings(settings: SystemSettingsDto): Promise<Syste
   return putJson<SystemSettingsDto>("/api/systemsettings", settings);
 }
 
+// --- Clock Punch DTOs ---
+
+export interface ClockPunchDto {
+  id: number;
+  userId: number;
+  punchDate: string;     // ISO date
+  punchTime: string;     // ISO datetime
+  punchType: string;     // ClockIn, LunchOut, LunchIn, ClockOut
+  status: string;        // Active, NeedsAttention, Voided
+  originalPunchTime: string | null;
+  correctedByUserId: number | null;
+  correctedAt: string | null;
+}
+
+export interface ClockStatusDto {
+  currentState: string;       // "not_started" | "clocked_in" | "lunch_out" | "lunch_in" | "clocked_out"
+  validNextActions: string[]; // e.g., ["ClockIn"] or ["LunchOut", "ClockOut"]
+  todayPunches: ClockPunchDto[];
+  totalHoursToday: number | null;
+  clockInTime: string | null;
+  lunchMinutes: number | null;
+}
+
+export interface NeedsAttentionItemDto {
+  userId: number;
+  userName: string;
+  punchDate: string;
+  punches: ClockPunchDto[];
+}
+
 export interface DailyTimeEntryDto {
   id: number;
   userId: number;
@@ -262,6 +292,39 @@ export function saveDailyTimeEntriesBulk(
   entries: DailyTimeEntryDto[]
 ): Promise<void> {
   return putJson<void>("/api/DailyTimeEntries/bulk", entries);
+}
+
+// --- Clock Punch API helpers ---
+
+/** Record a clock punch (ClockIn, LunchOut, LunchIn, ClockOut) */
+export function recordPunch(punchType: string): Promise<ClockStatusDto> {
+  return postJson<ClockStatusDto>("/api/clockpunches/punch", { punchType });
+}
+
+/** Get current clock status for a user (defaults to current user) */
+export function fetchClockStatus(userId?: number): Promise<ClockStatusDto> {
+  const query = userId ? `?userId=${userId}` : "";
+  return getJson<ClockStatusDto>(`/api/clockpunches/status${query}`);
+}
+
+/** Undo the last punch within the undo window */
+export function undoLastPunch(punchId: number): Promise<ClockStatusDto> {
+  return deleteJson<ClockStatusDto>(`/api/clockpunches/${punchId}/undo`);
+}
+
+/** Get punches needing attention (manager/admin only) */
+export function fetchNeedsAttention(): Promise<NeedsAttentionItemDto[]> {
+  return getJson<NeedsAttentionItemDto[]>("/api/clockpunches/needs-attention");
+}
+
+/** Correct a punch time (manager/admin only) */
+export function correctPunchTime(punchId: number, correctedPunchTime: string): Promise<ClockPunchDto> {
+  return putJson<ClockPunchDto>(`/api/clockpunches/${punchId}/correct`, { correctedPunchTime });
+}
+
+/** Get punch history for a date range */
+export function fetchPunchHistory(userId: number, start: string, end: string): Promise<ClockPunchDto[]> {
+  return getJson<ClockPunchDto[]>(`/api/clockpunches/history?userId=${userId}&start=${start}&end=${end}`);
 }
 
 export interface TeamTimeEntryDto {
