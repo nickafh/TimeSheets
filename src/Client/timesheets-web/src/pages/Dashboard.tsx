@@ -406,11 +406,11 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Clock Status Card (hourly employees only) — above the grid */}
+      {isHourly && <div style={{ marginBottom: '32px', maxWidth: '560px' }}>{renderClockStatusCard()}</div>}
+
       {/* Dashboard Cards - 2x2 Grid on desktop, single column on mobile */}
       <div className="dashboard-cards-grid">
-        {/* Clock Status Card (hourly employees only) */}
-        {renderClockStatusCard()}
-
         {/* This Week's Hours (salary employees only — hourly employees have Clock Status instead) */}
         {!isHourly && <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{ padding: '32px' }}>
