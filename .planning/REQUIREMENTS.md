@@ -21,12 +21,12 @@
 
 ### Alert/Confirm Replacement & Error States
 
-- [ ] **UX-01**: All alert() calls replaced with Toast notifications (40+ instances across 8+ pages)
-- [ ] **UX-02**: All confirm() calls replaced with ConfirmDialog modals (10 instances gating destructive actions)
+- [x] **UX-01**: All alert() calls replaced with Toast notifications (40+ instances across 8+ pages)
+- [x] **UX-02**: All confirm() calls replaced with ConfirmDialog modals (10 instances gating destructive actions)
 - [ ] **UX-03**: Dashboard shows visible error states per section instead of silent console.error
 - [ ] **UX-04**: Pages with silent catch blocks show user-visible error feedback (9 instances)
-- [ ] **UX-05**: All pages use standardized LoadingSpinner during data fetches
-- [ ] **UX-06**: All pages use standardized EmptyState when no data exists
+- [x] **UX-05**: All pages use standardized LoadingSpinner during data fetches
+- [x] **UX-06**: All pages use standardized EmptyState when no data exists
 
 ### Code Cleanup
 
@@ -70,12 +70,12 @@
 | COMP-03 | Phase 12 | Complete |
 | COMP-04 | Phase 12 | Complete |
 | COMP-05 | Phase 12 | Complete |
-| UX-01 | Phase 14 | Pending |
-| UX-02 | Phase 14 | Pending |
+| UX-01 | Phase 14 | Complete |
+| UX-02 | Phase 14 | Complete |
 | UX-03 | Phase 14 | Pending |
 | UX-04 | Phase 14 | Pending |
-| UX-05 | Phase 14 | Pending |
-| UX-06 | Phase 14 | Pending |
+| UX-05 | Phase 14 | Complete |
+| UX-06 | Phase 14 | Complete |
 | CODE-01 | Phase 15 | Pending |
 | CODE-02 | Phase 15 | Pending |
 | CODE-03 | Phase 15 | Pending |

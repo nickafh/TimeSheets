@@ -84,7 +84,11 @@ Plans:
   2. All destructive actions (delete, deactivate, deny) show a styled ConfirmDialog modal instead of native confirm()
   3. Dashboard sections and pages with data fetches show inline error messages when requests fail, instead of silently logging to console
   4. All pages show the shared LoadingSpinner during data fetches and the shared EmptyState when no data exists
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 14-01-PLAN.md — Convert ManageHolidays, ManageNotifications, ManageUsers (29 alerts, 6 confirms)
+- [ ] 14-02-PLAN.md — Dashboard per-section error states and ManagerDashboard local toast migration
+- [ ] 14-03-PLAN.md — Convert remaining 8 pages (ApprovePto, AdminDashboard, TeamTimeEntries, CalendarView, TimeOffSummary, SystemReports, TimeOffRequests, SystemSettings)
 
 ### Phase 15: Code Cleanup
 **Goal**: Known tech debt items are resolved without changing any user-visible behavior
@@ -112,8 +116,8 @@ Plans:
 | 10. Email Styling | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 11. ManageUsers Quick-Create Fix | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
-| 13. Mobile UI Overflow Fixes | 2/2 | Complete   | 2026-02-21 | - |
-| 14. Alert/Confirm Replacement and Error States | v1.2 | 0/? | Not started | - |
+| 13. Mobile UI Overflow Fixes | 2/2 | Complete    | 2026-02-21 | - |
+| 14. Alert/Confirm Replacement and Error States | 1/3 | In Progress|  | - |
 | 15. Code Cleanup | v1.2 | 0/? | Not started | - |
 
 ---
