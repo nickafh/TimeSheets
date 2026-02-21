@@ -36,7 +36,7 @@ export default function TeamTimeEntries() {
         setWeekStartDay(settings.workWeekStartDay);
         setWeekStart(getWeekStart(new Date(), settings.workWeekStartDay));
       })
-      .catch(() => {}); // fallback to default Monday
+      .catch((err) => console.error("Failed to load system settings:", err)); // fallback to default Monday
   }, []);
 
   useEffect(() => {

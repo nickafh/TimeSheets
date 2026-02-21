@@ -38,7 +38,7 @@ export default function TeamMemberDetails() {
     fetchManagers().then(setManagers).catch(() => setManagers([]));
     getSystemSettings()
       .then((settings) => setWeekStartDay(settings.workWeekStartDay))
-      .catch(() => {}); // fallback to default Monday
+      .catch((err) => console.error("Failed to load system settings:", err)); // fallback to default Monday
   }, []);
 
   const loadData = async () => {

@@ -172,7 +172,7 @@ function HourlyClockView({
         }
         setWeeklyHours(days);
       })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to load weekly hours:", err));
   }, [userId, weekStart, clockStatus?.currentState]);
 
   // Clear undo timer on unmount
@@ -641,7 +641,7 @@ export default function WeeklyTimeEntries() {
   useEffect(() => {
     getSystemSettings()
       .then((settings) => setWeekStartDay(settings.workWeekStartDay))
-      .catch(() => {}); // fallback to default Monday
+      .catch((err) => console.error("Failed to load system settings:", err)); // fallback to default Monday
   }, []);
 
   // Re-compute week start when weekStartDay changes
@@ -663,7 +663,7 @@ export default function WeeklyTimeEntries() {
     if (!selectedUserId) return;
     fetchUserPtoRequests(selectedUserId)
       .then((reqs) => setApprovedPtoRequests(reqs.filter((r) => r.status === 1)))
-      .catch(() => {});
+      .catch((err) => console.error("Failed to load PTO requests:", err));
   }, [selectedUserId, isHourly]);
 
   // Build a set of dates with approved PTO and a map of date -> { hours, reason, ptoTypeName }

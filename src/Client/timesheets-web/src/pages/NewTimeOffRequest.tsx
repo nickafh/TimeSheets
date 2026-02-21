@@ -60,7 +60,7 @@ const NewTimeOffRequest = () => {
   useEffect(() => {
     fetchHolidays()
       .then(setHolidays)
-      .catch(() => {});
+      .catch((err) => console.error("Failed to load holidays:", err));
   }, []);
 
   const holidayMap = useMemo(() => {

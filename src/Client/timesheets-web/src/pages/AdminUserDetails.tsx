@@ -72,10 +72,10 @@ export default function AdminUserDetails() {
     fetchDepartmentAndCategoryLookup().then(({ departments, categories }) => {
       setDepartments(departments);
       setCategories(categories);
-    }).catch(() => {});
+    }).catch((err) => console.error("Failed to load department/category lookups:", err));
     getSystemSettings()
       .then((settings) => setWeekStartDay(settings.workWeekStartDay))
-      .catch(() => {}); // fallback to default Monday
+      .catch((err) => console.error("Failed to load system settings:", err)); // fallback to default Monday
   }, []);
 
   const loadData = async () => {

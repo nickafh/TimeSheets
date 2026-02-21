@@ -55,7 +55,7 @@ export default function ManageUsers() {
     fetchDepartmentAndCategoryLookup().then(({ departments, categories }) => {
       setDepartments(departments);
       setCategories(categories);
-    }).catch(() => {});
+    }).catch((err) => console.error("Failed to load department/category lookups:", err));
   }, []);
 
   useEffect(() => {
