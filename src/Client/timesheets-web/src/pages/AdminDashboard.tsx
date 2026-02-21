@@ -2,9 +2,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { fetchUsers, fetchPendingPtoRequests, fetchPtoHistory, fetchHolidays, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto, type HolidayDto } from "../api";
 import { Link } from "react-router-dom";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [allUsers, setAllUsers] = useState<UserDto[]>([]);
   const [activeUsers, setActiveUsers] = useState<UserDto[]>([]);
   const [inactiveUsers, setInactiveUsers] = useState<UserDto[]>([]);
@@ -41,6 +46,7 @@ export default function AdminDashboard() {
         setHolidays(holidayData);
       } catch (error) {
         console.error("Failed to fetch admin dashboard data:", error);
+        showToast("Failed to load dashboard data.", "error");
       } finally {
         setLoading(false);
       }
@@ -51,7 +57,7 @@ export default function AdminDashboard() {
 
   const handleApprove = async (request: PtoRequestWithUserDto) => {
     if (!user) return;
-    if (!confirm(`Approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}?`)) {
+    if (!(await confirm(`approve PTO request for ${request.userName} for ${formatPtoRequestDateDisplay(request)}`, "Approve"))) {
       return;
     }
     try {
@@ -61,10 +67,10 @@ export default function AdminDashboard() {
       setPendingPtoRequests(pendingPto);
       const allPto = await fetchPtoHistory();
       setAllPtoRequests(allPto);
-      alert("PTO request approved successfully!");
+      showToast("PTO request approved!", "success");
     } catch (error) {
       console.error("Failed to approve request:", error);
-      alert("Failed to approve request. Please try again.");
+      showToast("Failed to approve request.", "error");
     } finally {
       setProcessing(null);
     }
@@ -87,10 +93,10 @@ export default function AdminDashboard() {
       setPendingPtoRequests(pendingPto);
       const allPto = await fetchPtoHistory();
       setAllPtoRequests(allPto);
-      alert("PTO request denied.");
+      showToast("PTO request denied.", "success");
     } catch (error) {
       console.error("Failed to deny request:", error);
-      alert("Failed to deny request. Please try again.");
+      showToast("Failed to deny request.", "error");
     } finally {
       setProcessing(null);
     }
@@ -119,12 +125,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-        <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading admin dashboard...</span>
-      </div>
-    );
+    return <LoadingSpinner fullPage message="Loading dashboard..." />;
   }
 
   return (

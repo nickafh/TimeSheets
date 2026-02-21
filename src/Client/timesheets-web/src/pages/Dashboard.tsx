@@ -15,6 +15,9 @@ import {
   type DailyTimeEntryDto,
   type ClockStatusDto,
 } from "../api";
+import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { EmptyState } from "../components/EmptyState";
 
 const STATE_COLORS: Record<string, string> = {
   not_started: "#94a3b8",
@@ -34,6 +37,7 @@ function formatElapsed(ms: number): string {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [holidays, setHolidays] = useState<HolidayDto[]>([]);
   const [closures, setClosures] = useState<EarlyClosureDto[]>([]);
@@ -43,6 +47,13 @@ const Dashboard = () => {
   const [loadingHolidays, setLoadingHolidays] = useState(true);
   const [loadingPto, setLoadingPto] = useState(true);
   const [loadingWeek, setLoadingWeek] = useState(true);
+
+  // Per-section error states
+  const [notificationError, setNotificationError] = useState(false);
+  const [holidayError, setHolidayError] = useState(false);
+  const [ptoError, setPtoError] = useState(false);
+  const [weekError, setWeekError] = useState(false);
+  const [clockError, setClockError] = useState(false);
 
   // Clock status state (hourly employees only)
   const isHourly = user?.payType === "Hourly";
@@ -87,6 +98,8 @@ const Dashboard = () => {
         setClockStatus(status);
       } catch (err) {
         console.error("Failed to load clock status:", err);
+        showToast("Failed to load clock status.", "error");
+        setClockError(true);
       } finally {
         setLoadingClock(false);
       }
@@ -145,6 +158,8 @@ const Dashboard = () => {
       setNotifications(data);
     } catch (error) {
       console.error("Failed to load notifications:", error);
+      showToast("Failed to load notifications.", "error");
+      setNotificationError(true);
     } finally {
       setLoadingNotifications(false);
     }
@@ -161,6 +176,8 @@ const Dashboard = () => {
       setClosures(closureData);
     } catch (error) {
       console.error("Failed to load holidays/closures:", error);
+      showToast("Failed to load holidays and closures.", "error");
+      setHolidayError(true);
     } finally {
       setLoadingHolidays(false);
     }
@@ -174,6 +191,8 @@ const Dashboard = () => {
       setPtoSummary(summary);
     } catch (error) {
       console.error("Failed to load PTO summary:", error);
+      showToast("Failed to load PTO summary.", "error");
+      setPtoError(true);
     } finally {
       setLoadingPto(false);
     }
@@ -187,6 +206,8 @@ const Dashboard = () => {
       setWeekEntries(entries);
     } catch (error) {
       console.error("Failed to load week entries:", error);
+      showToast("Failed to load weekly time entries.", "error");
+      setWeekError(true);
     } finally {
       setLoadingWeek(false);
     }
@@ -273,7 +294,9 @@ const Dashboard = () => {
           </div>
 
           {loadingClock ? (
-            <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+            <LoadingSpinner size="sm" />
+          ) : clockError ? (
+            <EmptyState icon="error" message="Unable to load clock status" />
           ) : (
             <>
               {/* Hero number — elapsed time or total hours */}
@@ -367,7 +390,17 @@ const Dashboard = () => {
       </div>
 
       {/* Notifications Section */}
-      {!loadingNotifications && notifications.length > 0 && (
+      {loadingNotifications && (
+        <div style={{ marginBottom: '32px' }}>
+          <LoadingSpinner size="sm" />
+        </div>
+      )}
+      {!loadingNotifications && notificationError && (
+        <div style={{ marginBottom: '32px' }}>
+          <EmptyState icon="error" message="Unable to load notifications" />
+        </div>
+      )}
+      {!loadingNotifications && !notificationError && notifications.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
           {notifications.map((notification) => (
             <div
@@ -415,7 +448,9 @@ const Dashboard = () => {
                 {weekRange.monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – {weekRange.friday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </p>
               {loadingWeek ? (
-                <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+                <LoadingSpinner size="sm" />
+              ) : weekError ? (
+                <EmptyState icon="error" message="Unable to load weekly hours" />
               ) : (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
@@ -460,7 +495,9 @@ const Dashboard = () => {
               A quick snapshot of your PTO balance and next upcoming approved day off.
             </p>
             {loadingPto ? (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+              <LoadingSpinner size="sm" />
+            ) : ptoError ? (
+              <EmptyState icon="error" message="Unable to load PTO summary" />
             ) : (
               <div className="pto-overview-stats">
                 <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '4px' }}>
@@ -502,12 +539,11 @@ const Dashboard = () => {
             </div>
 
             {loadingHolidays ? (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+              <LoadingSpinner size="sm" />
+            ) : holidayError ? (
+              <EmptyState icon="error" message="Unable to load holidays" />
             ) : filteredHolidays.length === 0 ? (
-              <div style={{ padding: '32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <span className="material-symbols-outlined" style={{ color: '#e2e8f0', fontSize: '48px', marginBottom: '12px' }}>event_busy</span>
-                <p style={{ fontSize: '14px', color: '#666666', fontStyle: 'italic' }}>No holidays found for {currentYear}</p>
-              </div>
+              <EmptyState icon="celebration" message={`No holidays found for ${currentYear}`} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {filteredHolidays.slice(0, 2).map((holiday) => {
@@ -582,12 +618,11 @@ const Dashboard = () => {
             </div>
 
             {loadingHolidays ? (
-              <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
+              <LoadingSpinner size="sm" />
+            ) : holidayError ? (
+              <EmptyState icon="error" message="Unable to load early closures" />
             ) : filteredClosures.length === 0 ? (
-              <div style={{ padding: '48px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <span className="material-symbols-outlined" style={{ color: '#d4d4d4', fontSize: '48px', marginBottom: '12px' }}>event_busy</span>
-                <p style={{ fontSize: '14px', color: '#666666', fontStyle: 'italic' }}>No early closures found for {currentYear}</p>
-              </div>
+              <EmptyState icon="schedule" message={`No early closures found for ${currentYear}`} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {filteredClosures.slice(0, 2).map((closure) => {

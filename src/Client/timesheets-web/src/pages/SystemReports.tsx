@@ -8,11 +8,12 @@ import {
   type PtoRequestWithUserDto,
   type HolidayDto,
 } from "../api";
+import { useToast } from "../components/Toast";
 
 // CSV Export utility
-function exportToCSV(data: Record<string, unknown>[], filename: string) {
+function exportToCSV(data: Record<string, unknown>[], filename: string, onNoData?: () => void) {
   if (data.length === 0) {
-    alert("No data to export");
+    onNoData?.();
     return;
   }
 
@@ -62,6 +63,7 @@ interface ReportStats {
 }
 
 export default function SystemReports() {
+  const { showToast } = useToast();
   const [stats, setStats] = useState<ReportStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -173,6 +175,7 @@ export default function SystemReports() {
       });
     } catch (error) {
       console.error("Failed to load report data:", error);
+      showToast("Failed to load report data.", "error");
     } finally {
       setLoading(false);
     }
@@ -246,7 +249,7 @@ export default function SystemReports() {
       "Termination Date": u.terminationDate ? new Date(u.terminationDate).toLocaleDateString() : "",
       Status: u.isActive === 1 ? "Active" : "Inactive",
     }));
-    exportToCSV(data, "users_report");
+    exportToCSV(data, "users_report", () => showToast("No data to export", "info"));
     setShowExportMenu(false);
   };
 
@@ -267,7 +270,7 @@ export default function SystemReports() {
       "Approved/Denied At": r.approvedDeniedAt ? new Date(r.approvedDeniedAt).toLocaleDateString() : "",
       "Deny Reason": r.denyReason || "",
     }));
-    exportToCSV(data, `pto_requests_${selectedYear}`);
+    exportToCSV(data, `pto_requests_${selectedYear}`, () => showToast("No data to export", "info"));
     setShowExportMenu(false);
   };
 
@@ -277,7 +280,7 @@ export default function SystemReports() {
       Name: h.name,
       Date: new Date(h.holidayDate).toLocaleDateString(),
     }));
-    exportToCSV(data, "holidays_report");
+    exportToCSV(data, "holidays_report", () => showToast("No data to export", "info"));
     setShowExportMenu(false);
   };
 
@@ -287,7 +290,7 @@ export default function SystemReports() {
       "Total Requests": d.count,
       "Total Hours": d.hours.toFixed(1),
     }));
-    exportToCSV(data, `pto_by_department_${selectedYear}`);
+    exportToCSV(data, `pto_by_department_${selectedYear}`, () => showToast("No data to export", "info"));
     setShowExportMenu(false);
   };
 
@@ -297,7 +300,7 @@ export default function SystemReports() {
       "Total Requests": m.count,
       "Total Hours": m.hours.toFixed(1),
     }));
-    exportToCSV(data, `pto_by_month_${selectedYear}`);
+    exportToCSV(data, `pto_by_month_${selectedYear}`, () => showToast("No data to export", "info"));
     setShowExportMenu(false);
   };
 
