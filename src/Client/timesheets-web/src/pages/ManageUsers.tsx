@@ -12,8 +12,13 @@ import {
   type UserDto,
   type ManagerOptionDto,
 } from "../api";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export default function ManageUsers() {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [users, setUsers] = useState<UserDto[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +71,7 @@ export default function ManageUsers() {
       setUsers(data);
     } catch (error) {
       console.error("Failed to load users:", error);
-      alert("Failed to load users. Please try again.");
+      showToast("Failed to load users. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -117,7 +122,7 @@ export default function ManageUsers() {
     setSubmitted(true);
 
     if (!formData.firstName || !formData.lastName || !formData.email) {
-      alert("First Name, Last Name, and Email are required");
+      showToast("First Name, Last Name, and Email are required", "error");
       return;
     }
 
@@ -159,52 +164,45 @@ export default function ManageUsers() {
 
       setShowModal(false);
       await loadUsers();
-      alert(
+      showToast(
         editingUser
           ? "User updated successfully!"
-          : "User created successfully!"
+          : "User created successfully!",
+        "success"
       );
     } catch (error) {
       console.error("Failed to save user:", error);
-      alert("Failed to save user. Please check for duplicate emails.");
+      showToast("Failed to save user. Please check for duplicate emails.", "error");
     }
   };
 
   const handleDeactivate = async (user: UserDto) => {
-    if (
-      !confirm(
-        `Are you sure you want to deactivate ${user.firstName} ${user.lastName}?`
-      )
-    ) {
+    if (!(await confirm("deactivate this user", "Deactivate"))) {
       return;
     }
 
     try {
       await deactivateUser(user.id);
       await loadUsers();
-      alert("User deactivated successfully!");
+      showToast("User deactivated successfully!", "success");
     } catch (error) {
       console.error("Failed to deactivate user:", error);
-      alert("Failed to deactivate user. Please try again.");
+      showToast("Failed to deactivate user. Please try again.", "error");
     }
   };
 
   const handleActivate = async (user: UserDto) => {
-    if (
-      !confirm(
-        `Are you sure you want to reactivate ${user.firstName} ${user.lastName}?`
-      )
-    ) {
+    if (!(await confirm("activate this user", "Activate"))) {
       return;
     }
 
     try {
       await activateUser(user.id);
       await loadUsers();
-      alert("User activated successfully!");
+      showToast("User activated successfully!", "success");
     } catch (error) {
       console.error("Failed to activate user:", error);
-      alert("Failed to activate user. Please try again.");
+      showToast("Failed to activate user. Please try again.", "error");
     }
   };
 
@@ -242,12 +240,7 @@ export default function ManageUsers() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-        <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading users...</span>
-      </div>
-    );
+    return <LoadingSpinner fullPage message="Loading users..." />;
   }
 
   return (

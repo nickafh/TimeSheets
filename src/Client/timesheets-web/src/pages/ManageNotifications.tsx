@@ -10,9 +10,15 @@ import {
   deleteNotification,
   type NotificationDto,
 } from "../api";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { EmptyState } from "../components/EmptyState";
 
 export default function ManageNotifications() {
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -35,7 +41,7 @@ export default function ManageNotifications() {
       setNotifications(data);
     } catch (error) {
       console.error("Failed to load notifications:", error);
-      alert("Failed to load notifications. Please try again.");
+      showToast("Failed to load notifications. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +73,7 @@ export default function ManageNotifications() {
     e.preventDefault();
 
     if (!formData.title || !formData.message) {
-      alert("Title and Message are required");
+      showToast("Title and Message are required", "error");
       return;
     }
 
@@ -91,31 +97,30 @@ export default function ManageNotifications() {
 
       setShowModal(false);
       await loadNotifications();
-      alert(
+      showToast(
         editingNotification
           ? "Notification updated successfully!"
-          : "Notification created successfully!"
+          : "Notification created successfully!",
+        "success"
       );
     } catch (error) {
       console.error("Failed to save notification:", error);
-      alert("Failed to save notification. Please try again.");
+      showToast("Failed to save notification. Please try again.", "error");
     }
   };
 
   const handleDeactivate = async (notification: NotificationDto) => {
-    if (
-      !confirm(`Are you sure you want to deactivate "${notification.title}"?`)
-    ) {
+    if (!(await confirm("deactivate this notification", "Deactivate"))) {
       return;
     }
 
     try {
       await deactivateNotification(notification.id);
       await loadNotifications();
-      alert("Notification deactivated successfully!");
+      showToast("Notification deactivated successfully!", "success");
     } catch (error) {
       console.error("Failed to deactivate notification:", error);
-      alert("Failed to deactivate notification. Please try again.");
+      showToast("Failed to deactivate notification. Please try again.", "error");
     }
   };
 
@@ -123,29 +128,25 @@ export default function ManageNotifications() {
     try {
       await activateNotification(notification.id);
       await loadNotifications();
-      alert("Notification activated successfully!");
+      showToast("Notification activated successfully!", "success");
     } catch (error) {
       console.error("Failed to activate notification:", error);
-      alert("Failed to activate notification. Please try again.");
+      showToast("Failed to activate notification. Please try again.", "error");
     }
   };
 
   const handleDelete = async (notification: NotificationDto) => {
-    if (
-      !confirm(
-        `Are you sure you want to permanently delete "${notification.title}"? This cannot be undone.`
-      )
-    ) {
+    if (!(await confirm("delete this notification", "Delete"))) {
       return;
     }
 
     try {
       await deleteNotification(notification.id);
       await loadNotifications();
-      alert("Notification deleted successfully!");
+      showToast("Notification deleted successfully!", "success");
     } catch (error) {
       console.error("Failed to delete notification:", error);
-      alert("Failed to delete notification. Please try again.");
+      showToast("Failed to delete notification. Please try again.", "error");
     }
   };
 
@@ -193,12 +194,7 @@ export default function ManageNotifications() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#002349', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-        <span style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading notifications...</span>
-      </div>
-    );
+    return <LoadingSpinner fullPage message="Loading notifications..." />;
   }
 
   return (
@@ -352,11 +348,8 @@ export default function ManageNotifications() {
           <tbody>
             {notifications.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '48px', textAlign: 'center' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>notifications_off</span>
-                  <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-                    No notifications found. Create one to get started.
-                  </p>
+                <td colSpan={6}>
+                  <EmptyState icon="notifications_off" message="No notifications found. Create one to get started." ctaLabel="Create Notification" onCtaClick={openAddModal} />
                 </td>
               </tr>
             ) : (
@@ -500,13 +493,8 @@ export default function ManageNotifications() {
             backgroundColor: 'white',
             border: '1px solid #e2e8f0',
             borderRadius: '12px',
-            padding: '48px',
-            textAlign: 'center',
           }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#e2e8f0' }}>notifications_off</span>
-            <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>
-              No notifications found. Create one to get started.
-            </p>
+            <EmptyState icon="notifications_off" message="No notifications found. Create one to get started." ctaLabel="Create Notification" onCtaClick={openAddModal} />
           </div>
         ) : (
           notifications.map((notification) => (
