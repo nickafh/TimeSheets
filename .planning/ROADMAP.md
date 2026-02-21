@@ -117,7 +117,7 @@ Plans:
 | 11. ManageUsers Quick-Create Fix | v1.1 | 1/1 | Complete | 2026-02-21 |
 | 12. Shared Components Infrastructure | 3/3 | Complete    | 2026-02-21 | - |
 | 13. Mobile UI Overflow Fixes | 2/2 | Complete    | 2026-02-21 | - |
-| 14. Alert/Confirm Replacement and Error States | 1/3 | In Progress|  | - |
+| 14. Alert/Confirm Replacement and Error States | 2/3 | In Progress|  | - |
 | 15. Code Cleanup | v1.2 | 0/? | Not started | - |
 
 ---

@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 14 of 15 (Alert/Confirm Replacement and Error States)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In Progress
-Last activity: 2026-02-21 — Completed 14-01 Admin Pages Alert/Confirm Replacement
+Last activity: 2026-02-21 — Completed 14-02 Dashboard Error States and ManagerDashboard Toast Migration
 
 Progress: [██████████████████████████░░░░] 87% (13/15 phases)
 
@@ -24,9 +24,9 @@ Progress: [███████████████████████
 - Total execution time: 0.51 hours
 
 **v1.1 Velocity:**
-- Total plans completed: 15
-- Average duration: 3.9 minutes
-- Total execution time: 0.99 hours
+- Total plans completed: 16
+- Average duration: 4.1 minutes
+- Total execution time: 1.12 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -47,6 +47,7 @@ Progress: [███████████████████████
 | 13    | 01   | 2 min    | 2     | 4     |
 | 13    | 02   | 1 min    | 1     | 1     |
 | 14    | 01   | 7 min    | 2     | 3     |
+| 14    | 02   | 8 min    | 2     | 2     |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ All v1.0 and v1.1 decisions logged in PROJECT.md Key Decisions table.
 - [Phase 13]: CSS toggle classes (header-actions-full/header-actions-overflow) pattern for responsive button collapse
 - [Phase 13]: Progressive enhancement pattern (100vh then 100dvh) for iOS Safari dynamic viewport compatibility
 - [Phase 14]: EmptyState with CTA buttons for both desktop table and mobile card empty states in ManageNotifications
+- [Phase 14]: Per-section boolean error states (not global) for Dashboard independent section rendering on partial failures
+- [Phase 14]: showToast alongside console.error in every catch for user-visible feedback without losing developer debugging
 
 ### Pending Todos
 
@@ -74,7 +77,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 14-01-PLAN.md
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None
 
 ---
