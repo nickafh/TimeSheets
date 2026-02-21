@@ -5,7 +5,6 @@ import {
   fetchManagers,
   fetchDepartmentAndCategoryLookup,
   createUser,
-  updateUser,
   updateUserManagers,
   deactivateUser,
   activateUser,
@@ -25,7 +24,6 @@ export default function ManageUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [managers, setManagers] = useState<ManagerOptionDto[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -95,7 +93,6 @@ export default function ManageUsers() {
   };
 
   const openAddModal = () => {
-    setEditingUser(null);
     setFormData({
       firstName: "",
       lastName: "",
@@ -126,50 +123,34 @@ export default function ManageUsers() {
       return;
     }
 
-    if (!editingUser && (!formData.payType || !formData.exemptionStatus)) {
+    if (!formData.payType || !formData.exemptionStatus) {
       return;
     }
 
     try {
-      if (editingUser) {
-        // Update existing user
-        await updateUser(editingUser.id, {
-          ...editingUser,
-          ...formData,
-          hireDate: formData.hireDate || null,
-        } as UserDto);
-        await updateUserManagers(editingUser.id, formData.managerIds ?? []);
-      } else {
-        // Create new user
-        const created = await createUser({
-          legacyEmployeeId: null,
-          firstName: formData.firstName || "",
-          lastName: formData.lastName || "",
-          email: formData.email || "",
-          department: formData.department || null,
-          category: formData.category || null,
-          managerName: formData.managerName || null,
-          hireDate: formData.hireDate || null,
-          terminationDate: null,
-          isActive: 1,
-          isWfh: formData.isWfh || 0,
-          isPartTime: formData.isPartTime || 0,
-          isIntern: formData.isIntern || 0,
-          role: formData.role || "Employee",
-          payType: formData.payType || "Salary",
-          exemptionStatus: formData.exemptionStatus || "Exempt",
-        });
-        await updateUserManagers(created.id, formData.managerIds ?? []);
-      }
+      const created = await createUser({
+        legacyEmployeeId: null,
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        email: formData.email || "",
+        department: formData.department || null,
+        category: formData.category || null,
+        managerName: formData.managerName || null,
+        hireDate: formData.hireDate || null,
+        terminationDate: null,
+        isActive: 1,
+        isWfh: formData.isWfh || 0,
+        isPartTime: formData.isPartTime || 0,
+        isIntern: formData.isIntern || 0,
+        role: formData.role || "Employee",
+        payType: formData.payType || "Salary",
+        exemptionStatus: formData.exemptionStatus || "Exempt",
+      });
+      await updateUserManagers(created.id, formData.managerIds ?? []);
 
       setShowModal(false);
       await loadUsers();
-      showToast(
-        editingUser
-          ? "User updated successfully!"
-          : "User created successfully!",
-        "success"
-      );
+      showToast("User created successfully!", "success");
     } catch (error) {
       console.error("Failed to save user:", error);
       showToast("Failed to save user. Please check for duplicate emails.", "error");
@@ -846,10 +827,10 @@ export default function ManageUsers() {
               backgroundColor: '#002349',
             }}>
               <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: 'white', marginBottom: '4px' }}>
-                {editingUser ? "Edit User" : "Add New User"}
+                Add New User
               </h2>
               <p style={{ fontSize: '13px', color: '#C29B40' }}>
-                {editingUser ? "Update user information" : "Create a new user account"}
+                Create a new user account
               </p>
             </div>
 
@@ -979,8 +960,7 @@ export default function ManageUsers() {
               </div>
 
               {/* Pay Type and Exemption Status */}
-              {!editingUser && (
-                <div className="form-grid-2" style={{ marginBottom: '16px' }}>
+              <div className="form-grid-2" style={{ marginBottom: '16px' }}>
                   <div>
                     <label style={labelStyle}>
                       Pay Type <span style={{ color: '#dc2626' }}>*</span>
@@ -1036,8 +1016,7 @@ export default function ManageUsers() {
                       </div>
                     )}
                   </div>
-                </div>
-              )}
+              </div>
 
               {/* Employee Type Checkboxes */}
               <div style={{
@@ -1136,9 +1115,9 @@ export default function ManageUsers() {
                   }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                    {editingUser ? "save" : "person_add"}
+                    person_add
                   </span>
-                  {editingUser ? "Update User" : "Create User"}
+                  Create User
                 </button>
               </div>
             </form>
