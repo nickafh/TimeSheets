@@ -20,6 +20,7 @@ import {
   type DailyTimeEntryDto,
 } from "../api";
 import { getWeekStart, addDays, toDateOnlyString } from "../utils/dateUtils";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export default function AdminUserDetails() {
   const { id } = useParams<{ id: string }>();
@@ -265,12 +266,7 @@ export default function AdminUserDetails() {
 
   if (loading) {
     return (
-      <div className="page-container page-container--centered">
-        <div style={{ textAlign: 'center' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-          <div style={{ marginTop: '16px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading user details...</div>
-        </div>
-      </div>
+      <LoadingSpinner fullPage message="Loading user details..." />
     );
   }
 

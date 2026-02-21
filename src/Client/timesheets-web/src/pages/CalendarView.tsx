@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchHolidays, fetchAllPtoRequests, fetchEarlyClosures, fetchCalendarToken, API_BASE_URL } from "../api";
 import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 interface Holiday {
   id: number;
@@ -575,10 +576,7 @@ export default function CalendarView() {
 
         {/* Loading Display */}
         {loading && (
-          <div style={{ padding: '48px', textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
-            <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>Loading calendar data...</div>
-          </div>
+          <LoadingSpinner message="Loading calendar data..." />
         )}
 
         {!loading && (
@@ -922,9 +920,7 @@ export default function CalendarView() {
 
             {/* Loading state */}
             {isLoadingToken && !calendarToken && (
-              <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '14px' }}>
-                Loading calendar link...
-              </div>
+              <LoadingSpinner message="Loading calendar link..." />
             )}
 
             {/* Error state */}

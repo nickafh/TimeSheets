@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { DailyTimeEntryDto, UserDto } from "../api";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 import {
   fetchUsers,
   fetchDailyTimeEntries,
@@ -411,11 +412,8 @@ export default function TimeEntries() {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-10 text-center text-slate-500"
-                  >
-                    Loading…
+                  <td colSpan={4}>
+                    <LoadingSpinner message="Loading..." />
                   </td>
                 </tr>
               ) : (

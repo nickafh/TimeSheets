@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSystemSettings, updateSystemSettings, type SystemSettingsDto } from "../api";
 import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 type SystemSettingsData = SystemSettingsDto;
 
@@ -216,9 +217,7 @@ export default function SystemSettings() {
         </div>
       )}
       {loading && (
-        <div style={{ padding: "24px", textAlign: "center", color: "#64748b", fontSize: "14px" }}>
-          Loading settings...
-        </div>
+        <LoadingSpinner message="Loading settings..." />
       )}
 
       {/* Main Content */}

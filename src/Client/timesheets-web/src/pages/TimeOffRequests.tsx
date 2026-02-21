@@ -8,6 +8,7 @@ import {
 } from "../api";
 import { useAuth } from "../auth/useAuth";
 import { useConfirm } from "../components/ConfirmDialog";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 const TimeOffRequests = () => {
   const navigate = useNavigate();
@@ -152,10 +153,7 @@ const TimeOffRequests = () => {
       )}
 
       {loading ? (
-        <div style={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "48px", textAlign: "center" }}>
-          <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "#C29B40", opacity: 0.5 }}>hourglass_empty</span>
-          <div style={{ fontSize: "14px", color: "#666666", marginTop: "12px" }}>Loading requests...</div>
-        </div>
+        <LoadingSpinner message="Loading requests..." />
       ) : (
         <>
           <div style={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden", marginBottom: "32px" }}>

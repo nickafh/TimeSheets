@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DailyTimeEntryDto, PtoRequestWithUserDto, ClockStatusDto, ClockPunchDto } from "../api";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 import {
   fetchDailyTimeEntries,
   saveDailyTimeEntriesBulk,
@@ -242,16 +243,7 @@ function HourlyClockView({
 
   if (loading) {
     return (
-      <div style={{
-        backgroundColor: "white",
-        border: "1px solid #e2e8f0",
-        borderRadius: "12px",
-        padding: "48px",
-        textAlign: "center",
-      }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "48px", color: "#C29B40", opacity: 0.5 }}>hourglass_empty</span>
-        <div style={{ fontSize: "14px", color: "#666666", marginTop: "12px" }}>Loading clock status...</div>
-      </div>
+      <LoadingSpinner message="Loading clock status..." />
     );
   }
 
@@ -1091,16 +1083,7 @@ export default function WeeklyTimeEntries() {
 
       {/* Weekly Grids */}
       {loading ? (
-        <div style={{
-          backgroundColor: 'white',
-          border: '1px solid #e2e8f0',
-          borderRadius: '12px',
-          padding: '48px',
-          textAlign: 'center',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', opacity: 0.5 }}>hourglass_empty</span>
-          <div style={{ fontSize: '14px', color: '#666666', marginTop: '12px' }}>Loading time entries...</div>
-        </div>
+        <LoadingSpinner message="Loading time entries..." />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {weeks.map((week, weekIdx) => {

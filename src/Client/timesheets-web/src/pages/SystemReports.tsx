@@ -9,6 +9,7 @@ import {
   type HolidayDto,
 } from "../api";
 import { useToast } from "../components/Toast";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 // CSV Export utility
 function exportToCSV(data: Record<string, unknown>[], filename: string, onNoData?: () => void) {
@@ -206,12 +207,7 @@ export default function SystemReports() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#C29B40', animation: 'spin 1s linear infinite' }}>progress_activity</span>
-          <div style={{ marginTop: '16px', fontSize: '18px', fontWeight: 600, color: '#002349' }}>Loading reports...</div>
-        </div>
-      </div>
+      <LoadingSpinner fullPage message="Loading reports..." />
     );
   }
 
