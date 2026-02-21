@@ -16,21 +16,6 @@ import {
   type ClockStatusDto,
 } from "../api";
 
-const PUNCH_TYPE_LABELS: Record<string, string> = {
-  ClockIn: "Clock In",
-  LunchOut: "Lunch Out",
-  LunchIn: "Lunch In",
-  ClockOut: "Clock Out",
-};
-
-const STATE_LABELS: Record<string, string> = {
-  not_started: "Not Clocked In",
-  clocked_in: "Clocked In",
-  lunch_out: "On Lunch Break",
-  lunch_in: "Back from Lunch",
-  clocked_out: "Clocked Out for Today",
-};
-
 const STATE_COLORS: Record<string, string> = {
   not_started: "#94a3b8",
   clocked_in: "#059669",
@@ -230,15 +215,36 @@ const Dashboard = () => {
   const upcomingHolidays = filteredHolidays.filter(h => !isPast(h.holidayDate));
   const upcomingClosures = filteredClosures.filter(c => !isPast(c.closureDate));
 
-  // Clock status card helper
+  // Clock status card helper — compact design to fit 2x2 grid
   const renderClockStatusCard = () => {
     if (!isHourly) return null;
 
     const state = clockStatus?.currentState ?? "not_started";
-    const stateLabel = STATE_LABELS[state] ?? state;
     const stateColor = STATE_COLORS[state] ?? "#94a3b8";
     const isActive = state === "clocked_in" || state === "lunch_in";
     const isOnLunch = state === "lunch_out";
+    const isDone = state === "clocked_out";
+    const punches = clockStatus?.todayPunches ?? [];
+
+    // Short status labels for compact display
+    const shortLabels: Record<string, string> = {
+      not_started: "Not Clocked In",
+      clocked_in: "Clocked In",
+      lunch_out: "On Lunch",
+      lunch_in: "Back from Lunch",
+      clocked_out: "Day Complete",
+    };
+
+    // Short punch labels for timeline
+    const punchIcons: Record<string, string> = {
+      ClockIn: "In",
+      LunchOut: "L-Out",
+      LunchIn: "L-In",
+      ClockOut: "Out",
+    };
+
+    const formatShortTime = (iso: string) =>
+      new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
     return (
       <div style={{
@@ -248,110 +254,97 @@ const Dashboard = () => {
         overflow: 'hidden',
       }}>
         <div style={{ padding: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          {/* Header row — title + live status badge */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
             <h3 style={{ fontSize: '24px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>Clock Status</h3>
-            <div style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
+            <span style={{
+              fontSize: '9px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              padding: '6px 12px',
+              borderRadius: '2px',
+              color: 'white',
               backgroundColor: stateColor,
-              boxShadow: isActive ? `0 0 8px ${stateColor}` : 'none',
-            }} />
+              ...(isActive ? { boxShadow: `0 0 10px ${stateColor}40` } : {}),
+            }}>
+              {shortLabels[state] ?? state}
+            </span>
           </div>
 
           {loadingClock ? (
             <div style={{ padding: '32px 0', textAlign: 'center', color: '#999999', fontStyle: 'italic' }}>Loading...</div>
           ) : (
             <>
-              {/* Current State */}
+              {/* Hero number — elapsed time or total hours */}
               <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
-                  Current Status
-                </p>
-                <p style={{ fontSize: '18px', fontWeight: 600, color: stateColor }}>
-                  {stateLabel}
-                </p>
-              </div>
-
-              {/* Live Elapsed Time */}
-              {(isActive || isOnLunch) && elapsedTime && (
-                <div style={{ marginBottom: '20px' }}>
-                  <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
-                    {isOnLunch ? "Worked Before Lunch" : "Elapsed Time"}
-                  </p>
-                  <p style={{
-                    fontSize: '36px',
-                    fontFamily: "'Courier New', monospace",
-                    fontWeight: 700,
-                    color: isOnLunch ? '#d97706' : '#002349',
-                    letterSpacing: '2px',
-                  }}>
-                    {elapsedTime}
-                  </p>
-                  {isOnLunch && (
-                    <p style={{ fontSize: '13px', color: '#d97706', marginTop: '4px', fontStyle: 'italic' }}>
-                      On lunch break
+                {isDone && clockStatus?.totalHoursToday != null ? (
+                  <>
+                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                      Total Hours Today
                     </p>
-                  )}
-                </div>
-              )}
-
-              {/* Total Hours (when clocked out) */}
-              {state === "clocked_out" && clockStatus?.totalHoursToday != null && (
-                <div style={{ marginBottom: '20px' }}>
-                  <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
-                    Total Hours Today
-                  </p>
-                  <p style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
-                    {clockStatus.totalHoursToday.toFixed(2)} <span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>hrs</span>
-                  </p>
-                </div>
-              )}
-
-              {/* Today's Punch Log */}
-              <div>
-                <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '12px' }}>
-                  Today's Punches
-                </p>
-                {(!clockStatus?.todayPunches || clockStatus.todayPunches.length === 0) ? (
+                    <p style={{ fontSize: '32px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+                      {clockStatus.totalHoursToday.toFixed(2)} <span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 400, color: '#666666' }}>hrs</span>
+                    </p>
+                  </>
+                ) : (isActive || isOnLunch) && elapsedTime ? (
+                  <>
+                    <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                      {isOnLunch ? "Paused" : "Elapsed"}
+                    </p>
+                    <p style={{
+                      fontSize: '32px',
+                      fontFamily: "'Courier New', monospace",
+                      fontWeight: 700,
+                      color: isOnLunch ? '#d97706' : '#002349',
+                      letterSpacing: '1px',
+                    }}>
+                      {elapsedTime}
+                    </p>
+                  </>
+                ) : (
                   <p style={{ fontSize: '14px', color: '#94a3b8', fontStyle: 'italic' }}>
                     No punches today
                   </p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {clockStatus.todayPunches.map((punch) => (
+                )}
+              </div>
+
+              {/* Punch timeline — compact horizontal chips */}
+              {punches.length > 0 && (
+                <div>
+                  <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.15em', marginBottom: '10px' }}>
+                    Today's Punches
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {punches.map((punch) => (
                       <div key={punch.id} style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '10px 14px',
+                        gap: '5px',
+                        padding: '5px 10px',
                         backgroundColor: '#f8fafc',
-                        borderRadius: '4px',
+                        borderRadius: '3px',
                         border: '1px solid #f1f5f9',
+                        fontSize: '11px',
                       }}>
-                        <span style={{ fontSize: '14px', fontWeight: 600, color: '#002349' }}>
-                          {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                        <span style={{ fontWeight: 700, color: '#002349' }}>
+                          {punchIcons[punch.punchType] ?? punch.punchType}
                         </span>
-                        <span style={{ fontSize: '14px', fontFamily: "'Courier New', monospace", color: '#64748b' }}>
-                          {new Date(punch.punchTime).toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: true,
-                          })}
+                        <span style={{ color: '#64748b', fontFamily: "'Courier New', monospace", fontSize: '11px' }}>
+                          {formatShortTime(punch.punchTime)}
                         </span>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </>
           )}
         </div>
 
         <div style={{ padding: '16px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, color: '#999999', letterSpacing: '0.1em' }}>
-            {clockStatus?.todayPunches?.length ?? 0} punch{(clockStatus?.todayPunches?.length ?? 0) !== 1 ? "es" : ""} today
+            {punches.length} punch{punches.length !== 1 ? "es" : ""} today
           </span>
           <Link to="/timesheets/weekly" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: '#C29B40', letterSpacing: '0.1em', textDecoration: 'none' }}>
             Go to Time Entries
@@ -406,11 +399,10 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Clock Status Card (hourly employees only) — above the grid */}
-      {isHourly && <div style={{ marginBottom: '32px', maxWidth: '560px' }}>{renderClockStatusCard()}</div>}
-
       {/* Dashboard Cards - 2x2 Grid on desktop, single column on mobile */}
       <div className="dashboard-cards-grid">
+        {/* Clock Status (hourly) OR This Week's Hours (salary) — first grid cell */}
+        {isHourly ? renderClockStatusCard() : null}
         {/* This Week's Hours (salary employees only — hourly employees have Clock Status instead) */}
         {!isHourly && <div style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{ padding: '32px' }}>
