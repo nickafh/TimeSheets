@@ -39,9 +39,9 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Email Styling
 
-- [ ] **EML-01**: PTO notification emails use a branded HTML template matching the app's visual style
-- [ ] **EML-02**: Email template uses table-based layout with inline CSS for Outlook compatibility
-- [ ] **EML-03**: System test email uses the same branded template
+- [x] **EML-01**: PTO notification emails use a branded HTML template matching the app's visual style
+- [x] **EML-02**: Email template uses table-based layout with inline CSS for Outlook compatibility
+- [x] **EML-03**: System test email uses the same branded template
 
 ## v1.2 Requirements
 
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLK-08 | Phase 8 | Complete |
 | CLK-09 | Phase 8 | Complete |
 | CAL-01 | Phase 9 | Complete |
-| EML-01 | Phase 10 | Pending |
-| EML-02 | Phase 10 | Pending |
-| EML-03 | Phase 10 | Pending |
+| EML-01 | Phase 10 | Complete |
+| EML-02 | Phase 10 | Complete |
+| EML-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 21 total

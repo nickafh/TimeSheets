@@ -28,7 +28,7 @@ See: `.planning/milestones/v1.0-ROADMAP.md` for full details.
 - [x] **Phase 7: Overtime Tracking** - Non-exempt employees see overtime in weekly view; exempt employees see 40-hour warning (completed 2026-02-20)
 - [x] **Phase 8: Clock In/Out** - Hourly employees can clock in/out with real-time punches that auto-calculate daily hours (completed 2026-02-21)
 - [ ] **Phase 9: Early Closure Calendar** - Early closures display on the Time Off Calendar with closing time
-- [ ] **Phase 10: Email Styling** - PTO and system emails use a branded HTML template matching app aesthetic
+- [x] **Phase 10: Email Styling** - PTO and system emails use a branded HTML template matching app aesthetic (completed 2026-02-21)
 - [x] **Phase 11: ManageUsers Quick-Create Fix** - Add Pay Type/Exemption Status dropdowns to user creation modal (gap closure) (completed 2026-02-21)
 
 ## Phase Details
@@ -101,10 +101,10 @@ Plans:
   1. PTO notification emails (submitted, approved, denied) display with branded header, accent bar, and consistent footer matching the app's visual style
   2. Email templates use table-based layout with inline CSS (no flexbox, no grid) so they render correctly in Outlook desktop
   3. System test email uses the same branded template as PTO notification emails
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md — Create EmailTemplateService with branded template wrapper, wire into PTO and test email code paths
 
 ### Phase 11: ManageUsers Quick-Create Fix
 **Goal**: Add Pay Type and Exemption Status dropdowns to the ManageUsers quick-create modal so admins can set classification during user creation instead of requiring a separate edit step
@@ -137,7 +137,7 @@ Phases 6 through 8 execute sequentially (strict dependency chain). Phases 9, 10,
 | 7. Overtime Tracking | v1.1 | 2/2 | Complete | 2026-02-20 |
 | 8. Clock In/Out | 4/4 | Complete    | 2026-02-21 | - |
 | 9. Early Closure Calendar | v1.1 | 0/? | Not started | - |
-| 10. Email Styling | v1.1 | 0/? | Not started | - |
+| 10. Email Styling | 1/1 | Complete   | 2026-02-21 | - |
 | 11. ManageUsers Quick-Create Fix | v1.1 | Complete    | 2026-02-21 | 2026-02-21 |
 
 ---
