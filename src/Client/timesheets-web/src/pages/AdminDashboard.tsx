@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { fetchUsers, fetchPendingPtoRequests, fetchPtoHistory, fetchHolidays, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, type UserDto, type PtoRequestWithUserDto, type HolidayDto } from "../api";
+import { fetchUsers, fetchPendingPtoRequests, fetchPtoHistory, fetchHolidays, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, fetchNeedsAttention, correctPunchTime, type UserDto, type PtoRequestWithUserDto, type HolidayDto, type NeedsAttentionItemDto } from "../api";
 import { Link } from "react-router-dom";
 import { useToast } from "../components/Toast";
 import { useConfirm } from "../components/ConfirmDialog";
@@ -21,6 +21,14 @@ export default function AdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState<PtoRequestWithUserDto | null>(null);
   const [denyReason, setDenyReason] = useState("");
   const [processing, setProcessing] = useState<number | null>(null);
+
+  // Needs Attention state
+  const [needsAttentionItems, setNeedsAttentionItems] = useState<NeedsAttentionItemDto[]>([]);
+  const [loadingAttention, setLoadingAttention] = useState(true);
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
+  const [correctionItem, setCorrectionItem] = useState<NeedsAttentionItemDto | null>(null);
+  const [correctionValues, setCorrectionValues] = useState<Record<number, string>>({});
+  const [savingCorrection, setSavingCorrection] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +52,17 @@ export default function AdminDashboard() {
         // Fetch holidays
         const holidayData = await fetchHolidays();
         setHolidays(holidayData);
+
+        // Fetch needs attention items
+        try {
+          setLoadingAttention(true);
+          const attentionItems = await fetchNeedsAttention();
+          setNeedsAttentionItems(attentionItems);
+        } catch {
+          console.error("Failed to load needs attention items");
+        } finally {
+          setLoadingAttention(false);
+        }
       } catch (error) {
         console.error("Failed to fetch admin dashboard data:", error);
         showToast("Failed to load dashboard data.", "error");
@@ -121,6 +140,59 @@ export default function AdminDashboard() {
       case 1: return "Approved";
       case 2: return "Denied";
       default: return "Unknown";
+    }
+  };
+
+  const PUNCH_TYPE_LABELS: Record<string, string> = { ClockIn: "Clock In", LunchOut: "Lunch Out", LunchIn: "Lunch In", ClockOut: "Clock Out" };
+  const EXPECTED_PUNCH_ORDER = ["ClockIn", "LunchOut", "LunchIn", "ClockOut"];
+
+  const getMissingPunches = (item: NeedsAttentionItemDto): string[] => {
+    const existingTypes = new Set(item.punches.map(p => p.punchType));
+    const missing: string[] = [];
+    if (!existingTypes.has("ClockOut")) missing.push("Clock Out");
+    if (!existingTypes.has("ClockIn")) missing.push("Clock In");
+    if (existingTypes.has("LunchOut") && !existingTypes.has("LunchIn")) missing.push("Lunch In");
+    return missing;
+  };
+
+  const openCorrectionModal = (item: NeedsAttentionItemDto) => {
+    setCorrectionItem(item);
+    const values: Record<number, string> = {};
+    for (const punch of item.punches) {
+      const local = new Date(punch.punchTime);
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      values[punch.id] = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
+    }
+    setCorrectionValues(values);
+    setShowCorrectionModal(true);
+  };
+
+  const handleSaveCorrections = async () => {
+    if (!correctionItem) return;
+    setSavingCorrection(true);
+    try {
+      let changeCount = 0;
+      for (const punch of correctionItem.punches) {
+        const newValue = correctionValues[punch.id];
+        if (!newValue) continue;
+        const original = new Date(punch.punchTime);
+        const corrected = new Date(newValue);
+        if (Math.abs(original.getTime() - corrected.getTime()) > 60000) {
+          await correctPunchTime(punch.id, corrected.toISOString());
+          changeCount++;
+        }
+      }
+      setShowCorrectionModal(false);
+      setCorrectionItem(null);
+      setCorrectionValues({});
+      const refreshed = await fetchNeedsAttention();
+      setNeedsAttentionItems(refreshed);
+      showToast(changeCount > 0 ? `${changeCount} punch${changeCount !== 1 ? "es" : ""} corrected.` : "No changes detected.", "success");
+    } catch (err) {
+      console.error("Failed to save corrections:", err);
+      showToast("Failed to save corrections.", "error");
+    } finally {
+      setSavingCorrection(false);
     }
   };
 
@@ -253,6 +325,101 @@ export default function AdminDashboard() {
             This year
           </div>
         </div>
+      </div>
+
+      {/* Needs Attention */}
+      <div style={{
+        backgroundColor: 'white',
+        border: needsAttentionItems.length > 0 ? '1px solid #fbbf24' : '1px solid #e2e8f0',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        marginBottom: '32px',
+      }}>
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid #e2e8f0',
+          backgroundColor: needsAttentionItems.length > 0 ? 'rgba(217, 119, 6, 0.05)' : '#f8fafc',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '22px', color: needsAttentionItems.length > 0 ? '#d97706' : '#059669' }}>
+              {needsAttentionItems.length > 0 ? 'warning' : 'verified'}
+            </span>
+            <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: '#002349' }}>
+              Needs Attention
+            </h2>
+          </div>
+          <span style={{
+            backgroundColor: needsAttentionItems.length > 0 ? '#d97706' : '#059669',
+            color: 'white',
+            fontSize: '10px',
+            fontWeight: 700,
+            padding: '4px 10px',
+            borderRadius: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}>
+            {needsAttentionItems.length} Item{needsAttentionItems.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+
+        {loadingAttention ? (
+          <LoadingSpinner />
+        ) : needsAttentionItems.length === 0 ? (
+          <div style={{ padding: '48px', textAlign: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#a7f3d0' }}>check_circle</span>
+            <p style={{ fontSize: '14px', color: '#666666', marginTop: '12px', fontStyle: 'italic' }}>No items need attention</p>
+          </div>
+        ) : (
+          <div>
+            {needsAttentionItems.map((item, index) => {
+              const missingPunches = getMissingPunches(item);
+              const punchDate = new Date(item.punchDate + "T00:00:00");
+              return (
+                <div key={`${item.userId}-${item.punchDate}`} style={{
+                  padding: '20px 24px',
+                  borderBottom: index < needsAttentionItems.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  flexWrap: 'wrap',
+                }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(217, 119, 6, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#d97706' }}>schedule</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '15px', color: '#002349', marginBottom: '4px' }}>{item.userName}</div>
+                    <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '6px' }}>
+                      {punchDate.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
+                      {item.punches
+                        .sort((a, b) => EXPECTED_PUNCH_ORDER.indexOf(a.punchType) - EXPECTED_PUNCH_ORDER.indexOf(b.punchType))
+                        .map((punch) => (
+                          <span key={punch.id} style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '3px', backgroundColor: '#f1f5f9', color: '#334155' }}>
+                            {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}: {new Date(punch.punchTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                          </span>
+                        ))}
+                    </div>
+                    {missingPunches.length > 0 && (
+                      <div style={{ fontSize: '12px', color: '#dc2626', fontWeight: 600 }}>Missing: {missingPunches.join(", ")}</div>
+                    )}
+                  </div>
+                  <button onClick={() => openCorrectionModal(item)} style={{
+                    backgroundColor: '#d97706', color: 'white', padding: '8px 16px', fontSize: '11px', fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.05em', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '6px', minHeight: '44px', flexShrink: 0,
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                    Fix
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Admin Quick Actions */}
@@ -1110,6 +1277,58 @@ export default function AdminDashboard() {
                     Deny Request
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Correction Modal */}
+      {showCorrectionModal && correctionItem && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div style={{ width: '100%', maxWidth: '520px', margin: '0 16px', backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ padding: '20px 24px', backgroundColor: '#002349' }}>
+              <h2 style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", color: 'white', marginBottom: '4px' }}>Correct Punches</h2>
+              <p style={{ fontSize: '13px', color: '#C29B40' }}>
+                {correctionItem.userName} &mdash; {new Date(correctionItem.punchDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+              </p>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
+                Edit punch times below. Changes are saved with an audit trail.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {correctionItem.punches
+                  .sort((a, b) => EXPECTED_PUNCH_ORDER.indexOf(a.punchType) - EXPECTED_PUNCH_ORDER.indexOf(b.punchType))
+                  .map((punch) => (
+                    <div key={punch.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#002349', marginBottom: '6px' }}>
+                          {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                        </div>
+                        <input
+                          type="datetime-local"
+                          value={correctionValues[punch.id] ?? ""}
+                          onChange={(e) => setCorrectionValues((prev) => ({ ...prev, [punch.id]: e.target.value }))}
+                          style={{ width: '100%', padding: '8px 12px', fontSize: '14px', color: '#002349', border: '2px solid #e2e8f0', borderRadius: '6px', outline: 'none', fontFamily: "'Montserrat', sans-serif" }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowCorrectionModal(false); setCorrectionItem(null); setCorrectionValues({}); }}
+                style={{ backgroundColor: 'white', color: '#64748b', padding: '12px 24px', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', minHeight: '44px' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCorrections}
+                disabled={savingCorrection}
+                style={{ backgroundColor: '#d97706', color: 'white', padding: '12px 24px', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', borderRadius: '6px', border: 'none', cursor: savingCorrection ? 'not-allowed' : 'pointer', opacity: savingCorrection ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px' }}
+              >
+                {savingCorrection ? "Saving..." : "Save Corrections"}
               </button>
             </div>
           </div>

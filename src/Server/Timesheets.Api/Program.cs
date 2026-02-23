@@ -17,6 +17,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAppEmailSender, AppEmailSender>();
 builder.Services.AddScoped<EmailTemplateService>();
+builder.Services.AddHostedService<StalePunchDetectionService>();
 
 // CORS — configurable origins via Cors:AllowedOrigins, defaults to Vite dev server
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -396,44 +397,6 @@ using (var scope = app.Services.CreateScope())
     }
     catch { /* Table may already exist */ }
 
-    // Flag stale open punches from previous days as NeedsAttention
-    try
-    {
-        var stalePunches = await db.ClockPunches
-            .Where(p => p.PunchDate < DateTime.UtcNow.Date
-                && p.Status == "Active"
-                && p.PunchType != "ClockOut")
-            .ToListAsync();
-
-        // Group by UserId + PunchDate to batch-check for ClockOut
-        var staleGroups = stalePunches
-            .GroupBy(p => new { p.UserId, p.PunchDate })
-            .ToList();
-
-        foreach (var group in staleGroups)
-        {
-            var hasClockOut = await db.ClockPunches
-                .AnyAsync(p => p.UserId == group.Key.UserId
-                    && p.PunchDate == group.Key.PunchDate
-                    && p.PunchType == "ClockOut"
-                    && p.Status == "Active");
-
-            if (!hasClockOut)
-            {
-                // Flag all Active punches for this user+date
-                var dayPunches = await db.ClockPunches
-                    .Where(p => p.UserId == group.Key.UserId
-                        && p.PunchDate == group.Key.PunchDate
-                        && p.Status == "Active")
-                    .ToListAsync();
-                foreach (var dp in dayPunches)
-                    dp.Status = "NeedsAttention";
-            }
-        }
-
-        await db.SaveChangesAsync();
-    }
-    catch { /* Table may not exist yet on first startup */ }
 }
 
 app.UseForwardedHeaders();

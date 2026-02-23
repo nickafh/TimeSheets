@@ -347,6 +347,37 @@ public class ClockPunchesController : ControllerBase
         return Ok(grouped);
     }
 
+    /// <summary>GET /api/clockpunches/my-incomplete - Get the current user's own NeedsAttention punch days.</summary>
+    [HttpGet("my-incomplete")]
+    public async Task<IActionResult> MyIncomplete()
+    {
+        var (currentUserId, _) = GetCurrentUser();
+        if (currentUserId == null) return Unauthorized();
+
+        var punches = await _db.ClockPunches
+            .Where(p => p.UserId == currentUserId && p.Status == "NeedsAttention")
+            .OrderBy(p => p.PunchDate)
+            .ThenBy(p => p.PunchTime)
+            .ToListAsync();
+
+        var grouped = punches
+            .GroupBy(p => p.PunchDate)
+            .Select(g => new
+            {
+                punchDate = g.Key.ToString("yyyy-MM-dd"),
+                punches = g.Select(p => new
+                {
+                    p.Id,
+                    p.PunchType,
+                    p.PunchTime,
+                    p.Status,
+                }).ToList(),
+            })
+            .ToList();
+
+        return Ok(grouped);
+    }
+
     /// <summary>PUT /api/clockpunches/{id}/correct - Correct a punch time (Manager/Admin only).</summary>
     [HttpPut("{id}/correct")]
     public async Task<IActionResult> Correct(int id, [FromBody] CorrectRequest request)

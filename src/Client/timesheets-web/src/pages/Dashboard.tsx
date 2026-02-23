@@ -8,7 +8,9 @@ import {
   fetchUserPtoSummary,
   fetchDailyTimeEntries,
   fetchClockStatus,
+  fetchMyIncompleteEntries,
   type NotificationDto,
+  type MyIncompleteItemDto,
   type HolidayDto,
   type EarlyClosureDto,
   type UserPtoSummary,
@@ -61,6 +63,7 @@ const Dashboard = () => {
   const [clockStatus, setClockStatus] = useState<ClockStatusDto | null>(null);
   const [loadingClock, setLoadingClock] = useState(true);
   const [elapsedTime, setElapsedTime] = useState("");
+  const [incompleteItems, setIncompleteItems] = useState<MyIncompleteItemDto[]>([]);
 
   const currentYear = new Date().getFullYear();
 
@@ -85,6 +88,14 @@ const Dashboard = () => {
     loadPtoSummary();
     loadWeekEntries();
   }, [user?.id]);
+
+  // Load incomplete items for hourly employees
+  useEffect(() => {
+    if (!isHourly) return;
+    fetchMyIncompleteEntries()
+      .then(setIncompleteItems)
+      .catch((err) => console.error("Failed to load incomplete entries:", err));
+  }, [isHourly]);
 
   // Load clock status for hourly employees
   useEffect(() => {
@@ -429,6 +440,45 @@ const Dashboard = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Missed Clock-Out Warning Banner */}
+      {incompleteItems.length > 0 && (
+        <div style={{
+          marginBottom: '24px',
+          backgroundColor: '#fffbeb',
+          border: '1px solid #fbbf24',
+          borderLeft: '4px solid #d97706',
+          borderRadius: '0 8px 8px 0',
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '16px',
+        }}>
+          <span className="material-symbols-outlined" style={{ color: '#d97706', fontSize: '24px', flexShrink: 0, marginTop: '2px' }}>warning</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#92400e', marginBottom: '8px' }}>
+              Missed Clock-Out
+            </p>
+            <p style={{ fontSize: '13px', color: '#92400e', marginBottom: '12px' }}>
+              You have incomplete clock entries on the following date(s). Please contact your manager to correct your time.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {incompleteItems.map((item) => (
+                <span key={item.punchDate} style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  padding: '4px 12px',
+                  backgroundColor: 'rgba(217, 119, 6, 0.15)',
+                  color: '#92400e',
+                  borderRadius: '4px',
+                }}>
+                  {new Date(item.punchDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

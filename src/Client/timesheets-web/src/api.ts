@@ -322,6 +322,16 @@ export function correctPunchTime(punchId: number, correctedPunchTime: string): P
   return putJson<ClockPunchDto>(`/api/clockpunches/${punchId}/correct`, { correctedPunchTime });
 }
 
+/** Get current user's own incomplete (NeedsAttention) punch days */
+export interface MyIncompleteItemDto {
+  punchDate: string;
+  punches: { id: number; punchType: string; punchTime: string; status: string }[];
+}
+
+export function fetchMyIncompleteEntries(): Promise<MyIncompleteItemDto[]> {
+  return getJson<MyIncompleteItemDto[]>("/api/clockpunches/my-incomplete");
+}
+
 /** Get punch history for a date range */
 export function fetchPunchHistory(userId: number, start: string, end: string): Promise<ClockPunchDto[]> {
   return getJson<ClockPunchDto[]>(`/api/clockpunches/history?userId=${userId}&start=${start}&end=${end}`);

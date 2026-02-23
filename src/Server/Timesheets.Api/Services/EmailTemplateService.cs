@@ -258,6 +258,64 @@ public class EmailTemplateService
     }
 
     /// <summary>
+    /// Builds the "missed clock-out" email sent to the employee.
+    /// </summary>
+    public string BuildMissedClockOutEmployeeEmail(string employeeFirstName, string dateStr)
+    {
+        var encodedFirstName = WebUtility.HtmlEncode(employeeFirstName);
+        var encodedDate = WebUtility.HtmlEncode(dateStr);
+        var badge = @"<span style=""display:inline-block;padding:4px 12px;background-color:#fffbeb;color:#d97706;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;"">Needs Attention</span>";
+
+        var content = $@"<p style=""font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1f2933;margin:0 0 16px;"">
+    Hi {encodedFirstName},
+</p>
+<p style=""font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1f2933;margin:0 0 24px;"">
+    It looks like you forgot to clock out on <strong>{encodedDate}</strong>. Please contact your manager so they can correct your time entry.
+</p>
+{BuildDetailCard(
+    ("Date", encodedDate),
+    ("Status", badge)
+)}
+{BuildCtaButton("View Time Entries", $"{_frontendBaseUrl}/timesheets/weekly", "#d97706")}";
+
+        return WrapInBrandedTemplate($"You forgot to clock out on {dateStr}", content);
+    }
+
+    /// <summary>
+    /// Builds the "missed clock-out" summary email sent to the manager.
+    /// </summary>
+    public string BuildMissedClockOutManagerEmail(string managerFirstName, List<(string EmployeeName, string DateStr)> items)
+    {
+        var encodedManager = WebUtility.HtmlEncode(managerFirstName);
+
+        var tableRows = new System.Text.StringBuilder();
+        foreach (var item in items)
+        {
+            tableRows.Append($@"<tr>
+    <td style=""padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#002349;border-bottom:1px solid #e1e7ef;"">{WebUtility.HtmlEncode(item.EmployeeName)}</td>
+    <td style=""padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1f2933;border-bottom:1px solid #e1e7ef;text-align:right;"">{WebUtility.HtmlEncode(item.DateStr)}</td>
+</tr>");
+        }
+
+        var content = $@"<p style=""font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1f2933;margin:0 0 16px;"">
+    Hi {encodedManager},
+</p>
+<p style=""font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1f2933;margin:0 0 24px;"">
+    The following employee(s) have incomplete clock entries that need your attention.
+</p>
+<table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#F8F9FA;border:1px solid #e1e7ef;margin-bottom:8px;"">
+    <tr>
+        <td style=""padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#002349;border-bottom:2px solid #e1e7ef;"">Employee</td>
+        <td style=""padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#002349;border-bottom:2px solid #e1e7ef;text-align:right;"">Date</td>
+    </tr>
+    {tableRows}
+</table>
+{BuildCtaButton("Review in Dashboard", $"{_frontendBaseUrl}/manager/dashboard", "#d97706")}";
+
+        return WrapInBrandedTemplate($"{items.Count} employee(s) with incomplete clock entries", content);
+    }
+
+    /// <summary>
     /// Builds the system test email.
     /// </summary>
     public string BuildTestEmail()
