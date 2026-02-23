@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TimeSheets.Api.Models;
 
 namespace TimeSheets.Api.Data;
@@ -7,6 +8,17 @@ public class TimeSheetsDbContext : DbContext
 {
     public TimeSheetsDbContext(DbContextOptions<TimeSheetsDbContext> options)
         : base(options) { }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // MySQL DATETIME columns lose DateTimeKind info. Mark all as UTC so
+        // System.Text.Json serializes them with the "Z" suffix and browsers
+        // correctly convert to local time.
+        configurationBuilder.Properties<DateTime>()
+            .HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>()
+            .HaveConversion<NullableUtcDateTimeConverter>();
+    }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<UserManager> UserManagers => Set<UserManager>();
@@ -107,4 +119,16 @@ public class TimeSheetsDbContext : DbContext
             .HasIndex(cp => new { cp.UserId, cp.PunchDate })
             .HasDatabaseName("IX_ClockPunches_UserId_PunchDate");
     }
+}
+
+internal class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+{
+    public UtcDateTimeConverter()
+        : base(d => d, d => DateTime.SpecifyKind(d, DateTimeKind.Utc)) { }
+}
+
+internal class NullableUtcDateTimeConverter : ValueConverter<DateTime?, DateTime?>
+{
+    public NullableUtcDateTimeConverter()
+        : base(d => d, d => d.HasValue ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : d) { }
 }
