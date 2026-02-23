@@ -26,6 +26,7 @@ const Sidebar = () => {
     { to: "/admin/manage-users", label: "Manage Users", icon: "person", roles: ["Admin"] },
     { to: "/admin/notifications", label: "Notifications", icon: "campaign", roles: ["Admin"] },
     { to: "/admin/manage-holidays", label: "Manage Holidays", icon: "celebration", roles: ["Admin"] },
+    { to: "/admin/time-entries", label: "All Time Entries", icon: "schedule", roles: ["Admin"] },
     { to: "/admin/reports", label: "System Reports", icon: "analytics", roles: ["Admin"] },
   ];
 

@@ -25,6 +25,7 @@ import TeamTimeEntries from "./pages/TeamTimeEntries";
 import TeamMemberDetails from "./pages/TeamMemberDetails";
 import AdminUserDetails from "./pages/AdminUserDetails";
 import SystemSettings from "./pages/SystemSettings";
+import AdminAllTimeEntries from "./pages/AdminAllTimeEntries";
 
 function App() {
   return (
@@ -209,10 +210,7 @@ function App() {
           element={
             <RoleProtectedRoute allowedRoles={["Admin"]}>
               <PageWrapper>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold text-afh-navy">All Time Entries</h1>
-                  <p className="mt-4 text-slate-600">View time entries for all employees. (Feature coming soon)</p>
-                </div>
+                <AdminAllTimeEntries />
               </PageWrapper>
             </RoleProtectedRoute>
           }
