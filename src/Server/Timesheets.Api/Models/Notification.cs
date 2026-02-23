@@ -10,5 +10,6 @@ public class Notification
     public sbyte IsActive { get; set; } = 1;
     public int CreatedByUserId { get; set; }
 
-    public User CreatedByUser { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? CreatedByUser { get; set; }
 }

@@ -17,7 +17,9 @@ public class PtoRequest
     public int? ApprovedDeniedBy { get; set; }
     public string? DenyReason { get; set; }
 
-    public User User { get; set; } = null!;
-    public PtoType PtoType { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? User { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public PtoType? PtoType { get; set; }
     public User? ApproverUser { get; set; }
 }

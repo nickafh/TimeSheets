@@ -12,7 +12,8 @@ public class EmailTemplateService
 
     public EmailTemplateService(IConfiguration config)
     {
-        _frontendBaseUrl = config["App:FrontendUrl"] ?? "http://localhost:5173";
+        var url = config["App:FrontendUrl"];
+        _frontendBaseUrl = string.IsNullOrWhiteSpace(url) ? "http://localhost:5173" : url.TrimEnd('/');
     }
 
     /// <summary>

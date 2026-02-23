@@ -9,6 +9,8 @@ public class UserManager
     public int UserId { get; set; }
     public int ManagerId { get; set; }
 
-    public User User { get; set; } = null!;
-    public User Manager { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? User { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? Manager { get; set; }
 }

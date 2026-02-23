@@ -34,6 +34,7 @@ services:
       ConnectionStrings__DefaultConnection: >-
         Server=mysql;Port=3306;Database=afh_timesheets;User=root;Password=${MYSQL_ROOT_PASSWORD};TreatTinyAsBoolean=true;AllowZeroDateTime=True;ConvertZeroDateTime=True
       Jwt__Secret: ${JWT_SECRET}
+      App__FrontendUrl: ${FRONTEND_URL:-https://${DOMAIN}}
       Smtp__TenantId: ${GRAPH_TENANT_ID:-}
       Smtp__ClientId: ${GRAPH_CLIENT_ID:-}
       Smtp__ClientSecret: ${GRAPH_CLIENT_SECRET:-}

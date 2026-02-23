@@ -10,5 +10,6 @@ public class DailyTimeEntry
     public string DayType { get; set; } = "Work";
     public string? Notes { get; set; }
 
-    public User User { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? User { get; set; }
 }

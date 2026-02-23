@@ -329,7 +329,7 @@ public class ClockPunchesController : ControllerBase
             .Select(g => new
             {
                 userId = g.Key.UserId,
-                userName = $"{g.First().User.FirstName} {g.First().User.LastName}".Trim(),
+                userName = $"{g.First().User?.FirstName} {g.First().User?.LastName}".Trim(),
                 punchDate = g.Key.PunchDate.ToString("yyyy-MM-dd"),
                 punches = g.Select(p => new
                 {

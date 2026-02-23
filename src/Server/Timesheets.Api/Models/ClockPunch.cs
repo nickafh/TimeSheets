@@ -14,5 +14,6 @@ public class ClockPunch
     public int? CorrectedByUserId { get; set; }       // FK to Users - who corrected
     public DateTime? CorrectedAt { get; set; }        // When corrected
 
-    public User User { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public User? User { get; set; }
 }
