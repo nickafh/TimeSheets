@@ -1262,13 +1262,15 @@ export default function WeeklyTimeEntries() {
                         }}>
                           Worked
                         </td>
-                        {week.days.map((day, dayIdx) => (
+                        {week.days.map((day, dayIdx) => {
+                          const hasOT = overtimeByDay[dayIdx] > 0;
+                          return (
                           <td
                             key={day.date}
                             style={{
                               padding: '16px 12px',
                               textAlign: 'center',
-                              backgroundColor: day.isWeekend ? '#fafafa' : 'white',
+                              backgroundColor: day.isWeekend ? '#fafafa' : hasOT ? '#fffbeb' : 'white',
                             }}
                           >
                             <input
@@ -1287,14 +1289,16 @@ export default function WeeklyTimeEntries() {
                                 textAlign: 'center',
                                 fontSize: '14px',
                                 fontWeight: 600,
-                                color: '#1e293b',
-                                border: '2px solid #e2e8f0',
+                                color: hasOT ? '#92400e' : '#1e293b',
+                                border: `2px solid ${hasOT ? '#f59e0b' : '#e2e8f0'}`,
                                 borderRadius: '6px',
                                 outline: 'none',
+                                backgroundColor: hasOT ? '#fffbeb' : undefined,
                               }}
                             />
                           </td>
-                        ))}
+                          );
+                        })}
                         <td style={{
                           padding: '20px 24px',
                           textAlign: 'right',
@@ -1367,8 +1371,8 @@ export default function WeeklyTimeEntries() {
                         </td>
                       </tr>
 
-                      {/* Overtime row (non-exempt only) */}
-                      {isNonExempt && (
+                      {/* Overtime row - shown when any overtime exists */}
+                      {totalOvertime > 0 && (
                         <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                           <td style={{
                             padding: '20px 24px',
@@ -1506,7 +1510,7 @@ export default function WeeklyTimeEntries() {
                             style={{ backgroundColor: day.approvedPto ? '#eff6ff' : '#f8fafc', color: day.approvedPto ? '#2563eb' : '#94a3b8', borderColor: day.approvedPto ? '#93c5fd' : '#e2e8f0', cursor: 'default' }}
                           />
                         </div>
-                        {isNonExempt && overtimeByDay[dayIdx] > 0 && (
+                        {overtimeByDay[dayIdx] > 0 && (
                           <div className="timesheet-day-card__field">
                             <span className="timesheet-day-card__label" style={{ color: '#d97706' }}>Overtime</span>
                             <span style={{
