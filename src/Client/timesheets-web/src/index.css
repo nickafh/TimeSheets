@@ -1629,6 +1629,24 @@ h1, h2, h3, h4 {
     font-size: 13px !important;
     word-break: break-all !important;
   }
+
+  /* Show full action buttons on mobile instead of overflow menu */
+  .user-detail-header .header-actions-full {
+    display: flex !important;
+    width: 100%;
+    gap: 8px !important;
+  }
+
+  .user-detail-header .header-actions-full button {
+    flex: 1 !important;
+    padding: 10px 8px !important;
+    font-size: 9px !important;
+    white-space: nowrap !important;
+  }
+
+  .user-detail-header .header-actions-overflow {
+    display: none !important;
+  }
 }
 
 /* ======================
