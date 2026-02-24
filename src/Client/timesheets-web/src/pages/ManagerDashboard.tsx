@@ -8,6 +8,7 @@ import {
   formatPtoRequestDateDisplay,
   fetchNeedsAttention,
   correctPunchTime,
+  addMissingPunch,
   type UserDto,
   type PtoRequestWithUserDto,
   type NeedsAttentionItemDto,
@@ -46,7 +47,7 @@ export default function ManagerDashboard() {
   // Correction modal state
   const [showCorrectionModal, setShowCorrectionModal] = useState(false);
   const [correctionItem, setCorrectionItem] = useState<NeedsAttentionItemDto | null>(null);
-  const [correctionValues, setCorrectionValues] = useState<Record<number, string>>({});
+  const [correctionValues, setCorrectionValues] = useState<Record<string | number, string>>({});
   const [savingCorrection, setSavingCorrection] = useState(false);
 
   useEffect(() => {
@@ -159,12 +160,24 @@ export default function ManagerDashboard() {
   const openCorrectionModal = (item: NeedsAttentionItemDto) => {
     setCorrectionItem(item);
     // Pre-fill correction values with existing punch times
-    const values: Record<number, string> = {};
+    const values: Record<number | string, string> = {};
     for (const punch of item.punches) {
       // Convert UTC to local datetime-local format
       const local = new Date(punch.punchTime);
       const pad = (n: number) => n.toString().padStart(2, "0");
       values[punch.id] = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
+    }
+    // Add empty entries for missing punch types
+    const existingTypes = new Set(item.punches.map(p => p.punchType));
+    for (const punchType of EXPECTED_PUNCH_ORDER) {
+      if (!existingTypes.has(punchType)) {
+        // Only show ClockIn/ClockOut as missing always; LunchIn only if LunchOut exists
+        if (punchType === "ClockIn" || punchType === "ClockOut") {
+          values[`missing_${punchType}`] = "";
+        } else if (punchType === "LunchIn" && existingTypes.has("LunchOut")) {
+          values[`missing_${punchType}`] = "";
+        }
+      }
     }
     setCorrectionValues(values);
     setShowCorrectionModal(true);
@@ -175,6 +188,7 @@ export default function ManagerDashboard() {
     setSavingCorrection(true);
     try {
       let changeCount = 0;
+      // Handle corrections to existing punches
       for (const punch of correctionItem.punches) {
         const newValue = correctionValues[punch.id];
         if (!newValue) continue;
@@ -184,6 +198,16 @@ export default function ManagerDashboard() {
         if (Math.abs(original.getTime() - corrected.getTime()) > 60000) {
           // Changed by more than a minute -- submit correction
           await correctPunchTime(punch.id, corrected.toISOString());
+          changeCount++;
+        }
+      }
+
+      // Handle adding missing punches
+      for (const [key, value] of Object.entries(correctionValues)) {
+        if (typeof key === "string" && key.startsWith("missing_") && value) {
+          const punchType = key.replace("missing_", "");
+          const punchTime = new Date(value).toISOString();
+          await addMissingPunch(correctionItem.userId, correctionItem.punchDate, punchType, punchTime);
           changeCount++;
         }
       }
@@ -1179,16 +1203,32 @@ export default function ManagerDashboard() {
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {correctionItem.punches
-                  .sort((a, b) => EXPECTED_PUNCH_ORDER.indexOf(a.punchType) - EXPECTED_PUNCH_ORDER.indexOf(b.punchType))
-                  .map((punch) => (
-                    <div key={punch.id} style={{
+                {(() => {
+                  const existingTypes = new Set(correctionItem.punches.map(p => p.punchType));
+                  const missingTypes = EXPECTED_PUNCH_ORDER.filter(pt => {
+                    if (existingTypes.has(pt)) return false;
+                    if (pt === "ClockIn" || pt === "ClockOut") return true;
+                    if (pt === "LunchIn" && existingTypes.has("LunchOut")) return true;
+                    return false;
+                  });
+                  // Build combined list in expected order
+                  const allEntries: { key: string | number; punchType: string; isMissing: boolean }[] = [];
+                  for (const pt of EXPECTED_PUNCH_ORDER) {
+                    const existing = correctionItem.punches.find(p => p.punchType === pt);
+                    if (existing) {
+                      allEntries.push({ key: existing.id, punchType: pt, isMissing: false });
+                    } else if (missingTypes.includes(pt)) {
+                      allEntries.push({ key: `missing_${pt}`, punchType: pt, isMissing: true });
+                    }
+                  }
+                  return allEntries.map((entry) => (
+                    <div key={entry.key} style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px 16px',
-                      backgroundColor: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: entry.isMissing ? '#fffbeb' : '#f8fafc',
+                      border: entry.isMissing ? '2px dashed #d97706' : '1px solid #e2e8f0',
                       borderRadius: '8px',
                     }}>
                       <div style={{ flex: 1 }}>
@@ -1197,18 +1237,28 @@ export default function ManagerDashboard() {
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.1em',
-                          color: '#002349',
+                          color: entry.isMissing ? '#d97706' : '#002349',
                           marginBottom: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
                         }}>
-                          {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                          {entry.isMissing && (
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add_circle</span>
+                          )}
+                          {PUNCH_TYPE_LABELS[entry.punchType] ?? entry.punchType}
+                          {entry.isMissing && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#d97706' }}>(MISSING)</span>
+                          )}
                         </div>
                         <input
                           type="datetime-local"
-                          value={correctionValues[punch.id] ?? ""}
+                          value={correctionValues[entry.key] ?? ""}
+                          placeholder={entry.isMissing ? "Select date & time" : undefined}
                           onChange={(e) =>
                             setCorrectionValues((prev) => ({
                               ...prev,
-                              [punch.id]: e.target.value,
+                              [entry.key]: e.target.value,
                             }))
                           }
                           style={{
@@ -1216,7 +1266,7 @@ export default function ManagerDashboard() {
                             padding: '8px 12px',
                             fontSize: '14px',
                             color: '#002349',
-                            border: '2px solid #e2e8f0',
+                            border: entry.isMissing ? '2px solid #d97706' : '2px solid #e2e8f0',
                             borderRadius: '6px',
                             outline: 'none',
                             fontFamily: "'Montserrat', sans-serif",
@@ -1224,7 +1274,8 @@ export default function ManagerDashboard() {
                         />
                       </div>
                     </div>
-                  ))}
+                  ));
+                })()}
               </div>
             </div>
             <div className="form-actions-mobile" style={{

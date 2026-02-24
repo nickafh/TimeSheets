@@ -322,6 +322,11 @@ export function correctPunchTime(punchId: number, correctedPunchTime: string): P
   return putJson<ClockPunchDto>(`/api/clockpunches/${punchId}/correct`, { correctedPunchTime });
 }
 
+/** Add a missing punch for a user (manager/admin only) */
+export function addMissingPunch(userId: number, punchDate: string, punchType: string, punchTime: string): Promise<ClockPunchDto> {
+  return postJson<ClockPunchDto>("/api/clockpunches/add-missing", { userId, punchDate: punchDate + "T00:00:00", punchType, punchTime });
+}
+
 /** Get current user's own incomplete (NeedsAttention) punch days */
 export interface MyIncompleteItemDto {
   punchDate: string;

@@ -17,6 +17,14 @@ public class CorrectRequest
     public DateTime CorrectedPunchTime { get; set; }
 }
 
+public class AddMissingPunchRequest
+{
+    public int UserId { get; set; }
+    public DateTime PunchDate { get; set; }
+    public string PunchType { get; set; } = "";
+    public DateTime PunchTime { get; set; }
+}
+
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -455,6 +463,103 @@ public class ClockPunchesController : ControllerBase
             punch.PunchType,
             punch.Status,
             punch.OriginalPunchTime,
+            punch.CorrectedByUserId,
+            punch.CorrectedAt,
+        });
+    }
+
+    /// <summary>POST /api/clockpunches/add-missing - Add a missing punch for a user (Manager/Admin only).</summary>
+    [HttpPost("add-missing")]
+    public async Task<IActionResult> AddMissing([FromBody] AddMissingPunchRequest request)
+    {
+        var (currentUserId, role) = GetCurrentUser();
+        if (currentUserId == null) return Unauthorized();
+
+        if (!string.Equals(role, "Manager", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return Forbid();
+        }
+
+        var validTypes = new[] { "ClockIn", "ClockOut", "LunchOut", "LunchIn" };
+        if (!validTypes.Contains(request.PunchType))
+            return BadRequest(new { message = "Invalid punch type." });
+
+        // Check if this punch type already exists for the day
+        var existing = await _db.ClockPunches
+            .AnyAsync(p => p.UserId == request.UserId
+                && p.PunchDate == request.PunchDate.Date
+                && p.PunchType == request.PunchType
+                && p.Status != "Voided");
+
+        if (existing)
+            return BadRequest(new { message = $"{request.PunchType} already exists for this day." });
+
+        var punch = new ClockPunch
+        {
+            UserId = request.UserId,
+            PunchDate = request.PunchDate.Date,
+            PunchTime = request.PunchTime,
+            PunchType = request.PunchType,
+            Status = "Active",
+            CorrectedByUserId = currentUserId.Value,
+            CorrectedAt = DateTime.UtcNow,
+        };
+
+        _db.ClockPunches.Add(punch);
+        await _db.SaveChangesAsync();
+
+        // Check if this completes a full day - recalculate hours
+        var dayPunches = await _db.ClockPunches
+            .Where(p => p.UserId == punch.UserId
+                && p.PunchDate == punch.PunchDate
+                && (p.Status == "Active" || p.Status == "NeedsAttention"))
+            .OrderBy(p => p.PunchTime)
+            .ToListAsync();
+
+        var hasClockIn = dayPunches.Any(p => p.PunchType == "ClockIn");
+        var hasClockOut = dayPunches.Any(p => p.PunchType == "ClockOut");
+
+        if (hasClockIn && hasClockOut)
+        {
+            var workedHours = CalculateWorkedHours(dayPunches);
+
+            var dailyEntry = await _db.DailyTimeEntries
+                .FirstOrDefaultAsync(d => d.UserId == punch.UserId && d.WorkDate == punch.PunchDate);
+
+            if (dailyEntry == null)
+            {
+                dailyEntry = new DailyTimeEntry
+                {
+                    UserId = punch.UserId,
+                    WorkDate = punch.PunchDate,
+                    WorkedHours = workedHours,
+                    PtoHours = 0,
+                    DayType = "Work",
+                };
+                _db.DailyTimeEntries.Add(dailyEntry);
+            }
+            else
+            {
+                dailyEntry.WorkedHours = workedHours;
+                dailyEntry.DayType = "Work";
+            }
+
+            // Resolve NeedsAttention -> Active
+            foreach (var dp in dayPunches.Where(p => p.Status == "NeedsAttention"))
+                dp.Status = "Active";
+
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new
+        {
+            punch.Id,
+            punch.UserId,
+            punchDate = punch.PunchDate.ToString("yyyy-MM-dd"),
+            punch.PunchTime,
+            punch.PunchType,
+            punch.Status,
             punch.CorrectedByUserId,
             punch.CorrectedAt,
         });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { fetchUsers, fetchPendingPtoRequests, fetchPtoHistory, fetchHolidays, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, fetchNeedsAttention, correctPunchTime, type UserDto, type PtoRequestWithUserDto, type HolidayDto, type NeedsAttentionItemDto } from "../api";
+import { fetchUsers, fetchPendingPtoRequests, fetchPtoHistory, fetchHolidays, approvePtoRequest, denyPtoRequest, formatPtoRequestDateDisplay, fetchNeedsAttention, correctPunchTime, addMissingPunch, type UserDto, type PtoRequestWithUserDto, type HolidayDto, type NeedsAttentionItemDto } from "../api";
 import { Link } from "react-router-dom";
 import { useToast } from "../components/Toast";
 import { useConfirm } from "../components/ConfirmDialog";
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
   const [loadingAttention, setLoadingAttention] = useState(true);
   const [showCorrectionModal, setShowCorrectionModal] = useState(false);
   const [correctionItem, setCorrectionItem] = useState<NeedsAttentionItemDto | null>(null);
-  const [correctionValues, setCorrectionValues] = useState<Record<number, string>>({});
+  const [correctionValues, setCorrectionValues] = useState<Record<string | number, string>>({});
   const [savingCorrection, setSavingCorrection] = useState(false);
 
   useEffect(() => {
@@ -157,11 +157,22 @@ export default function AdminDashboard() {
 
   const openCorrectionModal = (item: NeedsAttentionItemDto) => {
     setCorrectionItem(item);
-    const values: Record<number, string> = {};
+    const values: Record<string | number, string> = {};
     for (const punch of item.punches) {
       const local = new Date(punch.punchTime);
       const pad = (n: number) => n.toString().padStart(2, "0");
       values[punch.id] = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
+    }
+    // Add empty entries for missing punch types
+    const existingTypes = new Set(item.punches.map(p => p.punchType));
+    for (const punchType of EXPECTED_PUNCH_ORDER) {
+      if (!existingTypes.has(punchType)) {
+        if (punchType === "ClockIn" || punchType === "ClockOut") {
+          values[`missing_${punchType}`] = "";
+        } else if (punchType === "LunchIn" && existingTypes.has("LunchOut")) {
+          values[`missing_${punchType}`] = "";
+        }
+      }
     }
     setCorrectionValues(values);
     setShowCorrectionModal(true);
@@ -172,6 +183,7 @@ export default function AdminDashboard() {
     setSavingCorrection(true);
     try {
       let changeCount = 0;
+      // Handle corrections to existing punches
       for (const punch of correctionItem.punches) {
         const newValue = correctionValues[punch.id];
         if (!newValue) continue;
@@ -179,6 +191,15 @@ export default function AdminDashboard() {
         const corrected = new Date(newValue);
         if (Math.abs(original.getTime() - corrected.getTime()) > 60000) {
           await correctPunchTime(punch.id, corrected.toISOString());
+          changeCount++;
+        }
+      }
+      // Handle adding missing punches
+      for (const [key, value] of Object.entries(correctionValues)) {
+        if (typeof key === "string" && key.startsWith("missing_") && value) {
+          const punchType = key.replace("missing_", "");
+          const punchTime = new Date(value).toISOString();
+          await addMissingPunch(correctionItem.userId, correctionItem.punchDate, punchType, punchTime);
           changeCount++;
         }
       }
@@ -1297,23 +1318,55 @@ export default function AdminDashboard() {
                 Edit punch times below. Changes are saved with an audit trail.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {correctionItem.punches
-                  .sort((a, b) => EXPECTED_PUNCH_ORDER.indexOf(a.punchType) - EXPECTED_PUNCH_ORDER.indexOf(b.punchType))
-                  .map((punch) => (
-                    <div key={punch.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                {(() => {
+                  const existingTypes = new Set(correctionItem.punches.map(p => p.punchType));
+                  const missingTypes = EXPECTED_PUNCH_ORDER.filter(pt => {
+                    if (existingTypes.has(pt)) return false;
+                    if (pt === "ClockIn" || pt === "ClockOut") return true;
+                    if (pt === "LunchIn" && existingTypes.has("LunchOut")) return true;
+                    return false;
+                  });
+                  const allEntries: { key: string | number; punchType: string; isMissing: boolean }[] = [];
+                  for (const pt of EXPECTED_PUNCH_ORDER) {
+                    const existing = correctionItem.punches.find(p => p.punchType === pt);
+                    if (existing) {
+                      allEntries.push({ key: existing.id, punchType: pt, isMissing: false });
+                    } else if (missingTypes.includes(pt)) {
+                      allEntries.push({ key: `missing_${pt}`, punchType: pt, isMissing: true });
+                    }
+                  }
+                  return allEntries.map((entry) => (
+                    <div key={entry.key} style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                      backgroundColor: entry.isMissing ? '#fffbeb' : '#f8fafc',
+                      border: entry.isMissing ? '2px dashed #d97706' : '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                    }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#002349', marginBottom: '6px' }}>
-                          {PUNCH_TYPE_LABELS[punch.punchType] ?? punch.punchType}
+                        <div style={{
+                          fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
+                          color: entry.isMissing ? '#d97706' : '#002349', marginBottom: '6px',
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                        }}>
+                          {entry.isMissing && <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add_circle</span>}
+                          {PUNCH_TYPE_LABELS[entry.punchType] ?? entry.punchType}
+                          {entry.isMissing && <span style={{ fontSize: '10px', fontWeight: 600, color: '#d97706' }}>(MISSING)</span>}
                         </div>
                         <input
                           type="datetime-local"
-                          value={correctionValues[punch.id] ?? ""}
-                          onChange={(e) => setCorrectionValues((prev) => ({ ...prev, [punch.id]: e.target.value }))}
-                          style={{ width: '100%', padding: '8px 12px', fontSize: '14px', color: '#002349', border: '2px solid #e2e8f0', borderRadius: '6px', outline: 'none', fontFamily: "'Montserrat', sans-serif" }}
+                          value={correctionValues[entry.key] ?? ""}
+                          placeholder={entry.isMissing ? "Select date & time" : undefined}
+                          onChange={(e) => setCorrectionValues((prev) => ({ ...prev, [entry.key]: e.target.value }))}
+                          style={{
+                            width: '100%', padding: '8px 12px', fontSize: '14px', color: '#002349',
+                            border: entry.isMissing ? '2px solid #d97706' : '2px solid #e2e8f0',
+                            borderRadius: '6px', outline: 'none', fontFamily: "'Montserrat', sans-serif",
+                          }}
                         />
                       </div>
                     </div>
-                  ))}
+                  ));
+                })()}
               </div>
             </div>
             <div style={{ padding: '16px 24px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
